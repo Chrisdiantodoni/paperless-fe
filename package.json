@@ -10,6 +10,7 @@
     "typecheck": "turbo typecheck"
   },
   "devDependencies": {
+    "@types/js-cookie": "^3.0.6",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "turbo": "^2.9.15",
@@ -24,5 +25,9 @@
       "esbuild",
       "lightningcss"
     ]
+  },
+  "dependencies": {
+    "axios": "^1.17.0",
+    "js-cookie": "^3.0.8"
   }
 }
