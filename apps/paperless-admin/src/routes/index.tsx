@@ -98,7 +98,8 @@ function App() {
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-1.5">
+      Sucessfully Access
+      {/* <div className="flex flex-col gap-1.5">
         <Label className="text-sm font-medium">
           Content <span className="text-destructive">*</span>
         </Label>
@@ -122,7 +123,7 @@ function App() {
             </>
           )}
         />
-      </div>
+      </div>*/}
     </div>
   )
 }
