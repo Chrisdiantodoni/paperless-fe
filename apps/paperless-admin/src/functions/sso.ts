@@ -1,4 +1,4 @@
-import sso from "@/lib/sso"
+import sso from "@/services/API/sso"
 import { createServerFn } from "@tanstack/react-start"
 
 export const verifySSOTicket = createServerFn({ method: "POST" }).handler(

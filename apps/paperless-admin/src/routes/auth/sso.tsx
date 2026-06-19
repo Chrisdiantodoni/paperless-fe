@@ -20,7 +20,7 @@ function SSOCallbackComponent() {
 
   useEffect(() => {
     if (!ticket) {
-      navigate({ to: "/auth/login", search: { error: "missing_ticket" } })
+      navigate({ to: import.meta.env.PORTAL_URL })
       return
     }
 
