@@ -5,6 +5,10 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "dev:admin": "turbo dev --filter=paperless-admin",
+    "dev:admin:build": "turbo build --filter=paperless-admin",
+    "dev:user": "turbo dev --filter=paperless-user",
+    "dev:user:build": "turbo build --filter=paperless-user",
     "lint": "turbo lint",
     "format": "turbo format",
     "typecheck": "turbo typecheck"
