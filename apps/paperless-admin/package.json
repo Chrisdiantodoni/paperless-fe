@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
+    "start": "cross-env NODE_ENV=development tsx server.ts",
     "preview": "vite preview",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
@@ -24,20 +25,25 @@
     "@workspace/types": "workspace:*",
     "@workspace/ui": "workspace:*",
     "@workspace/utils": "workspace:*",
+    "express": "^5.2.1",
     "lucide-react": "^1.18.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.79.0",
+    "srvx": "^0.11.17",
     "tailwindcss": "^4"
   },
   "devDependencies": {
     "@tanstack/devtools-vite": "latest",
     "@tanstack/eslint-config": "latest",
+    "@types/express": "^5.0.6",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
+    "tsx": "^4.22.4",
     "typescript": "^6",
     "vite": "^8"
   }
