@@ -42,7 +42,7 @@ if (DEVELOPMENT) {
       const handler = toNodeHandler(serverEntry.fetch)
 
       // Handle the request with the SSR handler
-      await handler(req, res)
+      await handler(req as any, res as any)
     } catch (error) {
       // Fix stack traces so Vite points to original source code
       if (typeof error === "object" && error instanceof Error) {
@@ -53,6 +53,7 @@ if (DEVELOPMENT) {
   })
 } else {
   // Import the prebuilt SSR handler from the production build.
+  // @ts-expect-error - dist/server/server.js is a build artifact, no declarations
   const { default: handler } = await import("./dist/server/server.js")
 
   // Convert TanStack Start's fetch-style handler to an Express handler.
@@ -66,7 +67,7 @@ if (DEVELOPMENT) {
   // using the TanStack Start server handler.
   app.use(async (req, res, next) => {
     try {
-      await nodeHandler(req, res)
+      await nodeHandler(req as any, res as any)
     } catch (error) {
       next(error)
     }

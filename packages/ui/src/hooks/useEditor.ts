@@ -13,6 +13,7 @@ import {
 } from "@tiptap/extension-table"
 import Underline from "@tiptap/extension-underline"
 import { TextStyle, Color } from "@tiptap/extension-text-style"
+import TextAlign from "@tiptap/extension-text-align"
 
 export function useEditor(initialContent?: string): Editor | null {
   const editor = useTiptapEditor({
@@ -44,6 +45,9 @@ export function useEditor(initialContent?: string): Editor | null {
       TextStyle,
       Color.configure({
         types: ["textStyle"],
+      }),
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
       }),
     ],
     content: initialContent || "<p></p>",

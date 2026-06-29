@@ -50,12 +50,12 @@ export function TableDialog({ editor, open, onOpenChange }: TableDialogProps) {
 
   const handleAddColumnLeft = () => {
     if (!editor) return
-    editor.chain().focus().addColBefore().run()
+    editor.chain().focus().addColumnBefore().run()
   }
 
   const handleAddColumnRight = () => {
     if (!editor) return
-    editor.chain().focus().addColAfter().run()
+    editor.chain().focus().addColumnAfter().run()
   }
 
   const handleDeleteRow = () => {
@@ -65,7 +65,7 @@ export function TableDialog({ editor, open, onOpenChange }: TableDialogProps) {
 
   const handleDeleteColumn = () => {
     if (!editor) return
-    editor.chain().focus().deleteCol().run()
+    editor.chain().focus().deleteColumn().run()
   }
 
   const handleDeleteTable = () => {

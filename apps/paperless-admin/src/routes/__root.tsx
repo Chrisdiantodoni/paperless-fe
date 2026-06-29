@@ -1,8 +1,19 @@
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
+import {
+  HeadContent,
+  Scripts,
+  createRootRouteWithContext,
+} from "@tanstack/react-router"
+import type { UserData } from "@workspace/types/user.type"
+import { SidebarProvider } from "@workspace/ui/components/ui/sidebar"
+import { TooltipProvider } from "@workspace/ui/components/ui/tooltip"
 
 import appCss from "@workspace/ui/globals.css?url"
 
-export const Route = createRootRoute({
+interface RouteContext {
+  user?: UserData
+}
+
+export const Route = createRootRouteWithContext<RouteContext>()({
   head: () => ({
     meta: [
       {
@@ -23,6 +34,7 @@ export const Route = createRootRoute({
       },
     ],
   }),
+
   notFoundComponent: () => (
     <main className="container mx-auto p-4 pt-16">
       <h1>404</h1>
@@ -39,7 +51,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {children}
+        <SidebarProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </SidebarProvider>
         <Scripts />
       </body>
     </html>

@@ -1,70 +1,96 @@
 // app/routes/auth/sso.tsx
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { verifySSOTicket } from "@/server/auth"
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
-import { verifySSOTicket } from "../../functions/sso"
-import sso from "@/services/API/sso"
+
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/ui/card"
+import { Loader2 } from "lucide-react"
+import { ssoMiddleware } from "@/middlewares/sso"
 
 export const Route = createFileRoute("/auth/sso")({
   component: SSOCallbackComponent,
+  server: {
+    middleware: [ssoMiddleware],
+  },
+  beforeLoad: async ({ context }) => {
+    if (context.user?.id) {
+      throw redirect({ to: "/dashboard" })
+    }
+  },
   validateSearch: (search: Record<string, unknown>) => {
     return {
-      ticket: (search.ticket as string) || undefined,
+      ticket: search.ticket as string,
     }
   },
 })
 
 function SSOCallbackComponent() {
   const { ticket } = Route.useSearch()
+  const [countdown, setCountdown] = useState(3)
+  const [redirecting, setRedirecting] = useState(false)
   const navigate = useNavigate()
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!ticket) {
-      navigate({ to: import.meta.env.PORTAL_URL })
-      return
+    let interval: ReturnType<typeof setInterval>
+
+    const startRedirect = () => {
+      setRedirecting(true)
+      interval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval)
+            window.location.href = `${import.meta.env.VITE_PORTAL_URL}`
+          }
+          return prev - 1
+        })
+      }, 1000)
     }
 
-    const performHandshake = async () => {
-      // 3. Panggil Server Function (berjalan di server-side TanStack)
-      const result = await sso.verifyTicket(ticket)
-      if (result.data.token) {
-        // 4. Simpan token ke Cookie agar bisa dibaca saat SSR di page lain
-        document.cookie = `paperless_token=${result.data.token}; path=/; max-age=86400; Secure; SameSite=Strict`
+    if (!ticket) {
+      startRedirect()
+      return () => clearInterval(interval)
+    }
 
-        // 5. Lempar ke Dashboard utama Paperless
-        navigate({ to: "/" })
+    const fetchSSO = async () => {
+      try {
+        const result = await verifySSOTicket({ data: { ticket } })
+        if (result.data.token) {
+          console.log(result.data.token)
+          navigate({ to: "/" })
+        } else {
+          // startRedirect()
+        }
+      } catch {
+        // startRedirect()
       }
     }
 
-    performHandshake()
+    fetchSSO()
+    return () => clearInterval(interval)
   }, [ticket, navigate])
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50">
-      <div className="max-w-sm rounded-xl bg-white p-8 text-center shadow-md">
-        {errorMessage ? (
-          <>
-            <div className="mb-2 text-xl font-semibold text-red-500">
-              Autentikasi Gagal
-            </div>
-            <p className="text-sm text-slate-500">{errorMessage}</p>
-            <p className="mt-4 text-xs text-slate-400">
-              Mengalihkan Anda kembali ke halaman login...
-            </p>
-          </>
-        ) : (
-          <>
-            <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-b-2 border-indigo-600"></div>
-            <h2 className="text-xl font-semibold text-slate-800">
-              Menyelaraskan Sesi...
-            </h2>
-            <p className="mt-2 text-sm text-slate-500">
-              Mohon tunggu, kami sedang menghubungkan Anda ke sistem Paperless
-              Alfa Scorpii.
-            </p>
-          </>
-        )}
-      </div>
+    <div className="flex min-h-screen w-full items-center justify-center bg-muted/40 p-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+          <CardTitle className="text-lg">
+            {redirecting ? "Sesi tidak valid" : "Memverifikasi sesi"}
+          </CardTitle>
+          <CardDescription>
+            {redirecting
+              ? `Mengalihkan ke portal dalam ${countdown} detik...`
+              : "Harap tunggu sebentar..."}
+          </CardDescription>
+        </CardHeader>
+      </Card>
     </div>
   )
 }

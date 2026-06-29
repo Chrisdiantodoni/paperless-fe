@@ -1,3 +1,4 @@
+import type { ErrorAPI } from "@workspace/types"
 import { api } from "../api"
 
 class SSOService {
@@ -6,9 +7,9 @@ class SSOService {
       const res = await api.post<any>("/auth/sso-verify", { ticket })
       return res.data
     } catch (error: any) {
-      console.log({ error })
-      const errorMessage =
-        error.response?.data?.message || "Gagal memvalidasi tiket SSO."
+      const apiError = error as ErrorAPI
+      const errorMessage = apiError.message || "Gagal memvalidasi tiket SSO."
+
       throw new Error(errorMessage)
     }
   }

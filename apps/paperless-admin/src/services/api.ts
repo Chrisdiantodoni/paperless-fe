@@ -1,6 +1,8 @@
+import { readSessionToken } from "@/server/session"
 import { setupApi } from "@workspace/api-client"
 
-export const api = setupApi(
-  import.meta.env.VITE_BASE_URL,
-  import.meta.env.VITE_PORTAL_URL
-)
+// Pastikan ada string kosong atau fallback jika env tidak terdefinisi
+const baseUrl = import.meta.env.VITE_BASE_URL || "/api"
+const portalUrl = import.meta.env.VITE_PORTAL_URL || ""
+
+export const api = setupApi(baseUrl, portalUrl, () => readSessionToken())

@@ -65,7 +65,7 @@ export function ImageUploadDialog({
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     const file = e.dataTransfer.files[0]
-    if (file && file.type.startsWith("image/")) {
+    if (file.type.startsWith("image/")) {
       handleFileUpload(file)
     }
   }

@@ -73,7 +73,7 @@ export function extractLinks(
  */
 export function validateMarkdown(markdown: string): boolean {
   try {
-    md.parse(markdown)
+    md.parse(markdown, {})
     return true
   } catch {
     return false

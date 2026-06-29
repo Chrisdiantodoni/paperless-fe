@@ -1,9 +1,13 @@
 import { createApi } from "./api"
 import { setupInterceptors } from "./interceptors"
 
-const setupApi = (baseUrl: string, portalUrl?: string) => {
+const setupApi = (
+  baseUrl: string,
+  portalUrl?: string,
+  getToken?: () => string | null
+) => {
   const api = createApi(baseUrl)
-  setupInterceptors(api, portalUrl)
+  setupInterceptors(api, portalUrl, getToken)
   return api
 }
 

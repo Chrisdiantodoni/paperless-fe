@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
+    "ui": "pnpm dlx shadcn@latest add",
     "dev": "turbo dev",
     "dev:admin": "turbo dev --filter=paperless-admin",
     "dev:admin:build": "turbo build --filter=paperless-admin",

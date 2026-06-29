@@ -41,7 +41,6 @@ export function RichTextEditor({
   onChange,
   value,
   hasError = false,
-  placeholder = "Start typing...",
   className,
 }: RichTextEditorProps) {
   const [isPreview, setIsPreview] = useState(false)

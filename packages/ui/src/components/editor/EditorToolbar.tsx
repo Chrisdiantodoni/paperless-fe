@@ -18,7 +18,6 @@ import {
   Image,
   Redo,
   Undo,
-  Copy,
   Download,
   Eye,
   EyeOff,
@@ -162,13 +161,6 @@ export function EditorToolbar({
   })
 
   const handleAddLink = () => {
-    const selectedText =
-      editor?.view.state.selection.from !== editor?.view.state.selection.to
-        ? editor?.view.state.doc.textBetween(
-            editor.view.state.selection.from,
-            editor.view.state.selection.to
-          )
-        : ""
     setLinkOpen(true)
   }
 

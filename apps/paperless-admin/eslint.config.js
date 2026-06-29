@@ -10,6 +10,10 @@ export default [
       "import/order": "off",
       "sort-imports": "off",
       "@typescript-eslint/array-type": "off",
+      "@typescript-eslint/no-unused-vars": ["error", {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+      }],
       "@typescript-eslint/require-await": "off",
       "pnpm/json-enforce-catalog": "off",
     },
