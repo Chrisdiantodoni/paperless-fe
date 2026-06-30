@@ -30,6 +30,7 @@ import {
 import { Link } from "@tanstack/react-router"
 import { Mail } from "lucide-react"
 import type { UserData } from "@workspace/types/user.type"
+import type { NavPrimaryprops } from "@workspace/types/utilities"
 
 // This is sample data.
 const data = {
@@ -161,7 +162,14 @@ const data = {
   ],
 }
 
-export function AppSidebar({ user }: { user?: UserData }) {
+export function AppSidebar({
+  user,
+  sidebar,
+}: {
+  user?: UserData
+  sidebar: NavPrimaryprops["items"]
+}) {
+  console.log(sidebar)
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -183,8 +191,7 @@ export function AppSidebar({ user }: { user?: UserData }) {
         {/* <TeamSwitcher teams={data.teams} />*/}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMain sidebar={sidebar} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

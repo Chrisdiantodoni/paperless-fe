@@ -1,38 +1,48 @@
 import { AppSidebar } from "@/components/app-sidebar"
 import { authMiddleware } from "@/middlewares/auth"
 import { getCurrentUser } from "@/server/auth"
-import { createFileRoute, Outlet } from "@tanstack/react-router"
+import { getSidebar } from "@/server/utilities"
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
 import { Separator } from "@workspace/ui/components/ui/separator"
+
 import {
   SidebarInset,
   SidebarTrigger,
 } from "@workspace/ui/components/ui/sidebar"
+import { DynamicBreadcrumb } from "@/components/dynamic-breadcrumb"
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_dashboard")({
   server: {
     middleware: [authMiddleware],
   },
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
+    if (location.pathname === "/" || location.pathname === "") {
+      throw redirect({
+        to: "/dashboard",
+      })
+    }
     const user = await getCurrentUser()
-    return { user }
+    const sidebar = await getSidebar()
+    return { user, sidebar }
   },
-  loader: ({ context }) => ({ user: context.user }),
+  loader: ({ context }) => ({ user: context.user, sidebar: context.sidebar }),
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const { user } = Route.useLoaderData()
+  const { user, sidebar } = Route.useLoaderData()
   return (
     <>
-      <AppSidebar user={user} />
+      <AppSidebar user={user} sidebar={sidebar} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator
               orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
+              className="mt-1 mr-2 data-[orientation=vertical]:h-5"
             />
+            <DynamicBreadcrumb sidebar={sidebar} />
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
