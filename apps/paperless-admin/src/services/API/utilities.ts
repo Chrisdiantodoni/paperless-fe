@@ -2,7 +2,7 @@ import type { APIResponse } from "@workspace/types/api"
 import type { NavPrimaryprops } from "@workspace/types/utilities"
 import { api } from "../api"
 
-class utilitiesService {
+class UtilitiesService {
   async getSidebar(): Promise<APIResponse<NavPrimaryprops["items"]>> {
     try {
       const res = await api.get("/sidebar")
@@ -14,4 +14,4 @@ class utilitiesService {
   }
 }
 
-export default new utilitiesService()
+export default new UtilitiesService()

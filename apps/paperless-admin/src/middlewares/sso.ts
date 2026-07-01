@@ -6,7 +6,7 @@ export const ssoMiddleware = createMiddleware({ type: "request" }).server(
   async ({ next, request }) => {
     const url = new URL(request.url)
     if (url.pathname.startsWith("/auth/sso")) {
-      const token = readSessionToken()
+      const token = await readSessionToken()
       if (!token) {
         return next()
       } else {

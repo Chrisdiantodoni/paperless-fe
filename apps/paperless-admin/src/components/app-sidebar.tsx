@@ -26,6 +26,7 @@ import {
   CropIcon,
   ChartPieIcon,
   MapTrifoldIcon,
+  FalloutShelter,
 } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
 import { Mail } from "lucide-react"
@@ -169,7 +170,11 @@ export function AppSidebar({
   user?: UserData
   sidebar: NavPrimaryprops["items"]
 }) {
-  console.log(sidebar)
+  const sidebarItems = sidebar.map((item) => ({
+    ...item,
+    activeOptions: { exact: false },
+  }))
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -191,7 +196,7 @@ export function AppSidebar({
         {/* <TeamSwitcher teams={data.teams} />*/}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain sidebar={sidebar} />
+        <NavMain sidebar={sidebarItems} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

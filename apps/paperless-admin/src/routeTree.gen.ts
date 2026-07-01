@@ -13,7 +13,13 @@ import { Route as DashboardRouteImport } from './routes/_dashboard'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
 import { Route as AuthSsoRouteImport } from './routes/auth/sso'
 import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
+import { Route as DashboardSystemUsersRouteImport } from './routes/_dashboard/system/users'
+import { Route as DashboardSystemRolesRouteImport } from './routes/_dashboard/system/roles'
+import { Route as DashboardMasterStaffsRouteImport } from './routes/_dashboard/master/staffs'
+import { Route as DashboardMasterPositionsRouteImport } from './routes/_dashboard/master/positions'
 import { Route as DashboardMasterDepartmentsRouteImport } from './routes/_dashboard/master/departments'
+import { Route as DashboardMasterBranchesRouteImport } from './routes/_dashboard/master/branches'
+import { Route as DashboardMasterAreasRouteImport } from './routes/_dashboard/master/areas'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/_dashboard',
@@ -34,24 +40,67 @@ const DashboardDashboardRoute = DashboardDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardSystemUsersRoute = DashboardSystemUsersRouteImport.update({
+  id: '/system/users',
+  path: '/system/users',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardSystemRolesRoute = DashboardSystemRolesRouteImport.update({
+  id: '/system/roles',
+  path: '/system/roles',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardMasterStaffsRoute = DashboardMasterStaffsRouteImport.update({
+  id: '/master/staffs',
+  path: '/master/staffs',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardMasterPositionsRoute =
+  DashboardMasterPositionsRouteImport.update({
+    id: '/master/positions',
+    path: '/master/positions',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardMasterDepartmentsRoute =
   DashboardMasterDepartmentsRouteImport.update({
     id: '/master/departments',
     path: '/master/departments',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardMasterBranchesRoute = DashboardMasterBranchesRouteImport.update({
+  id: '/master/branches',
+  path: '/master/branches',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardMasterAreasRoute = DashboardMasterAreasRouteImport.update({
+  id: '/master/areas',
+  path: '/master/areas',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof DashboardIndexRoute
   '/dashboard': typeof DashboardDashboardRoute
   '/auth/sso': typeof AuthSsoRoute
+  '/master/areas': typeof DashboardMasterAreasRoute
+  '/master/branches': typeof DashboardMasterBranchesRoute
   '/master/departments': typeof DashboardMasterDepartmentsRoute
+  '/master/positions': typeof DashboardMasterPositionsRoute
+  '/master/staffs': typeof DashboardMasterStaffsRoute
+  '/system/roles': typeof DashboardSystemRolesRoute
+  '/system/users': typeof DashboardSystemUsersRoute
 }
 export interface FileRoutesByTo {
   '/dashboard': typeof DashboardDashboardRoute
   '/auth/sso': typeof AuthSsoRoute
   '/': typeof DashboardIndexRoute
+  '/master/areas': typeof DashboardMasterAreasRoute
+  '/master/branches': typeof DashboardMasterBranchesRoute
   '/master/departments': typeof DashboardMasterDepartmentsRoute
+  '/master/positions': typeof DashboardMasterPositionsRoute
+  '/master/staffs': typeof DashboardMasterStaffsRoute
+  '/system/roles': typeof DashboardSystemRolesRoute
+  '/system/users': typeof DashboardSystemUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -59,20 +108,52 @@ export interface FileRoutesById {
   '/_dashboard/dashboard': typeof DashboardDashboardRoute
   '/auth/sso': typeof AuthSsoRoute
   '/_dashboard/': typeof DashboardIndexRoute
+  '/_dashboard/master/areas': typeof DashboardMasterAreasRoute
+  '/_dashboard/master/branches': typeof DashboardMasterBranchesRoute
   '/_dashboard/master/departments': typeof DashboardMasterDepartmentsRoute
+  '/_dashboard/master/positions': typeof DashboardMasterPositionsRoute
+  '/_dashboard/master/staffs': typeof DashboardMasterStaffsRoute
+  '/_dashboard/system/roles': typeof DashboardSystemRolesRoute
+  '/_dashboard/system/users': typeof DashboardSystemUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/auth/sso' | '/master/departments'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/auth/sso'
+    | '/master/areas'
+    | '/master/branches'
+    | '/master/departments'
+    | '/master/positions'
+    | '/master/staffs'
+    | '/system/roles'
+    | '/system/users'
   fileRoutesByTo: FileRoutesByTo
-  to: '/dashboard' | '/auth/sso' | '/' | '/master/departments'
+  to:
+    | '/dashboard'
+    | '/auth/sso'
+    | '/'
+    | '/master/areas'
+    | '/master/branches'
+    | '/master/departments'
+    | '/master/positions'
+    | '/master/staffs'
+    | '/system/roles'
+    | '/system/users'
   id:
     | '__root__'
     | '/_dashboard'
     | '/_dashboard/dashboard'
     | '/auth/sso'
     | '/_dashboard/'
+    | '/_dashboard/master/areas'
+    | '/_dashboard/master/branches'
     | '/_dashboard/master/departments'
+    | '/_dashboard/master/positions'
+    | '/_dashboard/master/staffs'
+    | '/_dashboard/system/roles'
+    | '/_dashboard/system/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -110,11 +191,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardDashboardRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/system/users': {
+      id: '/_dashboard/system/users'
+      path: '/system/users'
+      fullPath: '/system/users'
+      preLoaderRoute: typeof DashboardSystemUsersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/system/roles': {
+      id: '/_dashboard/system/roles'
+      path: '/system/roles'
+      fullPath: '/system/roles'
+      preLoaderRoute: typeof DashboardSystemRolesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/master/staffs': {
+      id: '/_dashboard/master/staffs'
+      path: '/master/staffs'
+      fullPath: '/master/staffs'
+      preLoaderRoute: typeof DashboardMasterStaffsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/master/positions': {
+      id: '/_dashboard/master/positions'
+      path: '/master/positions'
+      fullPath: '/master/positions'
+      preLoaderRoute: typeof DashboardMasterPositionsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/master/departments': {
       id: '/_dashboard/master/departments'
       path: '/master/departments'
       fullPath: '/master/departments'
       preLoaderRoute: typeof DashboardMasterDepartmentsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/master/branches': {
+      id: '/_dashboard/master/branches'
+      path: '/master/branches'
+      fullPath: '/master/branches'
+      preLoaderRoute: typeof DashboardMasterBranchesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/master/areas': {
+      id: '/_dashboard/master/areas'
+      path: '/master/areas'
+      fullPath: '/master/areas'
+      preLoaderRoute: typeof DashboardMasterAreasRouteImport
       parentRoute: typeof DashboardRoute
     }
   }
@@ -123,13 +246,25 @@ declare module '@tanstack/react-router' {
 interface DashboardRouteChildren {
   DashboardDashboardRoute: typeof DashboardDashboardRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardMasterAreasRoute: typeof DashboardMasterAreasRoute
+  DashboardMasterBranchesRoute: typeof DashboardMasterBranchesRoute
   DashboardMasterDepartmentsRoute: typeof DashboardMasterDepartmentsRoute
+  DashboardMasterPositionsRoute: typeof DashboardMasterPositionsRoute
+  DashboardMasterStaffsRoute: typeof DashboardMasterStaffsRoute
+  DashboardSystemRolesRoute: typeof DashboardSystemRolesRoute
+  DashboardSystemUsersRoute: typeof DashboardSystemUsersRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardDashboardRoute: DashboardDashboardRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardMasterAreasRoute: DashboardMasterAreasRoute,
+  DashboardMasterBranchesRoute: DashboardMasterBranchesRoute,
   DashboardMasterDepartmentsRoute: DashboardMasterDepartmentsRoute,
+  DashboardMasterPositionsRoute: DashboardMasterPositionsRoute,
+  DashboardMasterStaffsRoute: DashboardMasterStaffsRoute,
+  DashboardSystemRolesRoute: DashboardSystemRolesRoute,
+  DashboardSystemUsersRoute: DashboardSystemUsersRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

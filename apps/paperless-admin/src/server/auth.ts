@@ -1,7 +1,7 @@
 import { verifySSOTicketSchema } from "@/schema/auth.schema"
 import sso from "@/services/API/sso"
 import { createServerFn } from "@tanstack/react-start"
-import { setSessionCookie } from "./session"
+import { setSessionCookie } from "./session.server"
 import type { APIResponse } from "@workspace/types/api"
 import type { UserData, UserResponse } from "@workspace/types/user.type"
 import auth from "@/services/API/auth"
