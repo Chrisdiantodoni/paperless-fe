@@ -1,7 +1,5 @@
 import { DataTable } from "@/components/data-table"
 import { SearchInput } from "@/components/search-input"
-import { getDepartments } from "@/server/master"
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import {
   Select,
@@ -18,14 +16,12 @@ import { useMemo } from "react"
 import type z from "zod"
 import { DataTablePagination } from "@/components/data-table-pagination"
 import { DepartmentCombobox } from "@/components/select/select-departments"
+import {
+  useDepartments,
+  departmentsQueryOptions,
+} from "@/hooks/queries/use-departments"
 
 type DepartmentSearch = z.infer<typeof departmentSearchSchema>
-
-const departmentsQueryOptions = (search: DepartmentSearch) =>
-  queryOptions({
-    queryKey: ["departments", search.status, search.page, search.search],
-    queryFn: () => getDepartments({ data: search }),
-  })
 
 export const Route = createFileRoute("/_dashboard/master/departments")({
   component: RouteComponent,
@@ -41,7 +37,7 @@ function RouteComponent() {
   const navigate = useNavigate({ from: Route.fullPath })
   const search = Route.useSearch()
   const { search: searchQuery, status } = search
-  const { data, isFetching } = useSuspenseQuery(departmentsQueryOptions(search))
+  const { data, isFetching } = useDepartments(search)
 
   const rows = useMemo(
     () =>

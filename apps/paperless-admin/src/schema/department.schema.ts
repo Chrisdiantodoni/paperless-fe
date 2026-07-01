@@ -5,3 +5,5 @@ export const departmentSearchSchema = z.object({
   search: z.string().catch(""),
   status: z.enum(["all", "active", "inactive"]).catch("all"),
 })
+
+export type DepartmentSearch = z.infer<typeof departmentSearchSchema>

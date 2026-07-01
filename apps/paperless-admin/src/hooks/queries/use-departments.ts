@@ -1,0 +1,48 @@
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query"
+import type z from "zod"
+import type { departmentSearchSchema } from "@/schema/department.schema"
+import { departmentKeys } from "@/keys/departmentKeys"
+import { getDepartments } from "@/server/master"
+
+type DepartmentSearch = z.infer<typeof departmentSearchSchema>
+
+export const departmentsQueryOptions = (search: DepartmentSearch) =>
+  queryOptions({
+    queryKey: departmentKeys.list(search),
+    queryFn: () => getDepartments({ data: search }),
+  })
+
+export function useDepartments(search: DepartmentSearch) {
+  // Menggunakan useSuspenseQuery bawaan TanStack Query
+  return useSuspenseQuery(departmentsQueryOptions(search))
+}
+
+export function useDepartmentSearch(
+  searchQuery: string,
+  isDropdownOpen: boolean
+) {
+  return useQuery({
+    queryKey: departmentKeys.search(searchQuery),
+    queryFn: () => getDepartments({ data: { search: searchQuery } }),
+    enabled: isDropdownOpen || searchQuery.length > 0,
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+// export function useUpdateDepartmentMutation() {
+//   const queryClient = useQueryClient()
+
+//   return useMutation({
+//     mutationFn: updateDepartment,
+//     onSuccess: () => {
+//       // Otomatis refresh semua list departemen begitu ada yang di-update
+//       queryClient.invalidateQueries({ queryKey: departmentKeys.lists() })
+//     },
+//   })
+// }

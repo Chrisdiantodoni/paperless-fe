@@ -14,7 +14,7 @@ export interface LaravelPaginationLinks {
 // Struktur pagination dasar milik Laravel
 export interface LaravelPaginationData<T> {
   current_page: number
-  data: T[] // Array dari entity utama
+  data: T // Array dari entity utama
   first_page_url: string
   from: number | null
   last_page: number

@@ -4,7 +4,7 @@ import { setupInterceptors } from "./interceptors"
 const setupApi = (
   baseUrl: string,
   portalUrl?: string,
-  getToken?: () => string | null
+  getToken?: () => string | null | Promise<string | null>
 ) => {
   const api = createApi(baseUrl)
   setupInterceptors(api, portalUrl, getToken)

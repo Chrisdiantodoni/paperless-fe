@@ -15,7 +15,7 @@ import {
 } from "@workspace/ui/components/ui/popover"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Check, ChevronsUpDown } from "lucide-react"
-import { getDepartments } from "@/server/master"
+import { useDepartmentSearch } from "@/hooks/queries/use-departments"
 
 interface DepartmentComboboxProps {
   value?: string
@@ -30,13 +30,7 @@ export function DepartmentCombobox({
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebounce(search, 300)
 
-  const { data, isFetching } = useQuery({
-    queryKey: ["departments-search", debouncedSearch],
-    queryFn: () => getDepartments({ data: { search: debouncedSearch } }),
-    enabled: open, // baru fetch saat dropdown dibuka
-  })
-
-  console.log(data)
+  const { data, isFetching } = useDepartmentSearch(debouncedSearch, open)
 
   const options = data?.data ?? []
   const selectedLabel = options.find((d) => d.id === value)?.name ?? value

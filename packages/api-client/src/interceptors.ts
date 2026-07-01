@@ -1,24 +1,19 @@
 import type { AxiosInstance } from "axios"
 import Cookies from "js-cookie"
+import { SESSION_COOKIE } from "@workspace/utils"
 
 export const setupInterceptors = (
   instance: AxiosInstance,
   portalUrl?: string,
-  getToken?: () => string
+  getToken?: () => string | null | Promise<string | null>
 ) => {
   const isClient = typeof window !== "undefined"
 
   instance.interceptors.request.use(
-    (config) => {
-      let token: string | null = null
-
-      if (isClient) {
-        // Jika di browser, baca lewat js-cookie biasa
-        token = Cookies.get("token") || null
-      } else if (getToken) {
-        // Jika di server, jalankan fungsi penarik cookie yang dikirim dari apps
-        token = getToken()
-      }
+    async (config) => {
+      // await supaya handle baik sync (client) maupun async (server)
+      const token = (await getToken?.()) ?? Cookies.get(SESSION_COOKIE)
+      console.log(token)
 
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`
@@ -64,9 +59,9 @@ export const setupInterceptors = (
         window.location.href = "/403"
       } else if (status === 401 || message === "Unauthenticated.") {
         if (window.location.pathname !== "/login") {
-          Cookies.remove("token")
-          localStorage.clear() // Sekarang aman, tidak bikin Node.js crash lagi
-          window.location.href = "/login"
+          // Cookies.remove("token")
+          // localStorage.clear() // Sekarang aman, tidak bikin Node.js crash lagi
+          // window.location.href = "/login"
         }
       } else if (status === 503) {
         window.location.href = "/under-construction"

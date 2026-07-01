@@ -12,6 +12,7 @@
     }
   },
   "devDependencies": {
+    "@workspace/utils": "workspace:*",
     "typescript": "^6"
   }
 }
