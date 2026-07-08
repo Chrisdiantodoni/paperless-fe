@@ -41,7 +41,7 @@ export function SearchInput({
   }, [debouncedValue])
 
   return (
-    <div className={`relative w-full max-w-sm ${className ?? ""} h-8`}>
+    <div className={`relative w-full lg:max-w-sm ${className ?? ""} h-8`}>
       <Search className="absolute top-2 left-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         className="pl-8"

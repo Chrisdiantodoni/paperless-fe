@@ -1,4 +1,3 @@
-import { DataTable } from "@/components/data-table"
 import { SearchInput } from "@/components/search-input"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import {
@@ -10,16 +9,17 @@ import {
 } from "@workspace/ui/components/ui/select"
 import { columns } from "./-column/department-column"
 import type { DepartmentRow } from "./-column/department-column"
-import { departmentSearchSchema } from "@/schema/department.schema"
+import { departmentSearchSchema } from "@/schema/list.schema"
 import { zodValidator } from "@tanstack/zod-adapter"
 import { useMemo } from "react"
 import type z from "zod"
-import { DataTablePagination } from "@/components/data-table-pagination"
 import { DepartmentCombobox } from "@/components/select/select-departments"
 import {
   useDepartments,
   departmentsQueryOptions,
 } from "@/hooks/queries/use-departments"
+import { DataTable } from "@workspace/ui/components/ui/data-table"
+import { DataTablePagination } from "@workspace/ui/components/ui/data-table-pagination"
 
 type DepartmentSearch = z.infer<typeof departmentSearchSchema>
 
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_dashboard/master/departments")({
   loader: async ({ context: { queryClient }, deps: search }) => {
     await queryClient.ensureQueryData(departmentsQueryOptions(search))
   },
-  pendingMs: 2000,
+  pendingMs: 500,
 })
 
 function RouteComponent() {

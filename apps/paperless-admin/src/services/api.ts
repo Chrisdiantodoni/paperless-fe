@@ -5,4 +5,8 @@ import { setupApi } from "@workspace/api-client"
 const baseUrl = import.meta.env.VITE_BASE_URL || "/api"
 const portalUrl = import.meta.env.VITE_PORTAL_URL || ""
 
-export const api = setupApi(baseUrl, portalUrl, () => readSessionToken())
+export const api = setupApi(
+  baseUrl,
+  portalUrl,
+  async () => await readSessionToken()
+)

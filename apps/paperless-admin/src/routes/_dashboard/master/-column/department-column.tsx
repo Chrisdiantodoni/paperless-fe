@@ -1,4 +1,4 @@
-import { DataTableColumnHeader } from "@/components/data-table-column-header"
+import { DataTableColumnHeader } from "@workspace/ui/components/ui/data-table-column-header"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { Department } from "@workspace/types/master"
 

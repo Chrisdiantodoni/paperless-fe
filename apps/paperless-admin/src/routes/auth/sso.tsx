@@ -63,10 +63,10 @@ function SSOCallbackComponent() {
           console.log(result.data.token)
           navigate({ to: "/" })
         } else {
-          // startRedirect()
+          startRedirect()
         }
       } catch {
-        // startRedirect()
+        startRedirect()
       }
     }
 

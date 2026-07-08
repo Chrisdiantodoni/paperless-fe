@@ -1,4 +1,4 @@
-import type { DepartmentSearch } from "@/schema/department.schema"
+import type { DepartmentSearch } from "@/schema/list.schema"
 
 export const departmentKeys = {
   all: ["departments"] as const,

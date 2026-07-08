@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "vite dev --port 3000",
+    "dev": "cross-env NODE_ENV=development vite dev --port 3000",
     "build": "vite build",
     "start": "cross-env NODE_ENV=development tsx server.ts",
     "preview": "vite preview",
@@ -14,11 +14,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@dnd-kit/dom": "^0.5.0",
+    "@dnd-kit/react": "^0.5.0",
     "@phosphor-icons/react": "^2.1.10",
     "@tailwindcss/vite": "^4",
     "@tanstack/react-devtools": "latest",
+    "@tanstack/react-form": "^1.33.0",
+    "@tanstack/react-form-devtools": "^0.2.29",
     "@tanstack/react-form-start": "^1.33.0",
     "@tanstack/react-query": "^5.101.0",
+    "@tanstack/react-query-devtools": "^5.101.2",
     "@tanstack/react-router": "latest",
     "@tanstack/react-router-devtools": "latest",
     "@tanstack/react-start": "latest",
@@ -26,6 +31,7 @@
     "@tanstack/router-plugin": "latest",
     "@tanstack/zod-adapter": "^1.167.0",
     "@workspace/api-client": "workspace:*",
+    "@workspace/forms": "workspace:*",
     "@workspace/types": "workspace:*",
     "@workspace/ui": "workspace:*",
     "@workspace/utils": "workspace:*",
@@ -33,7 +39,7 @@
     "lucide-react": "^1.18.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "react-hook-form": "^7.79.0",
+    "sonner": "^2.0.7",
     "srvx": "^0.11.17",
     "tailwindcss": "^4",
     "zod": "^4.4.3"

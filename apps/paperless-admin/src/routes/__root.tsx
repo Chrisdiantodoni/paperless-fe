@@ -11,8 +11,8 @@ import { TooltipProvider } from "@workspace/ui/components/ui/tooltip"
 import { Toaster } from "@workspace/ui/components/ui/sonner"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
-import appCss from "@workspace/ui/globals.css?url"
-
+import appCss from "@/index.css?url"
+import { FormDevtoolsPanel } from "@tanstack/react-form-devtools"
 interface RouteContext {
   user?: UserData
   queryClient: QueryClient
@@ -69,6 +69,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             {
               name: "Tanstack Router",
               render: <TanStackRouterDevtoolsPanel />,
+            },
+            {
+              name: "Tanstack Form",
+              render: <FormDevtoolsPanel />,
             },
           ]}
         />

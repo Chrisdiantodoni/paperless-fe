@@ -1,5 +1,5 @@
-import { DataTableColumnHeader } from "@/components/data-table-column-header"
-import { createSelectColumn } from "@/components/data-table-select-column"
+import { DataTableColumnHeader } from "@workspace/ui/components/ui/data-table-column-header"
+import { createSelectColumn } from "@workspace/ui/components/ui/data-table-select-column"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { LaravelPaginationData } from "@workspace/types/api"
 import type { Area } from "@workspace/types/master"

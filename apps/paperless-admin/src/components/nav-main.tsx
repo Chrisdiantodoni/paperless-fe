@@ -44,7 +44,7 @@ export function NavMain({ sidebar }: { sidebar: NavPrimaryprops["items"] }) {
                 >
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuButton tooltip={item.title}>
+                      <SidebarMenuButton tooltip={item.title} size={"sm"}>
                         {Icon && <Icon size={18} />}
                         <span>{item.title}</span>
                         <CaretRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />

@@ -1,7 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar"
 import { authMiddleware } from "@/middlewares/auth"
-import { getCurrentUser } from "@/server/auth"
-import { getSidebar } from "@/server/utilities"
+import { userQueryOptions } from "@/hooks/queries/use-user"
+import { sidebarQueryOptions } from "@/hooks/queries/use-sidebar"
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
 import { Separator } from "@workspace/ui/components/ui/separator"
 
@@ -15,14 +15,17 @@ export const Route = createFileRoute("/_dashboard")({
   server: {
     middleware: [authMiddleware],
   },
-  beforeLoad: async ({ location }) => {
+  beforeLoad: async ({ context, location }) => {
     if (location.pathname === "/" || location.pathname === "") {
       throw redirect({
         to: "/dashboard",
       })
     }
-    const user = await getCurrentUser()
-    const sidebar = await getSidebar()
+    const { queryClient } = context
+    const [user, sidebar] = await Promise.all([
+      queryClient.ensureQueryData(userQueryOptions()),
+      queryClient.ensureQueryData(sidebarQueryOptions()),
+    ])
     return { user, sidebar }
   },
   loader: ({ context }) => ({ user: context.user, sidebar: context.sidebar }),

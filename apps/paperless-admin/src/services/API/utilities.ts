@@ -4,13 +4,8 @@ import { api } from "../api"
 
 class UtilitiesService {
   async getSidebar(): Promise<APIResponse<NavPrimaryprops["items"]>> {
-    try {
-      const res = await api.get("/sidebar")
-      return res.data
-    } catch (error: any) {
-      console.error("Error di sidebar:", error)
-      throw error
-    }
+    const res = await api.get("/sidebar")
+    return res.data
   }
 }
 
