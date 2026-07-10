@@ -43,7 +43,7 @@ export function NavUser({ user }: { user?: UserData }) {
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage
                   src={
-                    user?.hris_user ??
+                    user?.hris_user?.staff?.details?.photo_path ??
                     "https://api.dicebear.com/10.x/adventurer-neutral/svg?seed=Doni"
                   }
                   alt={user?.hris_user.username}
@@ -72,7 +72,7 @@ export function NavUser({ user }: { user?: UserData }) {
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage
                     src={
-                      user?.hris_user ??
+                      user?.hris_user?.staff?.details?.photo_path ??
                       "https://api.dicebear.com/10.x/adventurer-neutral/svg?seed=Doni"
                     }
                     alt={user?.hris_user.username}

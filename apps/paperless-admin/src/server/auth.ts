@@ -5,6 +5,7 @@ import { setSessionCookie } from "./session.server"
 import type { APIResponse } from "@workspace/types/api"
 import type { UserData, UserResponse } from "@workspace/types/user.type"
 import auth from "@/services/API/auth"
+import { handleApiError } from "@/lib/handle-api-error"
 
 export const verifySSOTicket = createServerFn({ method: "POST" })
   .validator(verifySSOTicketSchema)
@@ -16,16 +17,14 @@ export const verifySSOTicket = createServerFn({ method: "POST" })
       if (response?.data?.token) {
         console.log(response.data.token, "token")
         setSessionCookie(response.data.token)
-        return response // ✨ Terpenuhi jika token ada
+        return response
       }
 
-      // ── SOLUSI 1: Lempar Error jika data token tidak valid/kosong ──
       throw new Error(
         "Otentikasi gagal: Token tidak ditemukan dalam respon SSO."
       )
     } catch (error: any) {
-      // Semua error (baik dari sso.verifyTicket maupun throw manual di atas) akan bermuara di sini
-      throw new Error(error.message || "Gagal memvalidasi tiket SSO.")
+      handleApiError(error)
     }
   })
 
@@ -35,7 +34,7 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(
       const response = await auth.me()
       return response.data.user
     } catch (error: any) {
-      throw new Error(error.message || "Gagal mendapatkan data pengguna.")
+      handleApiError(error)
     }
   }
 )

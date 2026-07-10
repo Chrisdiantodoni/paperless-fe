@@ -54,7 +54,7 @@ export function NavMain({ sidebar }: { sidebar: NavPrimaryprops["items"] }) {
                       <SidebarMenuSub>
                         {item.children.map((subItem) => (
                           <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton asChild>
+                            <SidebarMenuSubButton asChild size="sm">
                               <Link
                                 activeProps={{
                                   "data-active": true,

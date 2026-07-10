@@ -52,7 +52,7 @@ export function BranchCombobox({ value, onChange }: BranchComboboxProps) {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="justify-between lg:w-[220px]"
+          className="w-full justify-between"
         >
           <span className="truncate">{resolvedLabel || "Pilih Cabang..."}</span>
           <span className="flex shrink-0 items-center gap-0.5">

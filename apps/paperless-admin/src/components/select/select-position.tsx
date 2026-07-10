@@ -28,17 +28,32 @@ function extractLabel(val?: string | SelectValue): string {
 interface PositionComboboxProps {
   value?: string | SelectValue
   onChange: (value: SelectValue) => void
+  onBlur?: () => void
+  dependsOn?: Record<string, unknown>
 }
 
-export function PositionCombobox({ value, onChange }: PositionComboboxProps) {
+export function PositionCombobox({
+  value,
+  onChange,
+  onBlur: _onBlur,
+  dependsOn,
+}: PositionComboboxProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebounce(search, 300)
 
+  const departmentId = (
+    dependsOn?.department_id as SelectValue | undefined
+  )?.value
+
   const resolvedValue = extractValue(value)
   const shouldFetch = open || !!resolvedValue
 
-  const { data, isFetching } = usePositionSearch(debouncedSearch, shouldFetch)
+  const { data, isFetching } = usePositionSearch(
+    debouncedSearch,
+    shouldFetch,
+    departmentId
+  )
   const options = data?.data ?? []
 
   const resolvedLabel =
@@ -51,7 +66,7 @@ export function PositionCombobox({ value, onChange }: PositionComboboxProps) {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="justify-between lg:w-[220px]"
+          className="w-full justify-between"
         >
           <span className="truncate">{resolvedLabel || "Pilih posisi..."}</span>
           <span className="flex shrink-0 items-center gap-0.5">

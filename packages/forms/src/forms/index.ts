@@ -9,7 +9,7 @@ import {
   FileUploadField,
   CheckboxGroupField,
   TextareaField,
-  // RichTextField,
+  RichTextEditorField,
 } from "../fields"
 import { SubmitButton } from "./submit-button"
 
@@ -139,7 +139,7 @@ export const { useAppForm, withForm } = createFormHook({
     FileUploadField,
     CheckboxGroupField,
     TextareaField,
-    // RichTextField,
+    RichTextEditorField,
   },
   formComponents: {
     SubmitButton,

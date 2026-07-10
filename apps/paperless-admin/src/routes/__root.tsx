@@ -13,6 +13,10 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 import appCss from "@/index.css?url"
 import { FormDevtoolsPanel } from "@tanstack/react-form-devtools"
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools"
+import { ThemeProvider } from "@/components/theme-provider"
+import { ConfirmProvider } from "@workspace/ui/components/ui/confirm-dialog"
+
 interface RouteContext {
   user?: UserData
   queryClient: QueryClient
@@ -52,30 +56,40 @@ export const Route = createRootRouteWithContext<RouteContext>()({
 function RootDocument({ children }: { children: React.ReactNode }) {
   const { queryClient } = Route.useRouteContext()
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        <QueryClientProvider client={queryClient}>
-          <SidebarProvider>
-            <TooltipProvider>{children}</TooltipProvider>
-          </SidebarProvider>
-          <Toaster />
-        </QueryClientProvider>
-        <TanStackDevtools
-          config={{ position: "bottom-right" }}
-          plugins={[
-            {
-              name: "Tanstack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            {
-              name: "Tanstack Form",
-              render: <FormDevtoolsPanel />,
-            },
-          ]}
-        />
+        <ThemeProvider defaultTheme="system" storageKey="theme">
+          <QueryClientProvider client={queryClient}>
+            <ConfirmProvider>
+              <SidebarProvider>
+                <TooltipProvider>{children}</TooltipProvider>
+              </SidebarProvider>
+
+              <Toaster />
+            </ConfirmProvider>
+            <TanStackDevtools
+              config={{ position: "bottom-right" }}
+              plugins={[
+                {
+                  name: "Tanstack Router",
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+                {
+                  name: "Tanstack Form",
+                  render: <FormDevtoolsPanel />,
+                },
+                {
+                  name: "Tanstack Query",
+                  render: <ReactQueryDevtoolsPanel />,
+                },
+              ]}
+            />
+          </QueryClientProvider>
+        </ThemeProvider>
+
         <Scripts />
       </body>
     </html>

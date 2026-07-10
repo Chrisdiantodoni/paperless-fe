@@ -37,22 +37,17 @@ export function DepartmentCombobox({
   value,
   onChange,
   onBlur,
-  invalid,
   error,
 }: DepartmentComboboxProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebounce(search, 300)
-
   const resolvedValue = extractValue(value)
-  const shouldFetch = open || !!resolvedValue
-
+  const shouldFetch = open || (!!resolvedValue && !extractLabel(value))
   const { data, isFetching } = useDepartmentSearch(debouncedSearch, shouldFetch)
   const options = data?.data ?? []
-
   const resolvedLabel =
     extractLabel(value) || options.find((d) => d.id === resolvedValue)?.name
-  console.log(error)
   return (
     <>
       <Popover
@@ -67,7 +62,7 @@ export function DepartmentCombobox({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className={`justify-between lg:w-[220px] ${
+            className={`w-full justify-between ${
               error ? "border-destructive focus-visible:ring-destructive" : ""
             }`}
           >

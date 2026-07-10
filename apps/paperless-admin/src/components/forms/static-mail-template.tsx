@@ -22,10 +22,14 @@ import { Repeater } from "@workspace/forms/src/fields"
 import { DepartmentCombobox } from "../select/select-departments"
 import { StaffCombobox } from "../select/select-staff"
 import { Label } from "@workspace/ui/components/ui/label"
-import { createStaticMailTemplate } from "@/server/master"
+import {
+  createStaticMailTemplate,
+  updateStaticMailTemplate,
+} from "@/server/master"
 import type { SelectValue } from "@workspace/types"
-import { LabelWithTooltip } from "../label-tooltip"
-import { useNavigate } from "@tanstack/react-router"
+import { useNavigate, useParams } from "@tanstack/react-router"
+import { GroupedSelectPreview } from "../grouped-select-preview"
+import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FormApi = any
@@ -50,7 +54,7 @@ const emptyCcRecipient: RecipientItem = {
 }
 
 interface FieldOptions {
-  branchOptions: { value: string; label: string }[]
+  branchOptions: { value: string; label: string; regions: string }[]
   departmentOptions: { value: string; label: string }[]
   positionOptions: { value: string; label: string }[]
 }
@@ -66,7 +70,10 @@ interface EmailPreviewProps {
   options: FieldOptions
 }
 
-const EmailPreview = memo(function EmailPreview({ form }: EmailPreviewProps) {
+const EmailPreview = memo(function EmailPreview({
+  form,
+  options,
+}: EmailPreviewProps) {
   const name: string = useStore(
     form.store,
     (state: { values: StaticMailTemplateFormSchema }) => state.values.name
@@ -109,8 +116,6 @@ const EmailPreview = memo(function EmailPreview({ form }: EmailPreviewProps) {
       state.values.recipients_cc
   )
 
-  console.log(selectedBranches)
-
   const toLabel = useMemo(
     () => toRecipients.map(recipientLabel).join(", "),
     [toRecipients]
@@ -131,11 +136,11 @@ const EmailPreview = memo(function EmailPreview({ form }: EmailPreviewProps) {
       <div className="px-5 py-4">
         <div className="mb-4 space-y-2 text-sm">
           <div className="flex">
-            <span className="w-16 shrink-0 text-muted-foreground">From</span>
+            <span className="w-20 shrink-0 text-muted-foreground">From</span>
             <span className="tabular-nums">system@paperless.co.id</span>
           </div>
           <div className="flex">
-            <span className="w-16 shrink-0 text-muted-foreground">To</span>
+            <span className="w-20 shrink-0 text-muted-foreground">To</span>
             <span>
               {toRecipients.length > 0 ? (
                 toLabel
@@ -147,7 +152,7 @@ const EmailPreview = memo(function EmailPreview({ form }: EmailPreviewProps) {
             </span>
           </div>
           <div className="flex">
-            <span className="w-16 shrink-0 text-muted-foreground">Cc</span>
+            <span className="w-20 shrink-0 text-muted-foreground">Cc</span>
             <span>
               {ccRecipients.length > 0 ? (
                 ccLabel
@@ -159,7 +164,7 @@ const EmailPreview = memo(function EmailPreview({ form }: EmailPreviewProps) {
             </span>
           </div>
           <div className="flex border-b pb-3">
-            <span className="w-16 shrink-0 text-muted-foreground">Subject</span>
+            <span className="w-20 shrink-0 text-muted-foreground">Subject</span>
             <span className="font-medium">
               {name || (
                 <span className="text-muted-foreground italic">
@@ -169,7 +174,7 @@ const EmailPreview = memo(function EmailPreview({ form }: EmailPreviewProps) {
             </span>
           </div>
           <div className="flex border-b pb-3">
-            <span className="w-16 shrink-0 text-muted-foreground">Dept</span>
+            <span className="w-20 shrink-0 text-muted-foreground">Dept</span>
             <span>
               {department.label || (
                 <span className="text-muted-foreground italic">
@@ -179,10 +184,18 @@ const EmailPreview = memo(function EmailPreview({ form }: EmailPreviewProps) {
             </span>
           </div>
           <div className="flex">
-            <span className="w-16 shrink-0 text-muted-foreground">Cabang</span>
+            <span className="w-20 shrink-0 text-muted-foreground">Cabang</span>
             <span>
               {selectedBranches.length > 0 ? (
-                <LabelWithTooltip items={selectedBranches} />
+                <GroupedSelectPreview
+                  items={selectedBranches}
+                  getGroupKey={(item) => {
+                    const branch = options.branchOptions.find(
+                      (b) => b.value === item.value
+                    )
+                    return branch?.region ?? "Lainnya"
+                  }}
+                />
               ) : (
                 <span className="text-muted-foreground italic">
                   Belum dipilih
@@ -191,12 +204,20 @@ const EmailPreview = memo(function EmailPreview({ form }: EmailPreviewProps) {
             </span>
           </div>
           <div className="flex">
-            <span className="w-16 shrink-0 text-muted-foreground">
+            <span className="w-20 shrink-0 text-muted-foreground">
               Dept. Dist
             </span>
             <span>
               {selectedDepartments.length > 0 ? (
-                <LabelWithTooltip items={selectedDepartments} />
+                <GroupedSelectPreview
+                  items={selectedDepartments}
+                  getGroupKey={(item) => {
+                    const dept = options.departmentOptions.find(
+                      (b) => b.value === item.value
+                    )
+                    return dept?.dept_category ?? "Lainnya"
+                  }}
+                />
               ) : (
                 <span className="text-muted-foreground italic">
                   Belum dipilih
@@ -205,10 +226,10 @@ const EmailPreview = memo(function EmailPreview({ form }: EmailPreviewProps) {
             </span>
           </div>
           <div className="flex border-b pb-3">
-            <span className="w-16 shrink-0 text-muted-foreground">Posisi</span>
+            <span className="w-20 shrink-0 text-muted-foreground">Posisi</span>
             <span>
               {selectedPositions.length > 0 ? (
-                <LabelWithTooltip items={selectedPositions} />
+                <GroupedSelectPreview items={selectedPositions} />
               ) : (
                 <span className="text-muted-foreground italic">
                   Belum dipilih
@@ -240,7 +261,7 @@ const EmailPreview = memo(function EmailPreview({ form }: EmailPreviewProps) {
 // field tree. The `form` object is a stable reference from useAppForm.
 // ---------------------------------------------------------------------------
 
-interface TemplateFormFieldsProps {
+export interface TemplateFormFieldsProps {
   form: FormApi
   options: FieldOptions
 }
@@ -281,10 +302,7 @@ const TemplateFormFields = memo(function TemplateFormFields({
                     field.state.meta.isTouched && errors.length > 0
                   return (
                     <div className="flex flex-col space-y-2">
-                      <Label>
-                        Departemen
-                        <span className="text-destructive"> *</span>
-                      </Label>
+                      <Label required>Kategori / Dept</Label>
                       <DepartmentCombobox
                         value={field.state.value as SelectValue}
                         onChange={field.handleChange}
@@ -473,23 +491,31 @@ export function StaticMailTemplateForm({
   initialValues,
 }: StaticMailTemplateFormProps) {
   const navigate = useNavigate()
+
+  const confirm = useConfirm()
+
   const options = useMemo<FieldOptions>(
     () => ({
       branchOptions: branches.map((b) => ({
         value: b.id,
         label: b.name_branch,
+        region: b.area.name_area,
       })),
       departmentOptions: departments.map((d) => ({
         value: d.id,
         label: d.name,
+        dept_category: d.branch_category,
       })),
       positionOptions: positions.map((p) => ({
         value: p.id,
         label: p.name,
+        category: p.position_type,
       })),
     }),
     [branches, departments, positions]
   )
+
+  const { id } = useParams({ strict: false })
 
   const form = useAppForm({
     defaultValues: {
@@ -500,20 +526,38 @@ export function StaticMailTemplateForm({
       onSubmit: staticMailTemplateFormSchema,
     },
     onSubmit: async ({ value }) => {
-      try {
-        const response = await createStaticMailTemplate({ data: value })
-        toast.success("Template email berhasil disimpan")
-        navigate({
-          to: "/mail/static-mail-templates/$id",
-          params: { id: response.id },
-        })
-      } catch (error) {
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : "Gagal menyimpan template email"
-        )
-      }
+      await confirm({
+        title: "Simpan template email?",
+        description: "Pastikan data yang dimasukkan sudah benar.",
+        confirmLabel: "Simpan",
+        onConfirm: async () => {
+          try {
+            const response =
+              initialValues && id
+                ? await updateStaticMailTemplate({
+                    data: {
+                      form: value,
+                      id: id, // TypeScript aman karena 'id' sudah dijamin ada oleh kondisi (initialValues && id)
+                    },
+                  })
+                : await createStaticMailTemplate({
+                    data: value,
+                  })
+            toast.success("Template email berhasil disimpan")
+            navigate({
+              to: "/mail/static-mail-templates/$id",
+              params: { id: response.id },
+            })
+          } catch (error) {
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : "Gagal menyimpan template email"
+            )
+            throw error
+          }
+        },
+      })
     },
   })
 

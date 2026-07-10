@@ -3,7 +3,7 @@ import type { StaticMailTemplateSearch } from "@/schema/list.schema"
 export const staticMailTemplateKeys = {
   all: ["static-mail-templates"] as const,
   lists: () => [...staticMailTemplateKeys.all, "list"] as const,
-  list: (search: StaticMailTemplateSearch) => {
+  list: (search?: StaticMailTemplateSearch) => {
     return [...staticMailTemplateKeys.lists(), search] as const
   },
   details: () => [...staticMailTemplateKeys.all, "detail"] as const,

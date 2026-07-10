@@ -7,5 +7,6 @@ export const positionKeys = {
     [...positionKeys.lists(), search] as const,
   details: () => [...positionKeys.all, "detail"] as const,
   detail: (id: string) => [...positionKeys.details(), id] as const,
-  search: (query: string) => [...positionKeys.all, "search", query] as const,
+  search: (query: string, departmentId?: string) =>
+    [...positionKeys.all, "search", query, departmentId] as const,
 }

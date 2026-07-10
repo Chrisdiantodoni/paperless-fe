@@ -11,6 +11,7 @@ export interface Area {
 export interface Branch {
   id: string
   area: Area
+  name: string
   sub_area: null | string
   code_branch: string
   dpack_code: string
@@ -52,12 +53,50 @@ export interface StaticMailTemplate {
   code: string
   description?: string
   department_id: string
+  department: string
   is_active: string
   content: string
   branches: Branch[]
   departments: Department[]
   positions: Position[]
-  recipients: UserData[]
+  recipients: {
+    id: string
+    sequence: number
+    recipient_type: "to" | "cc"
+    user_id: string
+    department: string
+    branch: string
+    position: string
+    nip: string
+  }[]
+  created_at: string
+  updated_at: string
+}
+
+export interface IDynamicMailTemplate {
+  id: string
+  type: string
+  name: string
+  code: string
+  description?: string
+  department_id: string
+  department: string
+  is_active: string
+  content: string
+  branches: Branch[]
+  departments: Department[]
+  positions: Position[]
+  form_schema: any[]
+  recipients: {
+    id: string
+    sequence: number
+    recipient_type: "to" | "cc"
+    user_id: string
+    department: string
+    branch: string
+    position: string
+    nip: string
+  }[]
   created_at: string
   updated_at: string
 }

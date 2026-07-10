@@ -1,10 +1,10 @@
-import { StaticMailTemplateForm } from "@/components/forms/static-mail-template"
-import type { StaticMailTemplateFormSchema } from "@/schema/master/schema"
+import { DynamicMailTemplateForm } from "@/components/forms/dynamic-mail-template"
+import type { DynamicMailTemplateForm as DynamicMailTemplateFormSchema } from "@/schema/master/schema"
 import {
   getBranches,
   getDepartments,
+  getDynamicMailTemplateById,
   getPositions,
-  getStaticMailTemplateById,
 } from "@/server/master"
 import { createFileRoute, useRouter } from "@tanstack/react-router"
 import { Button } from "@workspace/ui/components/ui/button"
@@ -18,17 +18,17 @@ import {
 import { ArrowLeft } from "lucide-react"
 
 export const Route = createFileRoute(
-  "/_dashboard/mail/static-mail-templates/$id/edit"
+  "/_dashboard/mail/dynamic-mail-templates/$id/edit"
 )({
   loader: async ({ params }) => {
     const id = params.id
 
-    const [resBranches, resDepartments, resPositions, resStaticMailTemplate] =
+    const [resBranches, resDepartments, resPositions, resDynamicMailTemplate] =
       await Promise.all([
         getBranches({ data: { is_paginate: false } }),
         getDepartments({ data: { is_paginate: false } }),
         getPositions({ data: { is_paginate: false } }),
-        getStaticMailTemplateById({ data: id }),
+        getDynamicMailTemplateById({ data: id }),
       ])
     return {
       branches: Array.isArray(resBranches) ? resBranches : resBranches.data,
@@ -36,7 +36,7 @@ export const Route = createFileRoute(
         ? resDepartments
         : resDepartments.data,
       positions: Array.isArray(resPositions) ? resPositions : resPositions.data,
-      resStaticMailTemplate,
+      resDynamicMailTemplate,
     }
   },
   component: RouteComponent,
@@ -44,36 +44,38 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
   const router = useRouter()
-  const { branches, departments, positions, resStaticMailTemplate } =
+  const { branches, departments, positions, resDynamicMailTemplate } =
     Route.useLoaderData()
 
-  const initialValues: StaticMailTemplateFormSchema = {
-    ...resStaticMailTemplate,
-    description: resStaticMailTemplate.description ?? "",
-    department_id: {
-      label: resStaticMailTemplate.department,
-      value: resStaticMailTemplate.department_id,
+  const initialValues: DynamicMailTemplateFormSchema = {
+    ...resDynamicMailTemplate,
+    content: resDynamicMailTemplate.content ?? "",
+    form_schema: resDynamicMailTemplate.form_schema,
+    description: resDynamicMailTemplate.description ?? "",
+    department: {
+      label: resDynamicMailTemplate.department,
+      value: resDynamicMailTemplate.department_id,
     },
-    branches: resStaticMailTemplate.branches.map((item) => ({
+    branches: resDynamicMailTemplate.branches.map((item) => ({
       label: item.name,
       value: item.id,
     })),
-    departments: resStaticMailTemplate.departments.map((item) => ({
+    departments: resDynamicMailTemplate.departments.map((item) => ({
       label: item.name,
       value: item.id,
     })),
-    positions: resStaticMailTemplate.positions.map((item) => ({
+    positions: resDynamicMailTemplate.positions.map((item) => ({
       label: item.name,
       value: item.id,
     })),
-    recipients_cc: resStaticMailTemplate.recipients
+    recipients_cc: resDynamicMailTemplate.recipients
       .filter((filter) => filter.recipient_type == "cc")
       .map((rec) => ({
         user_id: { value: rec.user_id, label: rec.name },
         recipient_type: "cc",
         sequence: rec.sequence,
       })),
-    recipients: resStaticMailTemplate.recipients
+    recipients: resDynamicMailTemplate.recipients
       .filter((filter) => filter.recipient_type == "to")
       .map((rec) => ({
         user_id: { value: rec.user_id, label: rec.name },
@@ -97,7 +99,7 @@ function RouteComponent() {
             Edit Template Surat
           </h1>
           <p className="text-sm text-muted-foreground">
-            Update template surat statis.
+            Update template surat dinamis.
           </p>
         </div>
       </div>
@@ -109,7 +111,7 @@ function RouteComponent() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <StaticMailTemplateForm
+          <DynamicMailTemplateForm
             branches={branches}
             departments={departments}
             positions={positions}

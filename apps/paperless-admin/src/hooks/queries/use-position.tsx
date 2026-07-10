@@ -18,11 +18,15 @@ export function usePositions(search: PositionSearch) {
 
 export function usePositionSearch(
   searchQuery: string,
-  isDropdownOpen: boolean
+  isDropdownOpen: boolean,
+  departmentId?: string
 ) {
   return useQuery({
-    queryKey: positionKeys.search(searchQuery),
-    queryFn: () => getPositions({ data: { search: searchQuery } as any }),
+    queryKey: positionKeys.search(searchQuery, departmentId),
+    queryFn: () =>
+      getPositions({
+        data: { search: searchQuery, department_id: departmentId } as any,
+      }),
     enabled: isDropdownOpen || searchQuery.length > 0,
     staleTime: 1000 * 60 * 5,
   })

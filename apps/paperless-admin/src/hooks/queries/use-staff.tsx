@@ -13,10 +13,26 @@ export function useStaffs(search: StaffSearch) {
   return useSuspenseQuery(staffQueryOptions(search))
 }
 
-export function useStaffSearch(searchQuery: string, isDropdownOpen: boolean) {
+export function useStaffSearch(
+  searchQuery: string,
+  isDropdownOpen: boolean,
+  deps?: {
+    departmentId?: string
+    branchId?: string
+    positionId?: string
+  }
+) {
   return useQuery({
-    queryKey: staffKeys.search(searchQuery),
-    queryFn: () => getStaff({ data: { search: searchQuery } as any }),
+    queryKey: staffKeys.search(searchQuery, deps),
+    queryFn: () =>
+      getStaff({
+        data: {
+          search: searchQuery,
+          department_id: deps?.departmentId,
+          branch_id: deps?.branchId,
+          position_id: deps?.positionId,
+        } as any,
+      }),
     enabled: isDropdownOpen || searchQuery.length > 0,
     staleTime: 1000 * 60 * 5,
   })

@@ -28,16 +28,20 @@ export const Route = createFileRoute("/_dashboard/master/departments")({
   validateSearch: zodValidator(departmentSearchSchema),
   loaderDeps: ({ search }) => search,
   loader: async ({ context: { queryClient }, deps: search }) => {
-    await queryClient.ensureQueryData(departmentsQueryOptions(search))
+    const data = await queryClient.ensureQueryData(
+      departmentsQueryOptions(search)
+    )
+    return { data }
   },
   pendingMs: 500,
 })
 
 function RouteComponent() {
   const navigate = useNavigate({ from: Route.fullPath })
+  const { data: initialData } = Route.useLoaderData()
   const search = Route.useSearch()
   const { search: searchQuery, status } = search
-  const { data, isFetching } = useDepartments(search)
+  const { data, isFetching } = useDepartments(search, initialData)
 
   const rows = useMemo(
     () =>

@@ -31,6 +31,7 @@ interface StaffComboboxProps {
   onBlur?: () => void
   invalid?: boolean
   error?: string
+  dependsOn?: Record<string, unknown>
 }
 
 export function StaffCombobox({
@@ -39,15 +40,28 @@ export function StaffCombobox({
   onBlur,
   invalid,
   error,
+  dependsOn,
 }: StaffComboboxProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebounce(search, 300)
 
+  const departmentId = (
+    dependsOn?.department_id as SelectValue | undefined
+  )?.value
+  const branchId = (dependsOn?.branch_id as SelectValue | undefined)?.value
+  const positionId = (
+    dependsOn?.position_id as SelectValue | undefined
+  )?.value
+
   const resolvedValue = extractValue(value)
   const shouldFetch = open || !!resolvedValue
 
-  const { data, isFetching } = useStaffSearch(debouncedSearch, shouldFetch)
+  const { data, isFetching } = useStaffSearch(
+    debouncedSearch,
+    shouldFetch,
+    { departmentId, branchId, positionId }
+  )
   const options = data?.data ?? []
 
   const resolvedLabel =
