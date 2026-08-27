@@ -89,7 +89,7 @@ function RouteComponent() {
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link
-              to="/mail/static-mail-templates/$id/edit"
+              to="/mail/dynamic-mail-templates/$id/edit"
               params={{ id: data.id }}
             >
               <Pencil className="h-4 w-4" />

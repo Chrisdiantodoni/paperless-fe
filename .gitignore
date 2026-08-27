@@ -16,3 +16,7 @@ todos.json
 
 # typescript
 *.tsbuildinfo
+
+# compiled artifacts (never commit .js from src/)
+apps/*/src/**/*.js
+packages/*/src/**/*.js

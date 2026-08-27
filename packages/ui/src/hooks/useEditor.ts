@@ -2,6 +2,7 @@
 
 import { useEditorState, useEditor as useTiptapEditor } from "@tiptap/react"
 import type { Editor } from "@tiptap/core"
+import { markdownToHtml } from "@workspace/ui/lib/markdown-utils"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
 import Image from "@tiptap/extension-image"
@@ -156,36 +157,38 @@ export function setMarkdownContent(
 ): void {
   if (!editor) return
 
-  // Simple markdown to HTML conversion
-  let html = markdown
-    .replace(/^### (.*?)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.*?)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.*?)$/gm, "<h1>$1</h1>")
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/__(.*?)__/g, "<strong>$1</strong>")
-    .replace(/\*(.*?)\*/g, "<em>$1</em>")
-    .replace(/_(.*?)_/g, "<em>$1</em>")
-    .replace(/~~(.*?)~~/g, "<s>$1</s>")
-    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-    .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" />')
-    .replace(/`(.*?)`/g, "<code>$1</code>")
-    .replace(/- (.*?)$/gm, "<li>$1</li>")
+  editor.commands.setContent(markdownToHtml(markdown))
+}
 
-  // Wrap loose list items
-  html = html
-    .replace(/(<li>.*?<\/li>)/s, "<ul>$1</ul>")
-    .replace(/<\/ul>\s*<ul>/g, "")
+export type EditorOutputFormat = "markdown" | "html"
 
-  // Convert paragraphs
-  const lines = html.split("\n").filter((line) => line.trim())
-  html = lines
-    .map((line) => {
-      if (!line.match(/^<[hpul]/)) {
-        return `<p>${line}</p>`
-      }
-      return line
-    })
-    .join("")
+/**
+ * Get editor content in the requested format
+ */
+export function getEditorContent(
+  editor: Editor | null,
+  format: EditorOutputFormat
+): string {
+  if (!editor) return ""
+  return format === "html" ? editor.getHTML() : getMarkdownFromEditor(editor)
+}
 
-  editor.commands.setContent(html)
+/**
+ * Set editor content from markdown or html
+ */
+export function setEditorContent(
+  editor: Editor | null,
+  content: string,
+  format: EditorOutputFormat
+): void {
+  if (!editor) return
+  if (format === "html") {
+    // Legacy rows may still contain markdown — render it before importing
+    const html = /<[a-z][\s\S]*?>/i.test(content.trim())
+      ? content
+      : markdownToHtml(content)
+    editor.commands.setContent(html || "<p></p>")
+    return
+  }
+  setMarkdownContent(editor, content)
 }

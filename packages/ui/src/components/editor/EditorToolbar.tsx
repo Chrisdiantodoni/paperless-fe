@@ -30,111 +30,32 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
 import { LinkDialog } from "./LinkDialog"
 import { TableDialog } from "./TableDialog"
 import { ImageUploadDialog } from "./ImageUploadDialog"
-import { setMarkdownContent } from "@workspace/ui/hooks/useEditor"
+import type { EditorOutputFormat } from "@workspace/ui/hooks/useEditor"
+import {
+  getEditorContent,
+  setMarkdownContent,
+} from "@workspace/ui/hooks/useEditor"
 import { Button } from "../ui/button"
 import { Separator } from "../ui/separator"
 import { useEditorState } from "@tiptap/react"
 
-// Helper function to get markdown from editor
-function getMarkdownFromEditor(editor: Editor | null): string {
-  if (!editor) return ""
-
-  const html = editor.getHTML()
-
-  // Convert HTML to basic markdown
-  let markdown = html
-    .replace(/<p>/g, "")
-    .replace(/<\/p>/g, "\n\n")
-    .replace(/<strong>|<b>/g, "**")
-    .replace(/<\/strong>|<\/b>/g, "**")
-    .replace(/<em>|<i>/g, "*")
-    .replace(/<\/em>|<\/i>/g, "*")
-    .replace(/<u>/g, "")
-    .replace(/<\/u>/g, "")
-    .replace(/<s>|<strike>/g, "~~")
-    .replace(/<\/s>|<\/strike>/g, "~~")
-    .replace(/<h1>/g, "# ")
-    .replace(/<\/h1>/g, "\n\n")
-    .replace(/<h2>/g, "## ")
-    .replace(/<\/h2>/g, "\n\n")
-    .replace(/<h3>/g, "### ")
-    .replace(/<\/h3>/g, "\n\n")
-    .replace(/<h4>/g, "#### ")
-    .replace(/<\/h4>/g, "\n\n")
-    .replace(/<h5>/g, "##### ")
-    .replace(/<\/h5>/g, "\n\n")
-    .replace(/<h6>/g, "###### ")
-    .replace(/<\/h6>/g, "\n\n")
-    .replace(/<blockquote>/g, "\n> ")
-    .replace(/<\/blockquote>/g, "\n")
-    .replace(/<ul>/g, "")
-    .replace(/<\/ul>/g, "\n")
-    .replace(/<ol>/g, "")
-    .replace(/<\/ol>/g, "\n")
-    .replace(/<li>/g, "- ")
-    .replace(/<\/li>/g, "\n")
-    .replace(/<code>/g, "`")
-    .replace(/<\/code>/g, "`")
-    .replace(/<pre><code[^>]*>/g, "```\n")
-    .replace(/<\/code><\/pre>/g, "\n```")
-    .replace(/<a href="([^"]*)"[^>]*>([^<]*)<\/a>/g, "[$2]($1)")
-    .replace(/<img[^>]*alt="([^"]*)"[^>]*src="([^"]*)"[^>]*>/g, "![$1]($2)")
-    .replace(/<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>/g, "![$2]($1)")
-    .replace(/<img[^>]*src="([^"]*)"[^>]*>/g, "![]($1)")
-    .replace(/<br\s*\/?>/g, "\n")
-    .replace(/<table[^>]*>([\s\S]*?)<\/table>/g, (match) => {
-      // Parse table
-      const rows: string[] = []
-      const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g
-      let rowMatch
-
-      while ((rowMatch = rowRegex.exec(match)) !== null) {
-        const cells: string[] = []
-        const cellRegex = /<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g
-        let cellMatch
-
-        while ((cellMatch = cellRegex.exec(rowMatch[1])) !== null) {
-          cells.push(cellMatch[1].replace(/<[^>]*>/g, "").trim())
-        }
-
-        if (cells.length > 0) {
-          rows.push(`| ${cells.join(" | ")} |`)
-        }
-      }
-
-      if (rows.length === 0) return ""
-
-      const separator = `| ${Array(rows[0].split("|").length - 2)
-        .fill("---")
-        .join(" | ")} |`
-      return rows[0] + "\n" + separator + "\n" + rows.slice(1).join("\n") + "\n"
-    })
-    .replace(/<[^>]*>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&")
-
-  // Clean up multiple newlines
-  markdown = markdown.replace(/\n\n\n+/g, "\n\n")
-
-  return markdown.trim()
-}
-
 interface EditorToolbarProps {
   editor: Editor | null
+  format?: EditorOutputFormat
   onPreviewChange?: (preview: boolean) => void
   isPreview?: boolean
 }
 
 export function EditorToolbar({
   editor,
+  format = "markdown",
   onPreviewChange,
   isPreview = false,
 }: EditorToolbarProps) {
@@ -164,23 +85,24 @@ export function EditorToolbar({
     setLinkOpen(true)
   }
 
-  const handleExportMarkdown = () => {
-    const markdown = getMarkdownFromEditor(editor)
+  const handleExport = (targetFormat: EditorOutputFormat) => {
+    const content = getEditorContent(editor, targetFormat)
+    const extension = targetFormat === "html" ? "html" : "md"
     const element = document.createElement("a")
     element.setAttribute(
       "href",
-      `data:text/plain;charset=utf-8,${encodeURIComponent(markdown)}`
+      `data:text/plain;charset=utf-8,${encodeURIComponent(content)}`
     )
-    element.setAttribute("download", "document.md")
+    element.setAttribute("download", `document.${extension}`)
     element.style.display = "none"
     document.body.appendChild(element)
     element.click()
     document.body.removeChild(element)
   }
 
-  const handleCopyMarkdown = () => {
-    const markdown = getMarkdownFromEditor(editor)
-    navigator.clipboard.writeText(markdown)
+  const handleCopy = (targetFormat: EditorOutputFormat) => {
+    const content = getEditorContent(editor, targetFormat)
+    navigator.clipboard.writeText(content)
   }
 
   const handleImportMarkdown = () => {
@@ -197,6 +119,26 @@ export function EditorToolbar({
 
   if (!editor) return null
 
+  const inTable = editor.isActive("table")
+  const canMergeCells = editor.can().mergeCells()
+  const canSplitCell = editor.can().splitCell()
+
+  const handleAddColumnBefore = () =>
+    editor.chain().focus().addColumnBefore().run()
+  const handleAddColumnAfter = () =>
+    editor.chain().focus().addColumnAfter().run()
+  const handleDeleteColumn = () => editor.chain().focus().deleteColumn().run()
+  const handleAddRowBefore = () => editor.chain().focus().addRowBefore().run()
+  const handleAddRowAfter = () => editor.chain().focus().addRowAfter().run()
+  const handleDeleteRow = () => editor.chain().focus().deleteRow().run()
+  const handleMergeCells = () => editor.chain().focus().mergeCells().run()
+  const handleSplitCell = () => editor.chain().focus().splitCell().run()
+  const handleToggleHeaderRow = () =>
+    editor.chain().focus().toggleHeaderRow().run()
+  const handleToggleHeaderColumn = () =>
+    editor.chain().focus().toggleHeaderColumn().run()
+  const handleDeleteTable = () => editor.chain().focus().deleteTable().run()
+
   return (
     <div className="space-y-2">
       {/* Main Toolbar */}
@@ -204,6 +146,7 @@ export function EditorToolbar({
         {/* Text Formatting */}
         <div className="flex gap-1">
           <Button
+            type="button"
             size="sm"
             variant={editor.isActive("bold") ? "default" : "outline"}
             onClick={() => editor.chain().focus().toggleBold().run()}
@@ -212,6 +155,7 @@ export function EditorToolbar({
             <Bold className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             size="sm"
             variant={editor.isActive("italic") ? "default" : "outline"}
             onClick={() => editor.chain().focus().toggleItalic().run()}
@@ -221,6 +165,7 @@ export function EditorToolbar({
             <Italic className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             size="sm"
             variant={editor.isActive("underline") ? "default" : "outline"}
             onClick={() => editor.chain().focus().toggleUnderline().run()}
@@ -229,6 +174,7 @@ export function EditorToolbar({
             <Underline className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             size="sm"
             variant={editor.isActive("strike") ? "default" : "outline"}
             onClick={() => editor.chain().focus().toggleStrike().run()}
@@ -241,6 +187,7 @@ export function EditorToolbar({
           <Popover>
             <PopoverTrigger asChild>
               <Button
+                type="button"
                 size="sm"
                 variant="outline"
                 title="Text Color"
@@ -411,6 +358,7 @@ export function EditorToolbar({
         {/* Headings */}
         <div className="flex gap-1">
           <Button
+            type="button"
             size="sm"
             variant={
               editor.isActive("heading", { level: 1 }) ? "default" : "outline"
@@ -423,6 +371,7 @@ export function EditorToolbar({
             <Heading1 className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             size="sm"
             variant={
               editor.isActive("heading", { level: 2 }) ? "default" : "outline"
@@ -435,6 +384,7 @@ export function EditorToolbar({
             <Heading2 className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             size="sm"
             variant={
               editor.isActive("heading", { level: 3 }) ? "default" : "outline"
@@ -453,6 +403,7 @@ export function EditorToolbar({
         {/* Lists */}
         <div className="flex gap-1">
           <Button
+            type="button"
             size="sm"
             variant={editor.isActive("bulletList") ? "default" : "outline"}
             onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -461,6 +412,7 @@ export function EditorToolbar({
             <List className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             size="sm"
             variant={editor.isActive("orderedList") ? "default" : "outline"}
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
@@ -475,6 +427,7 @@ export function EditorToolbar({
         {/* Blocks */}
         <div className="flex gap-1">
           <Button
+            type="button"
             size="sm"
             variant={editor.isActive("codeBlock") ? "default" : "outline"}
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
@@ -483,6 +436,7 @@ export function EditorToolbar({
             <Code className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             size="sm"
             variant={editor.isActive("blockquote") ? "default" : "outline"}
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
@@ -497,6 +451,7 @@ export function EditorToolbar({
         {/* Alignment */}
         <div className="flex gap-1">
           <Button
+            type="button"
             size="sm"
             variant={
               editor.isActive({ textAlign: "left" }) ? "default" : "outline"
@@ -507,6 +462,7 @@ export function EditorToolbar({
             <AlignLeft className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             size="sm"
             variant={
               editor.isActive({ textAlign: "center" }) ? "default" : "outline"
@@ -517,6 +473,7 @@ export function EditorToolbar({
             <AlignCenter className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             size="sm"
             variant={
               editor.isActive({ textAlign: "right" }) ? "default" : "outline"
@@ -533,6 +490,7 @@ export function EditorToolbar({
         {/* Media & Links */}
         <div className="flex gap-1">
           <Button
+            type="button"
             size="sm"
             variant="outline"
             onClick={() => setImageOpen(true)}
@@ -541,6 +499,7 @@ export function EditorToolbar({
             <Image className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             size="sm"
             variant="outline"
             onClick={handleAddLink}
@@ -548,14 +507,84 @@ export function EditorToolbar({
           >
             <Link2 className="h-4 w-4" />
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setTableOpen(true)}
-            title="Insert Table"
-          >
-            <Table2 className="h-4 w-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                size="sm"
+                variant={inTable ? "default" : "outline"}
+                title="Table"
+              >
+                <Table2 className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuItem onSelect={() => setTableOpen(true)}>
+                Insert table
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={!inTable}
+                onSelect={handleAddColumnBefore}
+              >
+                Add column before
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={!inTable}
+                onSelect={handleAddColumnAfter}
+              >
+                Add column after
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={!inTable}
+                onSelect={handleDeleteColumn}
+              >
+                Delete column
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem disabled={!inTable} onSelect={handleAddRowBefore}>
+                Add row before
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={!inTable} onSelect={handleAddRowAfter}>
+                Add row after
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={!inTable} onSelect={handleDeleteRow}>
+                Delete row
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={!canMergeCells}
+                onSelect={handleMergeCells}
+              >
+                Merge cells
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={!canSplitCell}
+                onSelect={handleSplitCell}
+              >
+                Split cell
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={!inTable}
+                onSelect={handleToggleHeaderRow}
+              >
+                Toggle header row
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={!inTable}
+                onSelect={handleToggleHeaderColumn}
+              >
+                Toggle header column
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={!inTable}
+                onSelect={handleDeleteTable}
+              >
+                Delete table
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <Separator orientation="vertical" className="h-8" />
@@ -563,6 +592,7 @@ export function EditorToolbar({
         {/* Undo/Redo */}
         <div className="flex gap-1">
           <Button
+            type="button"
             size="sm"
             variant="outline"
             onClick={() => editor.chain().focus().undo().run()}
@@ -572,6 +602,7 @@ export function EditorToolbar({
             <Undo className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             size="sm"
             variant="outline"
             onClick={() => editor.chain().focus().redo().run()}
@@ -587,22 +618,35 @@ export function EditorToolbar({
         {/* Export/Import */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="outline">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              title={`Export as ${format}`}
+            >
               <Download className="mr-1 h-4 w-4" />
-              Export
+              Export {format}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={handleExportMarkdown}>
+            <DropdownMenuItem onClick={() => handleExport("markdown")}>
               Download as Markdown
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleCopyMarkdown}>
+            <DropdownMenuItem onClick={() => handleCopy("markdown")}>
               Copy Markdown
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => handleExport("html")}>
+              Download as HTML
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleCopy("html")}>
+              Copy HTML
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
         <Button
+          type="button"
           size="sm"
           variant="outline"
           onClick={handleImportMarkdown}
@@ -613,6 +657,7 @@ export function EditorToolbar({
 
         {/* Preview Toggle */}
         <Button
+          type="button"
           size="sm"
           variant={isPreview ? "default" : "outline"}
           onClick={() => onPreviewChange?.(!isPreview)}

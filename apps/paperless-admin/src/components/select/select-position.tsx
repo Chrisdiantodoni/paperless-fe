@@ -42,9 +42,8 @@ export function PositionCombobox({
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebounce(search, 300)
 
-  const departmentId = (
-    dependsOn?.department_id as SelectValue | undefined
-  )?.value
+  const departmentId = (dependsOn?.department_id as SelectValue | undefined)
+    ?.value
 
   const resolvedValue = extractValue(value)
   const shouldFetch = open || !!resolvedValue
@@ -63,6 +62,7 @@ export function PositionCombobox({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          type="button"
           variant="outline"
           role="combobox"
           aria-expanded={open}

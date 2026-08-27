@@ -9,60 +9,249 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardRouteImport } from './routes/_dashboard'
+import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
+import { Route as AuthSsoRouteImport } from './routes/auth/sso'
+import { Route as AuthDevTicketRouteImport } from './routes/auth/dev-ticket'
+import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
+import { Route as DashboardMailRouteRouteImport } from './routes/_dashboard/mail/route'
+import { Route as DashboardSubordinatesIndexRouteImport } from './routes/_dashboard/subordinates/index'
+import { Route as DashboardProfileIndexRouteImport } from './routes/_dashboard/profile/index'
+import { Route as DashboardMailUserMailsIndexRouteImport } from './routes/_dashboard/mail/user-mails/index'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/_dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const AuthSsoRoute = AuthSsoRouteImport.update({
+  id: '/auth/sso',
+  path: '/auth/sso',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthDevTicketRoute = AuthDevTicketRouteImport.update({
+  id: '/auth/dev-ticket',
+  path: '/auth/dev-ticket',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardDashboardRoute = DashboardDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardMailRouteRoute = DashboardMailRouteRouteImport.update({
+  id: '/mail',
+  path: '/mail',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardSubordinatesIndexRoute =
+  DashboardSubordinatesIndexRouteImport.update({
+    id: '/subordinates/',
+    path: '/subordinates/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardProfileIndexRoute = DashboardProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardMailUserMailsIndexRoute =
+  DashboardMailUserMailsIndexRouteImport.update({
+    id: '/user-mails/',
+    path: '/user-mails/',
+    getParentRoute: () => DashboardMailRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof DashboardIndexRoute
+  '/mail': typeof DashboardMailRouteRouteWithChildren
+  '/dashboard': typeof DashboardDashboardRoute
+  '/auth/dev-ticket': typeof AuthDevTicketRoute
+  '/auth/sso': typeof AuthSsoRoute
+  '/profile/': typeof DashboardProfileIndexRoute
+  '/subordinates/': typeof DashboardSubordinatesIndexRoute
+  '/mail/user-mails/': typeof DashboardMailUserMailsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/mail': typeof DashboardMailRouteRouteWithChildren
+  '/dashboard': typeof DashboardDashboardRoute
+  '/auth/dev-ticket': typeof AuthDevTicketRoute
+  '/auth/sso': typeof AuthSsoRoute
+  '/': typeof DashboardIndexRoute
+  '/profile': typeof DashboardProfileIndexRoute
+  '/subordinates': typeof DashboardSubordinatesIndexRoute
+  '/mail/user-mails': typeof DashboardMailUserMailsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_dashboard': typeof DashboardRouteWithChildren
+  '/_dashboard/mail': typeof DashboardMailRouteRouteWithChildren
+  '/_dashboard/dashboard': typeof DashboardDashboardRoute
+  '/auth/dev-ticket': typeof AuthDevTicketRoute
+  '/auth/sso': typeof AuthSsoRoute
+  '/_dashboard/': typeof DashboardIndexRoute
+  '/_dashboard/profile/': typeof DashboardProfileIndexRoute
+  '/_dashboard/subordinates/': typeof DashboardSubordinatesIndexRoute
+  '/_dashboard/mail/user-mails/': typeof DashboardMailUserMailsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/mail'
+    | '/dashboard'
+    | '/auth/dev-ticket'
+    | '/auth/sso'
+    | '/profile/'
+    | '/subordinates/'
+    | '/mail/user-mails/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/mail'
+    | '/dashboard'
+    | '/auth/dev-ticket'
+    | '/auth/sso'
+    | '/'
+    | '/profile'
+    | '/subordinates'
+    | '/mail/user-mails'
+  id:
+    | '__root__'
+    | '/_dashboard'
+    | '/_dashboard/mail'
+    | '/_dashboard/dashboard'
+    | '/auth/dev-ticket'
+    | '/auth/sso'
+    | '/_dashboard/'
+    | '/_dashboard/profile/'
+    | '/_dashboard/subordinates/'
+    | '/_dashboard/mail/user-mails/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
+  AuthDevTicketRoute: typeof AuthDevTicketRoute
+  AuthSsoRoute: typeof AuthSsoRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_dashboard': {
+      id: '/_dashboard'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/': {
+      id: '/_dashboard/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/auth/sso': {
+      id: '/auth/sso'
+      path: '/auth/sso'
+      fullPath: '/auth/sso'
+      preLoaderRoute: typeof AuthSsoRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/auth/dev-ticket': {
+      id: '/auth/dev-ticket'
+      path: '/auth/dev-ticket'
+      fullPath: '/auth/dev-ticket'
+      preLoaderRoute: typeof AuthDevTicketRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/dashboard': {
+      id: '/_dashboard/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardDashboardRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/mail': {
+      id: '/_dashboard/mail'
+      path: '/mail'
+      fullPath: '/mail'
+      preLoaderRoute: typeof DashboardMailRouteRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/subordinates/': {
+      id: '/_dashboard/subordinates/'
+      path: '/subordinates'
+      fullPath: '/subordinates/'
+      preLoaderRoute: typeof DashboardSubordinatesIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/profile/': {
+      id: '/_dashboard/profile/'
+      path: '/profile'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof DashboardProfileIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/mail/user-mails/': {
+      id: '/_dashboard/mail/user-mails/'
+      path: '/user-mails'
+      fullPath: '/mail/user-mails/'
+      preLoaderRoute: typeof DashboardMailUserMailsIndexRouteImport
+      parentRoute: typeof DashboardMailRouteRoute
     }
   }
 }
 
+interface DashboardMailRouteRouteChildren {
+  DashboardMailUserMailsIndexRoute: typeof DashboardMailUserMailsIndexRoute
+}
+
+const DashboardMailRouteRouteChildren: DashboardMailRouteRouteChildren = {
+  DashboardMailUserMailsIndexRoute: DashboardMailUserMailsIndexRoute,
+}
+
+const DashboardMailRouteRouteWithChildren =
+  DashboardMailRouteRoute._addFileChildren(DashboardMailRouteRouteChildren)
+
+interface DashboardRouteChildren {
+  DashboardMailRouteRoute: typeof DashboardMailRouteRouteWithChildren
+  DashboardDashboardRoute: typeof DashboardDashboardRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardProfileIndexRoute: typeof DashboardProfileIndexRoute
+  DashboardSubordinatesIndexRoute: typeof DashboardSubordinatesIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardMailRouteRoute: DashboardMailRouteRouteWithChildren,
+  DashboardDashboardRoute: DashboardDashboardRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardProfileIndexRoute: DashboardProfileIndexRoute,
+  DashboardSubordinatesIndexRoute: DashboardSubordinatesIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRouteWithChildren,
+  AuthDevTicketRoute: AuthDevTicketRoute,
+  AuthSsoRoute: AuthSsoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

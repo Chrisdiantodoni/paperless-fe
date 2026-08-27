@@ -546,7 +546,7 @@ export function StaticMailTemplateForm({
             toast.success("Template email berhasil disimpan")
             navigate({
               to: "/mail/static-mail-templates/$id",
-              params: { id: response.id },
+              params: { id: response ?? response.data.id },
             })
           } catch (error) {
             toast.error(

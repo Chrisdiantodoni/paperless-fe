@@ -298,7 +298,10 @@ const TemplateFormFields = ({
               <div className="col-span-3">
                 <form.AppField name="content">
                   {(field: any) => (
-                    <field.RichTextEditorField label="Content" />
+                    <field.RichTextEditorField
+                      label="Content"
+                      outputFormat="html"
+                    />
                   )}
                 </form.AppField>
               </div>

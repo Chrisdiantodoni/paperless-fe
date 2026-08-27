@@ -105,13 +105,13 @@ export interface IStaff {
   id: string
   nip: string
   dpack_sales_code: string
-  biodata: Biodata
+  biodata: Biodata | null
   legal_documents: LegalDocuments
   employment_data: EmploymentData
   superior: null
   files: Files
   accessible_apps: any[]
-  user_account: UserData
+  user_account: UserData | null
 }
 
 export interface Biodata {

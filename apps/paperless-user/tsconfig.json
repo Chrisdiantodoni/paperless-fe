@@ -4,7 +4,7 @@
     "**/*.tsx",
     "eslint.config.js",
     "prettier.config.js",
-    "vite.config.ts"
+    "vite.config.ts",
   ],
   "compilerOptions": {
     "target": "ES2022",
@@ -14,7 +14,14 @@
     "types": ["vite/client"],
     "paths": {
       "@/*": ["./src/*"],
-      "@workspace/ui/*": ["../../packages/ui/src/*"]
+      "@workspace/ui": ["../../packages/ui/src/index.ts"],
+      "@workspace/ui/*": ["../../packages/ui/src/*"],
+      "@workspace/api-client": ["../../packages/api-client/src/index.ts"],
+      "@workspace/api-client/*": ["../../packages/api-client/src/*"],
+      "@workspace/types": ["../../packages/types/src/index.ts"],
+      "@workspace/types/*": ["../../packages/types/src/*"],
+      "@workspace/utils": ["../../packages/utils/src/index.ts"],
+      "@workspace/utils/*": ["../../packages/utils/src/*"],
     },
 
     /* Bundler mode */
@@ -29,6 +36,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
-  }
+    "noUncheckedSideEffectImports": true,
+  },
 }

@@ -59,12 +59,11 @@ export function StaffCombobox({
     branchId,
     positionId,
   })
-  const options = (data?.data ?? []).filter((d) => d?.user_account?.id != null)
+  const options = (data?.data ?? []).filter((d) => d.user_account?.id != null)
 
   const resolvedLabel =
     extractLabel(value) ||
-    options.find((d) => d?.user_account?.id === resolvedValue)?.biodata
-      ?.fullname
+    options.find((d) => d.user_account?.id === resolvedValue)?.biodata?.fullname
   return (
     <>
       <Popover
@@ -76,6 +75,7 @@ export function StaffCombobox({
       >
         <PopoverTrigger asChild>
           <Button
+            type="button"
             variant="outline"
             role="combobox"
             aria-expanded={open}
@@ -126,10 +126,10 @@ export function StaffCombobox({
                 options.map((staff) => (
                   <CommandItem
                     key={staff.id}
-                    value={String(staff.user_account.id)}
+                    value={String(staff.user_account?.id ?? "")}
                     onSelect={() => {
                       onChange({
-                        value: staff.user_account.id,
+                        value: staff.user_account?.id ?? "",
                         label: `${staff.biodata?.fullname} (${staff.nip})`,
                       })
                       setOpen(false)
@@ -137,7 +137,7 @@ export function StaffCombobox({
                   >
                     <Check
                       className={`mr-2 h-4 w-4 ${
-                        resolvedValue === staff.user_account.id
+                        resolvedValue === staff.user_account?.id
                           ? "opacity-100"
                           : "opacity-0"
                       }`}

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/_dashboard'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
 import { Route as AuthSsoRouteImport } from './routes/auth/sso'
+import { Route as AuthDevTicketRouteImport } from './routes/auth/dev-ticket'
 import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
 import { Route as DashboardSystemUsersRouteImport } from './routes/_dashboard/system/users'
 import { Route as DashboardSystemRolesRouteImport } from './routes/_dashboard/system/roles'
@@ -42,6 +43,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
 const AuthSsoRoute = AuthSsoRouteImport.update({
   id: '/auth/sso',
   path: '/auth/sso',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthDevTicketRoute = AuthDevTicketRouteImport.update({
+  id: '/auth/dev-ticket',
+  path: '/auth/dev-ticket',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardDashboardRoute = DashboardDashboardRouteImport.update({
@@ -143,6 +149,7 @@ const DashboardMailDynamicMailTemplatesIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof DashboardIndexRoute
   '/dashboard': typeof DashboardDashboardRoute
+  '/auth/dev-ticket': typeof AuthDevTicketRoute
   '/auth/sso': typeof AuthSsoRoute
   '/mail/all-mails': typeof DashboardMailAllMailsRoute
   '/master/areas': typeof DashboardMasterAreasRoute
@@ -163,6 +170,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/dashboard': typeof DashboardDashboardRoute
+  '/auth/dev-ticket': typeof AuthDevTicketRoute
   '/auth/sso': typeof AuthSsoRoute
   '/': typeof DashboardIndexRoute
   '/mail/all-mails': typeof DashboardMailAllMailsRoute
@@ -186,6 +194,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_dashboard': typeof DashboardRouteWithChildren
   '/_dashboard/dashboard': typeof DashboardDashboardRoute
+  '/auth/dev-ticket': typeof AuthDevTicketRoute
   '/auth/sso': typeof AuthSsoRoute
   '/_dashboard/': typeof DashboardIndexRoute
   '/_dashboard/mail/all-mails': typeof DashboardMailAllMailsRoute
@@ -210,6 +219,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/auth/dev-ticket'
     | '/auth/sso'
     | '/mail/all-mails'
     | '/master/areas'
@@ -230,6 +240,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/dashboard'
+    | '/auth/dev-ticket'
     | '/auth/sso'
     | '/'
     | '/mail/all-mails'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_dashboard'
     | '/_dashboard/dashboard'
+    | '/auth/dev-ticket'
     | '/auth/sso'
     | '/_dashboard/'
     | '/_dashboard/mail/all-mails'
@@ -274,6 +286,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRouteWithChildren
+  AuthDevTicketRoute: typeof AuthDevTicketRoute
   AuthSsoRoute: typeof AuthSsoRoute
 }
 
@@ -298,6 +311,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/sso'
       fullPath: '/auth/sso'
       preLoaderRoute: typeof AuthSsoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/dev-ticket': {
+      id: '/auth/dev-ticket'
+      path: '/auth/dev-ticket'
+      fullPath: '/auth/dev-ticket'
+      preLoaderRoute: typeof AuthDevTicketRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_dashboard/dashboard': {
@@ -478,6 +498,7 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRouteWithChildren,
+  AuthDevTicketRoute: AuthDevTicketRoute,
   AuthSsoRoute: AuthSsoRoute,
 }
 export const routeTree = rootRouteImport

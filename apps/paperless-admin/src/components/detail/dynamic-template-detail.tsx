@@ -14,51 +14,43 @@ import {
   Users,
   Mail,
   Search,
+  FileCode,
+  Asterisk,
 } from "lucide-react"
 import { Badge } from "@workspace/ui/components/ui/badge"
 import { Separator } from "@workspace/ui/components/ui/separator"
 import { Input } from "@workspace/ui/components/ui/input"
 import { formatDate } from "@workspace/utils"
-import type { RecipientItem } from "@/schema/master/schema"
 import { useMemo, useState } from "react"
+import { MarkdownPreview } from "@workspace/ui/components/editor/MarkdownPreview"
 
 export default function DynamicTemplateDetail({
   data,
 }: {
   data: IDynamicMailTemplate
 }) {
-  const toRecipients = data.recipients
+  const recipients = data?.recipients ?? []
+
+  const toRecipients = recipients
     .filter((r) => r.recipient_type === "to")
     .sort((a, b) => a.sequence - b.sequence)
-    .map((r) => ({
-      ...r,
-      // Transformasi string user_id menjadi format object yang dibutuhkan komponen
-      value: r.user_id,
-      label: r.name, // Ganti dengan r.name atau data lain jika kamu punya label yang lebih deskriptif
-    }))
 
-  const ccRecipients = data.recipients
+  const ccRecipients = recipients
     .filter((r) => r.recipient_type === "cc")
     .sort((a, b) => a.sequence - b.sequence)
-    .map((r) => ({
-      ...r,
-      value: r.user_id,
-      label: r.name,
-    }))
 
-  function recipientLabel(r: RecipientItem) {
-    return r.label || r.value || "—"
-  }
   return (
-    <Card className="shadow-sm">
+    <Card className="min-w-5xl shadow-sm">
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
               <CardTitle className="text-2xl font-bold">{data.name}</CardTitle>
-              <Badge variant="outline" className="text-xs">
-                {data.type}
-              </Badge>
+              {data.type && (
+                <Badge variant="outline" className="text-xs">
+                  {data.type}
+                </Badge>
+              )}
               <Badge
                 variant={data.is_active ? "default" : "secondary"}
                 className="text-xs"
@@ -72,26 +64,31 @@ export default function DynamicTemplateDetail({
               </CardDescription>
             )}
             <div className="flex flex-wrap gap-x-6 gap-y-1 pt-1 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5" />
-                Dibuat {formatDate(data.created_at)}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5" />
-                Diperbarui {formatDate(data.updated_at)}
-              </span>
+              {data.created_at && (
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Dibuat {formatDate(data.created_at)}
+                </span>
+              )}
+              {data.updated_at && (
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Diperbarui {formatDate(data.updated_at)}
+                </span>
+              )}
             </div>
           </div>
         </div>
       </CardHeader>
+
       <CardContent className="space-y-8">
         {/* INFORMASI UMUM */}
-        <div className="grid grid-cols-2 gap-6 rounded-lg border bg-muted/30 p-4">
+        <div className="grid grid-cols-1 gap-6 rounded-lg border bg-muted/30 p-4 sm:grid-cols-2">
           <div>
             <p className="mb-1 text-sm font-medium text-muted-foreground">
               Kode Template
             </p>
-            <p className="font-semibold">{data.code}</p>
+            <p className="font-semibold">{data.code || "—"}</p>
           </div>
           <div>
             <p className="mb-1 text-sm font-medium text-muted-foreground">
@@ -99,9 +96,70 @@ export default function DynamicTemplateDetail({
             </p>
             <div className="flex items-center gap-2 font-medium">
               <Building2 className="h-4 w-4 text-muted-foreground" />
-              {data.department}
+              {data.department || "—"}
             </div>
           </div>
+        </div>
+
+        {/* KONTEN */}
+        {data.content && (
+          <>
+            <Separator />
+            <div>
+              <h3 className="mb-4 text-lg font-semibold">Konten</h3>
+              {looksLikeHtml(data.content) ? (
+                <div
+                  className="tiptap max-w-none rounded-lg border border-input bg-background p-4"
+                  dangerouslySetInnerHTML={{ __html: data.content }}
+                />
+              ) : (
+                <MarkdownPreview markdown={data.content} />
+              )}
+            </div>
+          </>
+        )}
+
+        <Separator />
+
+        {/* SKEMA FORM */}
+        <div>
+          <div className="mb-4 flex items-center gap-2">
+            <FileCode className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-lg font-semibold">Skema Form</h3>
+          </div>
+
+          {!data.form_schema || data.form_schema.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Tidak ada skema form.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {data.form_schema.map((field, idx) => (
+                <div
+                  key={field.name || idx}
+                  className="flex items-start justify-between rounded-lg border bg-card p-3 shadow-xs"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5 font-medium">
+                      <span>{field.label}</span>
+                      {field.is_required && (
+                        <Asterisk className="h-3.5 w-3.5 text-destructive" />
+                      )}
+                    </div>
+                    <p className="font-mono text-xs text-muted-foreground">
+                      {field.name}
+                    </p>
+                  </div>
+                  <Badge
+                    variant="secondary"
+                    className="font-mono text-[11px] uppercase"
+                  >
+                    {field.type}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <Separator />
@@ -113,17 +171,17 @@ export default function DynamicTemplateDetail({
             <ScopeSection
               icon={Building2}
               title="Cabang"
-              items={data.branches}
+              items={data.branches ?? []}
             />
             <ScopeSection
               icon={Users}
               title="Departemen"
-              items={data.departments}
+              items={data.departments ?? []}
             />
             <ScopeSection
               icon={Briefcase}
               title="Posisi"
-              items={data.positions}
+              items={data.positions ?? []}
             />
           </div>
         </div>
@@ -137,7 +195,7 @@ export default function DynamicTemplateDetail({
             <h3 className="text-lg font-semibold">Penerima Email</h3>
           </div>
 
-          {data.recipients.length === 0 ? (
+          {recipients.length === 0 ? (
             <p className="text-sm text-muted-foreground">Tidak ada penerima.</p>
           ) : (
             <div className="space-y-6">
@@ -176,7 +234,7 @@ export default function DynamicTemplateDetail({
 function RecipientCard({
   recipient,
 }: {
-  recipient: StaticMailTemplate["recipients"][number]
+  recipient: IDynamicMailTemplate["recipients"][number]
 }) {
   const workInfo = [recipient.branch, recipient.department, recipient.position]
     .filter(Boolean)
@@ -185,28 +243,24 @@ function RecipientCard({
   return (
     <div className="flex flex-col justify-between gap-4 rounded-lg border bg-card p-4 transition-colors hover:bg-slate-50 sm:flex-row sm:items-center dark:hover:bg-slate-900/50">
       <div className="flex items-center gap-4">
-        {/* Sequence / Urutan */}
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-sm font-bold text-primary">
           {recipient.sequence}
         </div>
 
-        {/* Informasi User */}
         <div>
           <p className="font-medium">
-            {recipient.name}{" "}
-            <span className="font-normal text-muted-foreground">
-              ({recipient.nip})
-            </span>
+            {recipient.name || "—"}{" "}
+            {recipient.nip && (
+              <span className="font-normal text-muted-foreground">
+                ({recipient.nip})
+              </span>
+            )}
           </p>
-
-          {/* Hanya render elemen ini jika workInfo ada isinya */}
           {workInfo && (
             <p className="mt-0.5 text-xs text-muted-foreground">{workInfo}</p>
           )}
         </div>
       </div>
-
-      {/* Tipe Penerima (TO/CC) */}
     </div>
   )
 }
@@ -244,10 +298,10 @@ function ScopeSection({
 
       {items.length > 0 && (
         <div className="relative">
-          <Search className="absolute top-1.5 left-2 h-3.5 w-3.5 text-muted-foreground" />
+          <Search className="absolute top-2 left-2.5 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            className="h-7 pl-7 text-xs"
-            placeholder={`Cari...`}
+            className="h-8 pl-8 text-xs"
+            placeholder={`Cari ${title.toLowerCase()}...`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -255,13 +309,13 @@ function ScopeSection({
       )}
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Tidak ada.</p>
+        <p className="text-sm text-muted-foreground">Tidak ada data.</p>
       ) : (
         <ul className="max-h-48 space-y-1 overflow-y-auto pr-1">
           {filtered.map((item) => (
             <li
               key={item.id}
-              className="rounded px-2 py-1 text-sm hover:bg-muted"
+              className="rounded px-2 py-1.5 text-sm hover:bg-muted"
             >
               {item.name}
             </li>
@@ -270,4 +324,8 @@ function ScopeSection({
       )}
     </div>
   )
+}
+
+function looksLikeHtml(value: string): boolean {
+  return /<[a-z][\s\S]*?>/i.test(value.trim())
 }

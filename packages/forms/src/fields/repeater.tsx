@@ -65,7 +65,7 @@ export function Repeater<TItem>({
 }: RepeaterProps<TItem>) {
   return (
     <form.Field name={name} mode="array">
-      {(arrayField) => {
+      {(arrayField: any) => {
         const items = arrayField.state.value
         const atMax = maxItems !== undefined && items.length >= maxItems
 
@@ -91,7 +91,9 @@ export function Repeater<TItem>({
             {showError && (
               <p className="text-sm font-medium text-destructive">
                 {errors
-                  .map((err) => (typeof err === "string" ? err : err?.message))
+                  .map((err: { message?: string } | string) =>
+                    typeof err === "string" ? err : err?.message
+                  )
                   .join(", ")}
               </p>
             )}
@@ -112,7 +114,7 @@ export function Repeater<TItem>({
               </div>
             )}
 
-            {items.map((_, index) => (
+            {items.map((_: TItem, index: number) => (
               <div
                 key={index}
                 role="group"

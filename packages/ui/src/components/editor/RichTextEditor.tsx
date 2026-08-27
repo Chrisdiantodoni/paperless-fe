@@ -15,20 +15,23 @@ import Underline from "@tiptap/extension-underline"
 import { TextStyle, Color } from "@tiptap/extension-text-style"
 import { EditorToolbar } from "./EditorToolbar"
 import { EditorArea } from "./EditorArea"
-import {
-  getMarkdownFromEditor,
-  setMarkdownContent,
-} from "@workspace/ui/hooks/useEditor"
+import type { EditorOutputFormat } from "@workspace/ui/hooks/useEditor"
+import { getEditorContent, setEditorContent } from "@workspace/ui/hooks/useEditor"
 import { cn } from "@workspace/ui/lib/utils"
-import { MarkdownPreview } from "./MarkdownPreview"
 
 interface RichTextEditorProps {
   initialContent?: string
-  onContentChange?: (markdown: string) => void
+  /** Links the label's htmlFor to the editor for accessible focusing */
+  id?: string
+  /** Format emitted by onChange/onContentChange. Defaults to "markdown". */
+  outputFormat?: EditorOutputFormat
+  onContentChange?: (content: string) => void
   placeholder?: string
-  /** react-hook-form: called on every content change, same as onContentChange */
-  onChange?: (value: string) => void
-  /** react-hook-form: current field value — syncs editor when value changes externally */
+  /** called on every content change, same as onContentChange */
+  onChange?: (content: string) => void
+  /** fired when the editable area loses focus */
+  onBlur?: () => void
+  /** current field value — syncs editor when value changes externally (same format as outputFormat) */
   value?: string
   /** Shows a red border when true — wire up fieldState.invalid */
   hasError?: boolean
@@ -37,14 +40,22 @@ interface RichTextEditorProps {
 
 export function RichTextEditor({
   initialContent = "",
+  id,
+  outputFormat = "markdown",
   onContentChange,
   onChange,
+  onBlur,
   value,
   hasError = false,
   className,
 }: RichTextEditorProps) {
+  const format: EditorOutputFormat = outputFormat
+  const isHtml = format === "html"
   const [isPreview, setIsPreview] = useState(false)
-  const [markdown, setMarkdown] = useState(value ?? initialContent)
+  // Holds the last emitted content (in the selected format) for preview/count
+  const [content, setContent] = useState(value ?? initialContent)
+  // Live HTML of the editor — used for an accurate preview
+  const [previewHtml, setPreviewHtml] = useState("")
 
   const editor = useTiptapEditor({
     extensions: [
@@ -65,37 +76,46 @@ export function RichTextEditor({
     content: value || initialContent || "<p></p>",
     // Fix SSR hydration mismatch — tiptap must not render on the server
     immediatelyRender: false,
+    onBlur: () => onBlur?.(),
     editorProps: {
       attributes: { class: "focus:outline-none" },
     },
-    onUpdate: ({ editor }) => {
-      const newMarkdown = getMarkdownFromEditor(editor)
-      setMarkdown(newMarkdown)
-      onContentChange?.(newMarkdown)
-      onChange?.(newMarkdown)
+    onUpdate: ({ editor: tiptapEditor }) => {
+      setPreviewHtml(tiptapEditor.getHTML())
+      const editorContent = getEditorContent(tiptapEditor, format)
+      setContent(editorContent)
+      onContentChange?.(editorContent)
+      onChange?.(editorContent)
     },
   })
 
   // Sync when an external controller (react-hook-form setValue / reset) changes the value
   useEffect(() => {
     if (!editor || value === undefined) return
-    const current = getMarkdownFromEditor(editor)
-    if (value !== current) {
-      setMarkdownContent(editor, value)
-      setMarkdown(value)
+    const current = getEditorContent(editor, format)
+    if (normalizeContent(value) !== normalizeContent(current)) {
+      setEditorContent(editor, value, format)
+      setContent(value)
     }
-  }, [value, editor])
+    setPreviewHtml(editor.getHTML())
+  }, [value, editor, format])
 
-  // Seed initial HTML content on mount
+  // Seed initial content on mount
   useEffect(() => {
-    if (editor && initialContent && !editor.view.state.doc.content.size) {
-      setMarkdownContent(editor, initialContent)
+    if (!editor) return
+    if (initialContent && !editor.view.state.doc.content.size) {
+      setEditorContent(editor, initialContent, format)
+      setContent(initialContent)
     }
-  }, [editor, initialContent])
+    setPreviewHtml(editor.getHTML())
+  }, [editor, initialContent, format])
+
+  const { words, characters } = summarize(content, isHtml)
 
   return (
     <div className={cn("w-full space-y-2", className)}>
       <div
+        id={id}
         className={cn(
           "rounded-lg border border-input bg-background",
           hasError && "border-destructive ring-1 ring-destructive"
@@ -103,14 +123,15 @@ export function RichTextEditor({
       >
         <EditorToolbar
           editor={editor}
+          format={format}
           onPreviewChange={setIsPreview}
           isPreview={isPreview}
         />
         <div className="border-t border-input">
           {isPreview ? (
-            <MarkdownPreview
-              markdown={markdown}
-              className="rounded-none border-none"
+            <div
+              className="tiptap rounded-none border-none px-4 py-3 min-h-80 max-h-[600px] overflow-y-auto"
+              dangerouslySetInnerHTML={{ __html: previewHtml }}
             />
           ) : (
             <EditorArea editor={editor} />
@@ -120,9 +141,31 @@ export function RichTextEditor({
 
       {/* Word / character count */}
       <div className="text-right text-xs text-muted-foreground">
-        {markdown.split(/\s+/).filter(Boolean).length} words &middot;{" "}
-        {markdown.length} characters
+        {words} words &middot; {characters} characters
       </div>
     </div>
   )
+}
+
+function normalizeContent(value: string): string {
+  const trimmed = value === "<p></p>" ? "" : value.trim()
+  return trimmed
+}
+
+function summarize(
+  content: string,
+  isHtml: boolean
+): { words: number; characters: number } {
+  const text = isHtml
+    ? content
+        .replace(/<[^>]*>/g, " ")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .trim()
+    : content.trim()
+
+  return {
+    words: text.split(/\s+/).filter(Boolean).length,
+    characters: text.length,
+  }
 }

@@ -59,7 +59,7 @@ export default function StaticMailTemplateDetail({
     [ccRecipients]
   )
   return (
-    <Card className="shadow-sm">
+    <Card className="min-w-5xl shadow-sm">
       {/* HEADER */}
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

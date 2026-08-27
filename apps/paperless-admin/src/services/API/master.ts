@@ -44,7 +44,6 @@ class MasterService {
   async getStaff(
     params?: Record<string, string | number | undefined>
   ): Promise<APIResponse<LaravelPaginationData<IStaff[]>>> {
-    console.log(params)
     const res = await api.get("/master/staffs", { params })
     return res.data
   }
