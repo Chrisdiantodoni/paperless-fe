@@ -13,9 +13,10 @@ import { Button } from "@workspace/ui/components/ui/button"
 import { Input } from "@workspace/ui/components/ui/input"
 import { Badge } from "@workspace/ui/components/ui/badge"
 import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@workspace/ui/components/ui/toggle-group"
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/ui/tabs"
 import {
   Popover,
   PopoverContent,
@@ -131,29 +132,25 @@ export function MailHeader({
             <span>Buat</span>
           </Button>
           <div className="mx-1 hidden h-4 w-[1px] bg-border sm:block" />
-          <ToggleGroup
-            type="single"
-            variant="outline"
-            size="sm"
-            spacing
+          <Tabs
             value={activeNav}
-            onValueChange={(value) => {
-              if (value) onNavChange(value as MailNav)
-            }}
-            className="rounded-lg bg-muted/60 p-1"
+            onValueChange={(value) => onNavChange(value as MailNav)}
+            className="w-fit"
           >
-            {NAV_ITEMS.map(({ value, label, icon: Icon }) => (
-              <ToggleGroupItem
-                key={value}
-                value={value}
-                aria-label={label}
-                className="h-8 gap-2 px-3 text-xs font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {label}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+            <TabsList variant="default" className="h-9 gap-1 rounded-lg p-1">
+              {NAV_ITEMS.map(({ value, label, icon: Icon }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  aria-label={label}
+                  className="gap-2 px-3 text-xs font-medium"
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* Right: Search bar & action/filter buttons */}
@@ -200,7 +197,7 @@ export function MailHeader({
                       }))
                     }
                   >
-                    <SelectTrigger className="h-8">
+                    <SelectTrigger className="h-8 w-full">
                       <SelectValue placeholder="Semua jenis" />
                     </SelectTrigger>
                     <SelectContent>
@@ -227,7 +224,7 @@ export function MailHeader({
                       }))
                     }
                   >
-                    <SelectTrigger className="h-8">
+                    <SelectTrigger className="h-8 w-full">
                       <SelectValue placeholder="Semua status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -288,7 +285,7 @@ export function MailHeader({
                         }))
                       }
                     >
-                      <SelectTrigger className="h-8">
+                      <SelectTrigger className="h-8 w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -313,7 +310,7 @@ export function MailHeader({
                         }))
                       }
                     >
-                      <SelectTrigger className="h-8">
+                      <SelectTrigger className="h-8 w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
