@@ -96,7 +96,7 @@ export function useMailData() {
   ]
 
   const [activeNav, setActiveNav] = useState("All mail")
-  const [selectedId, setSelectedId] = useState(1)
+  const [selectedId, setSelectedId] = useState<number | null>(null)
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState("All")
   const [selected, setSelected] = useState<number[]>([])
@@ -127,8 +127,10 @@ export function useMailData() {
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
   const visibleMails = filtered.slice((page - 1) * pageSize, page * pageSize)
-  const current = mails.find((mail) => mail.id === selectedId) ?? mails[0]
-  const displayedStatus = approvalStatus[current.id] ?? current.status
+  const current = mails.find((mail) => mail.id === selectedId) ?? null
+  const displayedStatus = current
+    ? (approvalStatus[current.id] ?? current.status)
+    : "Pending"
 
   const toggle = (id: number) =>
     setSelected((items) =>
@@ -146,6 +148,7 @@ export function useMailData() {
   }
 
   const submitApproval = (nextStatus: "Approved" | "Rejected") => {
+    if (!current) return
     setApprovalStatus((items) => ({ ...items, [current.id]: nextStatus }))
   }
 

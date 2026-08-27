@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { useSidebar } from "@workspace/ui/components/ui/sidebar"
-import { useEffect } from "react"
 
 import {
   MailHeader,
   MailList,
   MailDetail,
+  MailEmptyState,
   ApprovalDialog,
 } from "@/components/mail"
 import { useMailData } from "@/hooks/queries/use-mail-data"
@@ -16,7 +15,6 @@ export const Route = createFileRoute("/_dashboard/mail/user-mails/")({
 
 function RouteComponent() {
   const {
-    mails,
     activeNav,
     setActiveNav,
     selectedId,
@@ -35,29 +33,16 @@ function RouteComponent() {
     setApprovalNote,
     approvalOpen,
     setApprovalOpen,
-    approvalStatus,
-    setApprovalStatus,
     filtered,
     visibleMails,
     pageCount,
     pageSize,
     showDetail,
     setShowDetail,
+    current,
+    displayedStatus,
+    submitApproval,
   } = useMailData()
-
-  const { open: sidebarOpen } = useSidebar()
-
-  const current = mails.find((mail) => mail.id === selectedId) ?? mails[0]
-  const displayedStatus = approvalStatus[current.id] ?? current.status
-
-  useEffect(() => {
-    if (
-      filtered.length > 0 &&
-      !filtered.find((mail) => mail.id === selectedId)
-    ) {
-      setSelectedId(filtered[0].id)
-    }
-  }, [filtered, selectedId, setSelectedId])
 
   const handleSelectAll = () => {
     setSelected(
@@ -84,8 +69,9 @@ function RouteComponent() {
     }
   }
 
-  const submitApproval = (nextStatus: "Approved" | "Rejected") => {
-    setApprovalStatus((items) => ({ ...items, [current.id]: nextStatus }))
+  const handleClose = () => {
+    setSelectedId(null)
+    setShowDetail(false)
   }
 
   return (
@@ -128,16 +114,20 @@ function RouteComponent() {
         <article
           className={`min-w-0 flex-1 lg:block ${showDetail ? "block" : "hidden"}`}
         >
-          <MailDetail
-            current={current}
-            displayedStatus={displayedStatus}
-            filtered={filtered}
-            selectedId={selectedId}
-            onOpenApproval={() => setApprovalOpen(true)}
-            onMoveSelection={moveSelection}
-            onBack={() => setShowDetail(false)}
-            showBackButton
-          />
+          {current ? (
+            <MailDetail
+              current={current}
+              displayedStatus={displayedStatus}
+              filtered={filtered}
+              selectedId={selectedId}
+              onOpenApproval={() => setApprovalOpen(true)}
+              onMoveSelection={moveSelection}
+              onClose={handleClose}
+              showCloseButton
+            />
+          ) : (
+            <MailEmptyState />
+          )}
         </article>
       </div>
 

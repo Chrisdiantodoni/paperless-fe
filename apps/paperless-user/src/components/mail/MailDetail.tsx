@@ -6,6 +6,7 @@ import {
   Star,
   FileText,
   Paperclip,
+  X,
 } from 'lucide-react'
 import { Button } from '@workspace/ui/components/ui/button'
 import { Badge } from '@workspace/ui/components/ui/badge'
@@ -19,8 +20,8 @@ export interface MailDetailProps {
   selectedId: number
   onOpenApproval: () => void
   onMoveSelection: (direction: -1 | 1) => void
-  onBack?: () => void
-  showBackButton?: boolean
+  onClose?: () => void
+  showCloseButton?: boolean
 }
 
 export function MailDetail({
@@ -30,8 +31,8 @@ export function MailDetail({
   selectedId,
   onOpenApproval,
   onMoveSelection,
-  onBack,
-  showBackButton = false,
+  onClose,
+  showCloseButton = false,
 }: MailDetailProps) {
   const currentIndex = filtered.findIndex((m) => m.id === selectedId)
   const canPrevious = currentIndex > 0
@@ -55,14 +56,14 @@ export function MailDetail({
       <div className="border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {showBackButton && (
+            {showCloseButton && (
               <Button
                 variant="ghost"
                 size="icon"
-                aria-label="Back to list"
-                onClick={onBack}
+                aria-label="Close"
+                onClick={onClose}
               >
-                <ChevronLeft className="h-4 w-4" />
+                <X className="h-4 w-4" />
               </Button>
             )}
             <Button variant="ghost" size="icon">
