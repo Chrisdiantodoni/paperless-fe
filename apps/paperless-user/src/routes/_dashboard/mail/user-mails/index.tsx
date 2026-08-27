@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { zodValidator } from "@tanstack/zod-adapter"
 
 import {
   MailHeader,
@@ -8,12 +9,50 @@ import {
   ApprovalDialog,
 } from "@/components/mail"
 import { useMailData } from "@/hooks/queries/use-mail-data"
+import { QueryClient } from "@tanstack/react-query"
+import { listRequestQuerySchema } from "@/schema/mail/schema"
+import {
+  allMailQueryOptions,
+  allSentMailQueryOptions,
+  useMailDetail,
+  useMailList,
+} from "@/hooks/queries/use-mails"
+import type { LaravelPaginationData } from "@workspace/types/api"
+import type { AllMailProps } from "@workspace/types/mail"
+import { getMailDetails } from "@/server/mails"
+import type { MailFilterState } from "@/components/mail"
 
 export const Route = createFileRoute("/_dashboard/mail/user-mails/")({
+  validateSearch: zodValidator(listRequestQuerySchema),
+  loaderDeps: ({ search }) => search,
+  loader: async ({ context: { queryClient }, deps: search }) => {
+    let data: LaravelPaginationData<AllMailProps[]>
+    if (search.type === "all") {
+      data = await queryClient.ensureQueryData(allMailQueryOptions(search))
+    } else {
+      data = await queryClient.ensureQueryData(allSentMailQueryOptions(search))
+    }
+    return { data }
+  },
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const { data: initialData } = Route.useLoaderData()
+  const search = Route.useSearch()
+
+  const isSent = search.type === "sent"
+
+  const {
+    data: mailPagination,
+    isFetching,
+    refetch,
+  } = useMailList(search, initialData)
+
+  const mailDataList = mailPagination.data
+
+  const navigate = Route.useNavigate()
+
   const {
     activeNav,
     setActiveNav,
@@ -21,107 +60,125 @@ function RouteComponent() {
     setSelectedId,
     query,
     setQuery,
-    status,
-    setStatus,
-    selected,
-    setSelected,
     refreshing,
-    refresh,
     page,
     setPage,
     approvalNote,
     setApprovalNote,
     approvalOpen,
     setApprovalOpen,
-    filtered,
-    visibleMails,
-    pageCount,
-    pageSize,
-    showDetail,
     setShowDetail,
     current,
-    displayedStatus,
     submitApproval,
-  } = useMailData()
+    showDetail,
+    setRefreshing,
+  } = useMailData(search)
 
-  const handleSelectAll = () => {
-    setSelected(
-      selected.length === filtered.length ? [] : filtered.map((mail) => mail.id)
-    )
-  }
-
-  const toggle = (id: number) =>
-    setSelected((items) =>
-      items.includes(id) ? items.filter((item) => item !== id) : [...items, id]
-    )
-
-  const moveSelection = (direction: -1 | 1) => {
-    const index = filtered.findIndex((mail) => mail.id === selectedId)
-    const nextIndex = index + direction
-    if (nextIndex >= 0 && nextIndex < filtered.length) {
-      const next = filtered[nextIndex]
-      setSelectedId(next.id)
-      setPage(
-        Math.floor(
-          filtered.findIndex((mail) => mail.id === next.id) / pageSize
-        ) + 1
-      )
-    }
-  }
+  const { data: mailDetail, isLoading: isLoadingDetail } =
+    useMailDetail(selectedId)
 
   const handleClose = () => {
     setSelectedId(null)
     setShowDetail(false)
   }
 
+  const handleNavChange = (nav: "all" | "sent" | "draft") => {
+    setActiveNav(nav)
+    if (nav === "draft") return
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        type: nav,
+        page: 1,
+      }),
+    })
+  }
+
+  const handleFiltersChange = (filters: MailFilterState) => {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        request_type: filters.request_type ?? undefined,
+        status: filters.status ?? undefined,
+        start_date: filters.start_date ?? undefined,
+        end_date: filters.end_date ?? undefined,
+        sort_by: filters.sort_by,
+        sort_dir: filters.sort_dir,
+        page: 1,
+      }),
+    })
+  }
+
+  const filters: MailFilterState = {
+    request_type: search.request_type,
+    status: search.status,
+    start_date: search.start_date,
+    end_date: search.end_date,
+    sort_by: search.sort_by,
+    sort_dir: search.sort_dir,
+  }
+
+  const handlePageChange = (page: number) => {
+    setPage(page)
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        page,
+      }),
+    })
+  }
+
+  const handleRefresh = () => {
+    setRefreshing(true)
+    refetch()
+    setRefreshing(false)
+  }
+
+  const handleMailClick = async (id: string) => {
+    setSelectedId(id)
+    setShowDetail(true)
+  }
+
   return (
     <main className="flex min-h-screen flex-col bg-background text-foreground">
       <MailHeader
         activeNav={activeNav}
-        status={status}
         query={query}
         refreshing={refreshing}
-        onNavChange={setActiveNav}
-        onStatusChange={setStatus}
+        filters={filters}
+        onNavChange={handleNavChange}
         onQueryChange={setQuery}
-        onRefresh={refresh}
+        onRefresh={handleRefresh}
+        onFiltersChange={handleFiltersChange}
+        onCompose={() => {}}
       />
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-stretch">
         <div
-          className={`w-full shrink-0 border-b border-border lg:block lg:w-[360px] lg:border-b-0 lg:border-r xl:w-[400px] ${
+          className={`w-full shrink-0 border-b border-border lg:block lg:w-[360px] lg:border-r lg:border-b-0 xl:w-[400px] ${
             showDetail ? "hidden" : "flex flex-col"
           }`}
         >
           <MailList
-            visibleMails={visibleMails}
-            filtered={filtered}
+            isLoading={isFetching}
+            pageCount={mailPagination.last_page}
+            pageSize={mailPagination.per_page}
+            mails={mailPagination}
             page={page}
-            pageSize={pageSize}
-            pageCount={pageCount}
-            selected={selected}
             selectedId={selectedId}
-            onToggle={toggle}
-            onSelectAll={handleSelectAll}
-            onPageChange={setPage}
-            onItemClick={(id) => {
-              setSelectedId(id)
-              setShowDetail(true)
-            }}
+            onPageChange={handlePageChange}
+            onItemClick={handleMailClick}
           />
         </div>
 
         <article
           className={`min-w-0 flex-1 lg:block ${showDetail ? "block" : "hidden"}`}
         >
-          {current ? (
+          {selectedId ? (
             <MailDetail
-              current={current}
-              displayedStatus={displayedStatus}
-              filtered={filtered}
-              selectedId={selectedId}
+              detail={mailDetail!}
+              isLoading={isLoadingDetail}
               onOpenApproval={() => setApprovalOpen(true)}
-              onMoveSelection={moveSelection}
               onClose={handleClose}
               showCloseButton
             />
