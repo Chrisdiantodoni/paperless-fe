@@ -35,10 +35,10 @@ export function ApprovalDialog({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h3 id="approval-title" className="text-lg font-semibold">
-              Review request
+              Tinjau Permohonan
             </h3>
             <p className="text-sm text-muted-foreground">
-              Choose an action and optionally leave a note.
+              Pilih tindakan dan beri catatan opsional.
             </p>
           </div>
           <Button
@@ -55,15 +55,15 @@ export function ApprovalDialog({
           className="mt-5 min-h-28 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
           value={approvalNote}
           onChange={(e) => onNoteChange(e.target.value)}
-          placeholder="Add a note for the requester (optional)"
-          aria-label="Approval note"
+          placeholder="Tambahkan catatan untuk pemohon (opsional)"
+          aria-label="Catatan persetujuan"
         />
 
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button variant="outline" onClick={onReject}>
-            Reject
+            Tolak
           </Button>
-          <Button onClick={onApprove}>Approve</Button>
+          <Button onClick={onApprove}>Setujui</Button>
         </div>
       </div>
     </div>

@@ -8,10 +8,10 @@ export function MailEmptyState() {
       </div>
       <div>
         <h2 className="text-base font-semibold text-foreground">
-          Select a mail to view
+          Pilih surat untuk dilihat
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Choose a conversation from the list to see its details
+          Pilih salah satu surat dari daftar untuk melihat detailnya
         </p>
       </div>
     </div>
