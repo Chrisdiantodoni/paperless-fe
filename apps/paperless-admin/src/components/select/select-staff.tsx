@@ -46,29 +46,25 @@ export function StaffCombobox({
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebounce(search, 300)
 
-  const departmentId = (
-    dependsOn?.department_id as SelectValue | undefined
-  )?.value
+  const departmentId = (dependsOn?.department_id as SelectValue | undefined)
+    ?.value
   const branchId = (dependsOn?.branch_id as SelectValue | undefined)?.value
-  const positionId = (
-    dependsOn?.position_id as SelectValue | undefined
-  )?.value
+  const positionId = (dependsOn?.position_id as SelectValue | undefined)?.value
 
   const resolvedValue = extractValue(value)
   const shouldFetch = open || !!resolvedValue
 
-  const { data, isFetching } = useStaffSearch(
-    debouncedSearch,
-    shouldFetch,
-    { departmentId, branchId, positionId }
-  )
-  const options = data?.data ?? []
+  const { data, isFetching } = useStaffSearch(debouncedSearch, shouldFetch, {
+    departmentId,
+    branchId,
+    positionId,
+  })
+  const options = (data?.data ?? []).filter((d) => d?.user_account?.id != null)
 
   const resolvedLabel =
     extractLabel(value) ||
     options.find((d) => d?.user_account?.id === resolvedValue)?.biodata
       ?.fullname
-  console.log({ invalid })
   return (
     <>
       <Popover
@@ -130,7 +126,7 @@ export function StaffCombobox({
                 options.map((staff) => (
                   <CommandItem
                     key={staff.id}
-                    value={staff.user_account.id}
+                    value={String(staff.user_account.id)}
                     onSelect={() => {
                       onChange({
                         value: staff.user_account.id,
