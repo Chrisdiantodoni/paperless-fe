@@ -41,6 +41,8 @@ function RouteComponent() {
     visibleMails,
     pageCount,
     pageSize,
+    showDetail,
+    setShowDetail,
   } = useMailData()
 
   const { open: sidebarOpen } = useSidebar()
@@ -49,7 +51,10 @@ function RouteComponent() {
   const displayedStatus = approvalStatus[current.id] ?? current.status
 
   useEffect(() => {
-    if (filtered.length > 0 && !filtered.find((mail) => mail.id === selectedId)) {
+    if (
+      filtered.length > 0 &&
+      !filtered.find((mail) => mail.id === selectedId)
+    ) {
       setSelectedId(filtered[0].id)
     }
   }, [filtered, selectedId, setSelectedId])
@@ -97,7 +102,11 @@ function RouteComponent() {
       />
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-stretch">
-        <div className="w-full shrink-0 border-r border-border lg:w-[52%] xl:w-[48%]">
+        <div
+          className={`w-full shrink-0 border-b border-border lg:block lg:w-[360px] lg:border-b-0 lg:border-r xl:w-[400px] ${
+            showDetail ? "hidden" : "flex flex-col"
+          }`}
+        >
           <MailList
             visibleMails={visibleMails}
             filtered={filtered}
@@ -106,14 +115,19 @@ function RouteComponent() {
             pageCount={pageCount}
             selected={selected}
             selectedId={selectedId}
-            onSelect={setSelectedId}
             onToggle={toggle}
             onSelectAll={handleSelectAll}
             onPageChange={setPage}
+            onItemClick={(id) => {
+              setSelectedId(id)
+              setShowDetail(true)
+            }}
           />
         </div>
 
-        <article className="hidden min-w-0 flex-1 lg:block">
+        <article
+          className={`min-w-0 flex-1 lg:block ${showDetail ? "block" : "hidden"}`}
+        >
           <MailDetail
             current={current}
             displayedStatus={displayedStatus}
@@ -121,6 +135,8 @@ function RouteComponent() {
             selectedId={selectedId}
             onOpenApproval={() => setApprovalOpen(true)}
             onMoveSelection={moveSelection}
+            onBack={() => setShowDetail(false)}
+            showBackButton
           />
         </article>
       </div>

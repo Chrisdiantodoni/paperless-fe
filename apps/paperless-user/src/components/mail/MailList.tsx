@@ -16,6 +16,7 @@ export interface MailListProps {
   onToggle: (id: number) => void
   onSelectAll: () => void
   onPageChange: (page: number) => void
+  onItemClick: (id: number) => void
 }
 
 export function MailList({
@@ -30,6 +31,7 @@ export function MailList({
   onToggle,
   onSelectAll,
   onPageChange,
+  onItemClick,
 }: MailListProps) {
   const isAllSelected = filtered.length > 0 && selected.length === filtered.length
   const startIndex = (page - 1) * pageSize + 1
@@ -68,7 +70,7 @@ export function MailList({
             mail={mail}
             isSelected={mail.id === selectedId}
             isChecked={selected.includes(mail.id)}
-            onSelect={onSelect}
+            onSelect={onItemClick}
             onToggle={onToggle}
           />
         ))}

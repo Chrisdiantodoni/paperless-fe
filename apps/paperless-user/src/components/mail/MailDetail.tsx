@@ -19,6 +19,8 @@ export interface MailDetailProps {
   selectedId: number
   onOpenApproval: () => void
   onMoveSelection: (direction: -1 | 1) => void
+  onBack?: () => void
+  showBackButton?: boolean
 }
 
 export function MailDetail({
@@ -28,6 +30,8 @@ export function MailDetail({
   selectedId,
   onOpenApproval,
   onMoveSelection,
+  onBack,
+  showBackButton = false,
 }: MailDetailProps) {
   const currentIndex = filtered.findIndex((m) => m.id === selectedId)
   const canPrevious = currentIndex > 0
@@ -51,9 +55,16 @@ export function MailDetail({
       <div className="border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
+            {showBackButton && (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Back to list"
+                onClick={onBack}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            )}
             <Button variant="ghost" size="icon">
               <Archive className="h-4 w-4" />
             </Button>

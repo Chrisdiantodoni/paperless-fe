@@ -107,6 +107,7 @@ export function useMailData() {
   const [approvalNote, setApprovalNote] = useState("")
   const [approvalOpen, setApprovalOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [showDetail, setShowDetail] = useState(false)
 
   const pageSize = 3
 
@@ -175,6 +176,8 @@ export function useMailData() {
     setApprovalOpen,
     refreshing,
     setRefreshing,
+    showDetail,
+    setShowDetail,
     filtered,
     pageCount,
     visibleMails,

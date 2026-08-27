@@ -37,9 +37,17 @@ export function MailItem({
   }
 
   return (
-    <button
+    <div
       onClick={() => onSelect(mail.id)}
-      className={`flex w-full gap-3 border-b border-border p-4 text-left transition-colors hover:bg-muted/50 ${
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onSelect(mail.id)
+        }
+      }}
+      className={`flex w-full cursor-pointer gap-3 border-b border-border p-4 text-left transition-colors hover:bg-muted/50 ${
         isSelected ? 'bg-accent/60' : ''
       }`}
     >
@@ -99,6 +107,6 @@ export function MailItem({
           </div>
         </div>
       </div>
-    </button>
+    </div>
   )
 }
