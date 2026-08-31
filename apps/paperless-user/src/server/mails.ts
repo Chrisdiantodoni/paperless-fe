@@ -25,6 +25,17 @@ export const getSentMails = createServerFn({ method: "GET" })
     }
   })
 
+export const getDraftMails = createServerFn({ method: "GET" })
+  .validator(listRequestQuerySchema)
+  .handler(async ({ data }) => {
+    try {
+      const response = await mails.getDraftMail(data)
+      return response.data
+    } catch (error: any) {
+      handleApiError(error)
+    }
+  })
+
 export const getMailDetails = createServerFn({ method: "POST" })
   .validator((id: string) => id)
   .handler(async ({ data }) => {

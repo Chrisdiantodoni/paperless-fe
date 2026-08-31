@@ -115,7 +115,7 @@ const TemplateFormFields = ({
                   return (
                     <div className="flex w-full flex-col space-y-2">
                       <Label required>Kategori / Dept</Label>
-                      <div className="flex w-full">
+                      <div className="flex w-full flex-col">
                         <DepartmentCombobox
                           value={field.state.value as SelectValue}
                           onChange={field.handleChange}

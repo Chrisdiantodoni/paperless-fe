@@ -29,7 +29,7 @@ export const staticMailTemplateFormSchema = z.object({
     })
     .refine((val) => val.value.length > 0, {
       message: "Departemen wajib dipilih",
-      path: [], // penting: bikin error nempel di department_id, bukan department_id.value
+      path: [],
     }),
 
   description: z.string().optional(),

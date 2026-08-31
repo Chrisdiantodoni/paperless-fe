@@ -12,6 +12,7 @@ import { useMailData } from "@/hooks/queries/use-mail-data"
 import { QueryClient } from "@tanstack/react-query"
 import { listRequestQuerySchema } from "@/schema/mail/schema"
 import {
+  AllDraftMailQueryOptions,
   allMailQueryOptions,
   allSentMailQueryOptions,
   useMailDetail,
@@ -20,7 +21,7 @@ import {
 import type { LaravelPaginationData } from "@workspace/types/api"
 import type { AllMailProps } from "@workspace/types/mail"
 import { getMailDetails } from "@/server/mails"
-import type { MailFilterState } from "@/components/mail"
+import type { MailFilterState } from "@/components/mail/MailHeader"
 
 export const Route = createFileRoute("/_dashboard/mail/user-mails/")({
   validateSearch: zodValidator(listRequestQuerySchema),
@@ -29,8 +30,10 @@ export const Route = createFileRoute("/_dashboard/mail/user-mails/")({
     let data: LaravelPaginationData<AllMailProps[]>
     if (search.type === "all") {
       data = await queryClient.ensureQueryData(allMailQueryOptions(search))
-    } else {
+    } else if (search.type === "sent") {
       data = await queryClient.ensureQueryData(allSentMailQueryOptions(search))
+    } else {
+      data = await queryClient.ensureQueryData(AllDraftMailQueryOptions(search))
     }
     return { data }
   },
@@ -84,7 +87,6 @@ function RouteComponent() {
 
   const handleNavChange = (nav: "all" | "sent" | "draft") => {
     setActiveNav(nav)
-    if (nav === "draft") return
     navigate({
       search: (prev) => ({
         ...prev,

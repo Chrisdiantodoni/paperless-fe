@@ -2,12 +2,12 @@ import { z } from "zod"
 
 export const listRequestQuerySchema = z.object({
   page: z.coerce.number().int().min(1).optional(),
-  per_page: z.coerce.number().int().min(1).max(100).optional().default(7),
+  per_page: z.coerce.number().int().min(1).max(100).optional().default(10),
   search: z.string().max(100).optional(),
 
   start_date: z.string().datetime().optional(),
   end_date: z.string().datetime().optional(),
-  type: z.enum(["all", "sent"]).default("all"),
+  type: z.enum(["all", "sent", "draft"]).default("all"),
 
   request_type: z
     .enum([
@@ -29,3 +29,4 @@ export const listRequestQuerySchema = z.object({
 })
 
 export type ListRequestQueryMail = z.infer<typeof listRequestQuerySchema>
+// masuk keluar draft

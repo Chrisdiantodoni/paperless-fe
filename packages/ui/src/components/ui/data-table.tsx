@@ -1,5 +1,4 @@
 // app/components/data-table.tsx
-import type { ColumnDef } from "@tanstack/react-table"
 import {
   flexRender,
   getCoreRowModel,
@@ -14,10 +13,11 @@ import {
   TableRow,
 } from "@workspace/ui/components/ui/table"
 import { DataTableSkeleton } from "./data-table-skeleton"
+import type { ColumnDef } from "@tanstack/react-table"
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+  columns: Array<ColumnDef<TData, TValue>>
+  data: Array<TData>
   isFetching?: boolean // Tambahkan prop penanda refetching
 }
 

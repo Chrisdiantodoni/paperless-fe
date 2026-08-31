@@ -33,7 +33,7 @@ export const Route = createRootRouteWithContext<RouteContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Paperless Admin Top Agent",
+        title: "Paperless User Top Agent",
       },
     ],
     links: [

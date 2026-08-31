@@ -39,7 +39,7 @@ export function SelectField({
         {required && <span className="text-destructive"> *</span>}
       </Label>
       <Select
-        value={field.state.value || undefined}
+        value={field.state.value}
         onValueChange={(value) => field.handleChange(value)}
       >
         <SelectTrigger

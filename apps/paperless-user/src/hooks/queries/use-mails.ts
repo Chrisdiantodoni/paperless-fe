@@ -1,6 +1,11 @@
 import { mailKeys } from "@/keys/mails"
 import type { listRequestQuerySchema } from "@/schema/mail/schema"
-import { getMailDetails, getMails, getSentMails } from "@/server/mails"
+import {
+  getDraftMails,
+  getMailDetails,
+  getMails,
+  getSentMails,
+} from "@/server/mails"
 import {
   keepPreviousData,
   queryOptions,
@@ -19,11 +24,16 @@ export const mailListQueryOptions = (
   initialData?: LaravelPaginationData<AllMailProps[]>
 ) => {
   const isSent = search.type === "sent"
+  const isDraft = search.type === "draft"
 
   return queryOptions({
     queryKey: mailKeys.list(search),
     queryFn: () =>
-      isSent ? getSentMails({ data: search }) : getMails({ data: search }),
+      isSent
+        ? getSentMails({ data: search })
+        : isDraft
+          ? getDraftMails({ data: search })
+          : getMails({ data: search }),
     placeholderData: keepPreviousData,
     staleTime: 30_000,
     initialData,
@@ -40,6 +50,11 @@ export const allSentMailQueryOptions = (
   search: ListMailQuerySearch,
   initialData?: LaravelPaginationData<AllMailProps[]>
 ) => mailListQueryOptions({ ...search, type: "sent" }, initialData)
+
+export const AllDraftMailQueryOptions = (
+  search: ListMailQuerySearch,
+  initialData?: LaravelPaginationData<AllMailProps[]>
+) => mailListQueryOptions({ ...search, type: "draft" }, initialData)
 
 export function useMailList(
   search: ListMailQuerySearch,

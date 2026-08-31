@@ -21,6 +21,13 @@ class mails {
     const res = await api.get(`/mail/user-mail/user-mails/${id}`)
     return res.data
   }
+
+  async getDraftMail(
+    params?: Record<string, string | number | undefined>
+  ): Promise<APIResponse<LaravelPaginationData<AllMailProps[]>>> {
+    const res = await api.get("/mail/user-mail/user-drafts", { params })
+    return res.data
+  }
 }
 
 export default new mails()

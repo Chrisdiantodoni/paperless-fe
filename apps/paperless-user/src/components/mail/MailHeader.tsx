@@ -12,11 +12,7 @@ import {
 import { Button } from "@workspace/ui/components/ui/button"
 import { Input } from "@workspace/ui/components/ui/input"
 import { Badge } from "@workspace/ui/components/ui/badge"
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/ui/tabs"
 import {
   Popover,
   PopoverContent,
@@ -29,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/ui/select"
+import CreateMail from "../create/create-mail"
 
 export type MailNav = "all" | "sent" | "draft"
 
@@ -54,7 +51,7 @@ export interface MailHeaderProps {
 }
 
 const NAV_ITEMS: { value: MailNav; label: string; icon: typeof Inbox }[] = [
-  { value: "all", label: "Masuk", icon: Inbox },
+  { value: "all", label: "Semua Mail", icon: Inbox },
   { value: "sent", label: "Terkirim", icon: Send },
   { value: "draft", label: "Draft", icon: FileText },
 ]
@@ -108,9 +105,12 @@ export function MailHeader({
   }
 
   const activeCount =
-    [filters.request_type, filters.status, filters.sort_by, filters.sort_dir]
-      .filter(Boolean).length +
-    (filters.start_date || filters.end_date ? 1 : 0)
+    [
+      filters.request_type,
+      filters.status,
+      filters.sort_by,
+      filters.sort_dir,
+    ].filter(Boolean).length + (filters.start_date || filters.end_date ? 1 : 0)
 
   const activeLabel =
     NAV_ITEMS.find((item) => item.value === activeNav)?.label ?? "Semua Surat"
@@ -127,10 +127,7 @@ export function MailHeader({
       <header className="flex flex-col gap-4 border-b bg-background p-4 lg:flex-row lg:items-center lg:justify-between">
         {/* Left: Compose button & nav tabs */}
         <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={onCompose} className="gap-2 shadow-sm">
-            <Plus className="h-4 w-4" />
-            <span>Buat</span>
-          </Button>
+          <CreateMail />
           <div className="mx-1 hidden h-4 w-[1px] bg-border sm:block" />
           <Tabs
             value={activeNav}
@@ -232,7 +229,9 @@ export function MailHeader({
                       {STATUS_OPTIONS.map((item) => (
                         <SelectItem key={item.value} value={item.value}>
                           <span className="flex items-center gap-2">
-                            <span className={`size-2 rounded-full ${item.dot}`} />
+                            <span
+                              className={`size-2 rounded-full ${item.dot}`}
+                            />
                             {item.label}
                           </span>
                         </SelectItem>

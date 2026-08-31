@@ -1,5 +1,5 @@
-import { ErrorAPI, ErrorApiTypes } from "./api"
+import type { ErrorAPI, ErrorApiTypes } from "./api"
 
-export { ErrorAPI, ErrorApiTypes }
+export type { ErrorAPI, ErrorApiTypes }
 
 export type SelectValue = { value: string; label: string }
