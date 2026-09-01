@@ -12,15 +12,15 @@ import {
 import { useAppForm } from "@workspace/forms/src/forms"
 import { Field, FieldGroup } from "@workspace/ui/components/ui/field"
 import { Label } from "@workspace/ui/components/ui/label"
-import { Select } from "@workspace/ui/components/ui/select"
 import { Plus } from "lucide-react"
-import {
-  createMailTemplateSchema,
-  sendMailSchema,
-} from "@/schema/mail/create-mail.schema"
+import { createMailTemplateSchema } from "@/schema/mail/create-mail.schema"
 import { DepartmentCombobox } from "../select/select-departments"
+import { StaticTemplateCombobox } from "../select/select-static-template"
+import { DynamicTemplateCombobox } from "../select/select-dynamic-template"
 import type { SelectValue } from "@workspace/types"
 import { useStore } from "@tanstack/react-form"
+import { useEffect } from "react"
+import { useNavigate } from "@tanstack/react-router"
 
 const options = [
   {
@@ -46,6 +46,8 @@ const options = [
 ]
 
 export default function CreateMail() {
+  const navigate = useNavigate()
+
   const form = useAppForm({
     defaultValues: {
       request_type: "",
@@ -55,12 +57,28 @@ export default function CreateMail() {
     validators: {
       onSubmit: createMailTemplateSchema,
     },
-    onSubmit: async (data) => {
-      console.log({ data })
+    onSubmit: async ({ value }) => {
+      navigate({
+        to: "/mail/user-mails/create",
+        search: {
+          request_type: value.request_type,
+          department: value.department,
+          template: value.template,
+        },
+      })
     },
   })
 
   const formType = useStore(form.store, (state) => state.values.request_type)
+  const departmentValue = useStore(
+    form.store,
+    (state) => state.values.department
+  )
+
+  // Reset template when department or request_type changes
+  useEffect(() => {
+    form.setFieldValue("template", { value: "", label: "" })
+  }, [formType, departmentValue])
 
   return (
     <Dialog>
@@ -83,10 +101,10 @@ export default function CreateMail() {
               Pilih Departemen dan Template untuk pembuatan mail.
             </DialogDescription>
           </DialogHeader>
-          <FieldGroup>
+          <FieldGroup className="gap-2 py-4">
             <Field>
               <form.AppField name="request_type">
-                {(field: any) => (
+                {(field) => (
                   <field.SelectField
                     label="Pilih Request"
                     options={options}
@@ -97,33 +115,81 @@ export default function CreateMail() {
             </Field>
 
             <form.Field name="department">
-              {(field: any) => {
+              {(field) => {
                 const errors = field.state.meta.errors
                 const showError =
                   field.state.meta.isTouched && errors.length > 0
                 return (
-                  <div className="flex w-full flex-col space-y-2">
+                  <div className="flex w-full flex-col space-y-1.5">
                     <Label required>Kategori / Dept</Label>
-                    <div className="flex w-full flex-col">
-                      <DepartmentCombobox
-                        value={field.state.value as SelectValue}
-                        onChange={field.handleChange}
-                        onBlur={field.handleBlur}
-                        invalid={showError}
-                        error={
-                          showError
-                            ? String(errors[0].message ?? "")
-                            : undefined
-                        }
-                      />
-                    </div>
+                    <DepartmentCombobox
+                      value={field.state.value}
+                      onChange={field.handleChange}
+                      onBlur={field.handleBlur}
+                      invalid={showError}
+                      error={
+                        showError ? String(errors[0]?.message ?? "") : undefined
+                      }
+                    />
                   </div>
                 )
               }}
             </form.Field>
+
+            {formType && (
+              <form.Field name="template">
+                {(field) => {
+                  const errors = field.state.meta.errors
+                  const showError =
+                    field.state.meta.isTouched && errors.length > 0
+                  const departmentValue = form.getFieldValue("department")
+                  const departmentId =
+                    typeof departmentValue === "object" && departmentValue.value
+                      ? departmentValue.value
+                      : ""
+
+                  // Hide template field if department not selected yet
+                  if (!departmentId) {
+                    return null
+                  }
+
+                  return (
+                    <div className="mt-1 flex w-full flex-col space-y-1.5">
+                      <Label required>Template</Label>
+                      {formType === "dynamic" ? (
+                        <DynamicTemplateCombobox
+                          value={field.state.value}
+                          onChange={field.handleChange}
+                          onBlur={field.handleBlur}
+                          departmentId={departmentId}
+                          invalid={showError}
+                          error={
+                            showError
+                              ? String(errors[0]?.message ?? "")
+                              : undefined
+                          }
+                        />
+                      ) : (
+                        <StaticTemplateCombobox
+                          value={field.state.value as SelectValue}
+                          onChange={field.handleChange}
+                          onBlur={field.handleBlur}
+                          departmentId={departmentId}
+                          invalid={showError}
+                          error={
+                            showError
+                              ? String(errors[0]?.message ?? "")
+                              : undefined
+                          }
+                        />
+                      )}
+                    </div>
+                  )
+                }}
+              </form.Field>
+            )}
           </FieldGroup>
-          {formType === "dynamic" ? <div>Dynamic</div> : null}
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>

@@ -119,6 +119,24 @@ class MasterService {
     const res = await api.delete(`/mail/dynamic/dynamic-mail-templates/${id}`)
     return res.data
   }
+
+  async getObligatedDynamicTemplate(
+    params?: Record<string, string | number | undefined | boolean>
+  ): Promise<APIResponse<LaravelPaginationData<IDynamicMailTemplate[]>>> {
+    const res = await api.get("/mail/dynamic/obligated-templates", {
+      params,
+    })
+    return res.data
+  }
+
+  async getObligatedStaticTemplate(
+    params?: Record<string, string | number | undefined | boolean>
+  ): Promise<APIResponse<LaravelPaginationData<StaticMailTemplate[]>>> {
+    const res = await api.get(`/mail/static/obligated-templates`, {
+      params,
+    })
+    return res.data
+  }
 }
 
 export default new MasterService()

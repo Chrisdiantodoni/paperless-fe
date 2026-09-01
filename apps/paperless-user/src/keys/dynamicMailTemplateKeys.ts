@@ -8,6 +8,6 @@ export const dynamicMailTemplateKeys = {
   },
   details: () => [...dynamicMailTemplateKeys.all, "detail"] as const,
   detail: (id: string) => [...dynamicMailTemplateKeys.details(), id] as const,
-  search: (query: string) =>
-    [...dynamicMailTemplateKeys.all, "search", query] as const,
+  search: (query: string, deps?: DynamicMailTemplateSearch) =>
+    [...dynamicMailTemplateKeys.all, "search", query, deps] as const,
 }

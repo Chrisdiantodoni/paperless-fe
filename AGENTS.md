@@ -27,3 +27,38 @@ pnpm + Turborepo monorepo. TanStack Start + Router (React 19, SSR), Tailwind v4,
 - Prettier: no semicolons, double quotes, `prettier-plugin-tailwindcss` for class sorting
 - ESLint uses `@tanstack/eslint-config` (per-package, no root config)
 - `.env*` gitignored; admin needs `VITE_BASE_URL` + `VITE_PORTAL_URL` (see `apps/paperless-admin/.env`)
+
+## Graphify Workflow
+
+Graphify generates code knowledge graphs per-app (not at root) for focused context and faster queries.
+
+### Generate/Regenerate Graphs
+
+After structural changes (new features, major refactors, new components):
+
+```bash
+graphify apps/paperless-admin --code-only
+graphify cluster-only apps/paperless-admin
+
+graphify apps/paperless-user --code-only
+graphify cluster-only apps/paperless-user
+```
+
+### Graph Outputs
+
+- `apps/paperless-admin/graphify-out/` — 564 nodes, 62 communities
+- `apps/paperless-user/graphify-out/` — 498 nodes, 27 communities
+- Each contains: `graph.json`, `graph.html`, `GRAPH_REPORT.md`, `.graphify_analysis.json`
+
+### Query Usage
+
+Use graphify query tools within each app's context:
+- `graphify query "search term" apps/paperless-admin/graphify-out`
+- `graphify explain "symbol" apps/paperless-admin/graphify-out`
+- `graphify path "from" "to" apps/paperless-admin/graphify-out`
+
+### Best Practices
+
+- Regenerate graphify after: new file structures, major component refactors, dependency changes
+- Keep `graphify-out/` gitignored (auto-regenerated, not source)
+- Use app-specific graphs to avoid noise from cross-app code

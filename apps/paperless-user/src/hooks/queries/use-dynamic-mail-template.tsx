@@ -3,11 +3,13 @@ import type { DynamicMailTemplateSearch } from "@/schema/list.schema"
 import {
   deleteDynamicMailTemplate,
   getDynamicMailTemplate,
+  getObligatedDynamicTemplate,
 } from "@/server/master"
 import {
   keepPreviousData,
   queryOptions,
   useMutation,
+  useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query"
@@ -50,5 +52,28 @@ export function useDeleteDynamicMailTemplateMutation() {
     onError: (error) => {
       toast.error(error.message || "Terjadi kesalahan saat menghapus data")
     },
+  })
+}
+
+export function useDynamicMailTemplateSearch(
+  searchQuery: string,
+  isDropdownOpen: boolean,
+  deps?: DynamicMailTemplateSearch
+) {
+  return useQuery({
+    queryKey: dynamicMailTemplateKeys.search(searchQuery, deps),
+    queryFn: async () => {
+      try {
+        console.log('[useDynamicMailTemplateSearch] Calling with deps:', deps)
+        const result = await getObligatedDynamicTemplate({ data: deps! })
+        console.log('[useDynamicMailTemplateSearch] Success:', result)
+        return result
+      } catch (error) {
+        console.error('[useDynamicMailTemplateSearch] Error:', error)
+        throw error
+      }
+    },
+    enabled: (isDropdownOpen || searchQuery.length > 0) && deps !== undefined,
+    staleTime: 1000 * 60 * 5,
   })
 }

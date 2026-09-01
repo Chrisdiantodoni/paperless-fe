@@ -47,36 +47,36 @@ function RouteComponent() {
   const {
     search: searchQuery,
     is_active,
-    department,
-    branch,
-    position,
+    department_id,
+    branch_id,
+    position_id,
     department_label,
     branch_label,
     position_label,
   } = search
 
   const [branchValue, setBranchValue] = useState<string | ComboboxValue>({
-    value: branch,
+    value: branch_id,
     label: branch_label,
   })
   const [departmentValue, setDepartmentValue] = useState<
     string | ComboboxValue
-  >(department)
+  >(department_id)
 
   const [positionValue, setPositionValue] = useState<string | ComboboxValue>(
-    position
+    position_id
   )
   const [isActiveValue, setIsActiveValue] = useState(is_active)
 
   useEffect(() => {
-    setBranchValue({ value: branch, label: branch_label })
-  }, [branch, branch_label])
+    setBranchValue({ value: branch_id, label: branch_label })
+  }, [branch_id, branch_label])
   useEffect(() => {
-    setPositionValue({ value: position, label: position_label })
-  }, [position, position_label])
+    setPositionValue({ value: position_id, label: position_label })
+  }, [position_id, position_label])
   useEffect(() => {
-    setDepartmentValue({ value: department, label: department_label })
-  }, [department, department_label])
+    setDepartmentValue({ value: department_id, label: department_label })
+  }, [department_id, department_label])
   useEffect(() => setIsActiveValue(is_active), [is_active])
 
   const { data, isFetching } = useDynamicMailTemplate(search, initialData)
@@ -163,7 +163,7 @@ function RouteComponent() {
                 navigate({
                   search: (prev) => ({
                     ...prev,
-                    branch: val.value,
+                    branch_id: val.value,
                     branch_label: val.label,
                     page: 1,
                   }),
@@ -179,7 +179,7 @@ function RouteComponent() {
                 navigate({
                   search: (prev) => ({
                     ...prev,
-                    department: val.value,
+                    department_id: val.value,
                     department_label: val.label,
                     page: 1,
                   }),
@@ -195,7 +195,7 @@ function RouteComponent() {
                 navigate({
                   search: (prev) => ({
                     ...prev,
-                    position: val.value,
+                    position_id: val.value,
                     position_label: val.label,
                     page: 1,
                   }),

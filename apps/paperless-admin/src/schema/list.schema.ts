@@ -13,11 +13,11 @@ export const staticMailTemplateSearchSchema = z.object({
   page: z.number().catch(1),
   search: z.string().catch(""),
   per_page: z.number().catch(10),
-  branch: z.string().catch(""),
+  branch_id: z.string().catch(""),
   branch_label: z.string().catch(""),
-  department: z.string().catch(""),
+  department_id: z.string().catch(""),
   department_label: z.string().catch(""),
-  position: z.string().catch(""),
+  position_id: z.string().catch(""),
   position_label: z.string().catch(""),
   is_active: z
     .preprocess(
@@ -39,11 +39,11 @@ export const dynamicMailTemplateSearchSchema = z.object({
   page: z.number().catch(1),
   search: z.string().catch(""),
   per_page: z.number().catch(10),
-  branch: z.string().catch(""),
+  branch_id: z.string().catch(""),
   branch_label: z.string().catch(""),
-  department: z.string().catch(""),
+  department_id: z.string().catch(""),
   department_label: z.string().catch(""),
-  position: z.string().catch(""),
+  position_id: z.string().catch(""),
   position_label: z.string().catch(""),
   is_active: z
     .preprocess(
