@@ -55,3 +55,43 @@ export interface RequestData {
   quota_deducted: string
   notes: string
 }
+
+export interface ObligatedTemplate {
+  id: string
+  type: string
+  request_type: string
+  name: string
+  code: string
+  description: string
+  is_active: string
+  department_id: string
+  department: string
+  form_schema: string
+  content: string
+  branches: string
+  departments: string
+  positions: string
+  recipients: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ObligatedTemplateListParams {
+  page?: number
+  per_page?: number
+  search?: string
+  type?: string
+  request_type?: string
+  category_id?: string
+  is_active?: string
+}
+
+export interface ObligatedTemplateListResponse {
+  data: ObligatedTemplate[]
+  meta: {
+    current_page: number
+    per_page: number
+    total: number
+    last_page: number
+  }
+}

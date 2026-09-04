@@ -22,6 +22,10 @@ const recipientItemSchema = z.object({
 export const staticMailTemplateFormSchema = z.object({
   name: z.string().min(1, { message: "Nama template wajib diisi" }).max(255),
   code: z.string().min(1, { message: "Kode wajib diisi" }).max(50),
+  request_type: z.enum(
+    ["leave_request", "permit_request", "absence_request", "overtime_request"],
+    { message: "Tipe permintaan wajib dipilih" }
+  ),
   department_id: z
     .object({
       value: z.string(),
@@ -59,6 +63,7 @@ const emptySelectValue = { value: "", label: "" }
 export const emptyStaticMailTemplateValues: StaticMailTemplateFormSchema = {
   name: "",
   code: "",
+  request_type: "leave_request",
   description: "",
   content: "",
   department_id: { ...emptySelectValue },

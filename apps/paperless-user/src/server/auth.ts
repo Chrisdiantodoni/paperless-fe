@@ -28,6 +28,12 @@ export const verifySSOTicket = createServerFn({ method: "POST" })
     }
   })
 
+export const setTicketAsSession = createServerFn({ method: "POST" })
+  .validator(verifySSOTicketSchema)
+  .handler(async ({ data }): Promise<void> => {
+    setSessionCookie(data.ticket)
+  })
+
 export const getCurrentUser = createServerFn({ method: "GET" }).handler(
   async (): Promise<UserData> => {
     try {

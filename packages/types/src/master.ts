@@ -56,6 +56,7 @@ export interface StaticMailTemplate {
   department: string
   is_active: string
   content: string
+  request_type: "leave_request" | "permit_request" | "absence_request" | "overtime_request"
   branches: Branch[]
   departments: Department[]
   positions: Position[]

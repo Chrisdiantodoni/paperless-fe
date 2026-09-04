@@ -1,6 +1,7 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
 import { DevTicketForm } from "@workspace/ui/components/auth/dev-ticket-form"
 import { verifySSOTicket } from "@/server/auth"
+import sso from "@/services/API/sso"
 
 export const Route = createFileRoute("/auth/dev-ticket")({
   component: DevTicketPage,
@@ -24,5 +25,14 @@ function DevTicketPage() {
     }
   }
 
-  return <DevTicketForm onSubmitTicket={handleSubmitTicket} />
+  const handleGenerateTicket = async (): Promise<string> => {
+    const portalId = import.meta.env.VITE_PORTAL_ID
+    if (!portalId) {
+      throw new Error("VITE_PORTAL_ID tidak ditemukan dalam environment variables.")
+    }
+    const { ticket } = await sso.generateTicket(portalId)
+    return ticket
+  }
+
+  return <DevTicketForm onSubmitTicket={handleSubmitTicket} onGenerateTicket={handleGenerateTicket} />
 }

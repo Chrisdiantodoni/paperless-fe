@@ -1,5 +1,6 @@
 import { handleApiError } from "@/lib/handle-api-error"
 import { listRequestQuerySchema } from "@/schema/mail/schema"
+import { obligatedTemplateListSchema } from "@/schema/mail/obligated-template.schema"
 import { createServerFn } from "@tanstack/react-start"
 import mails from "@/services/API/mail"
 
@@ -42,6 +43,17 @@ export const getMailDetails = createServerFn({ method: "POST" })
     try {
       const response = await mails.getMailDetails(data)
       return response.data
+    } catch (error: any) {
+      handleApiError(error)
+    }
+  })
+
+export const getObligatedTemplates = createServerFn({ method: "GET" })
+  .validator(obligatedTemplateListSchema)
+  .handler(async ({ data }) => {
+    try {
+      const response = await mails.getObligatedTemplates(data)
+      return response
     } catch (error: any) {
       handleApiError(error)
     }

@@ -49,6 +49,7 @@ function RouteComponent() {
 
   const initialValues: StaticMailTemplateFormSchema = {
     ...resStaticMailTemplate,
+    request_type: resStaticMailTemplate.request_type || "leave_request",
     description: resStaticMailTemplate.description ?? "",
     department_id: {
       label: resStaticMailTemplate.department,

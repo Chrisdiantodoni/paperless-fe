@@ -1,6 +1,10 @@
 import type { APIResponse, LaravelPaginationData } from "@workspace/types/api"
 import { api } from "../api"
 import type { AllMailProps } from "@workspace/types/mail"
+import type {
+  ObligatedTemplateListParams,
+  ObligatedTemplateListResponse,
+} from "@workspace/types"
 
 class mails {
   async getMail(
@@ -27,6 +31,13 @@ class mails {
   ): Promise<APIResponse<LaravelPaginationData<AllMailProps[]>>> {
     const res = await api.get("/mail/user-mail/user-drafts", { params })
     return res.data
+  }
+
+  async getObligatedTemplates(
+    params?: ObligatedTemplateListParams
+  ): Promise<ObligatedTemplateListResponse> {
+    const res = await api.get("/mail/obligated-templates", { params })
+    return res.data.data
   }
 }
 

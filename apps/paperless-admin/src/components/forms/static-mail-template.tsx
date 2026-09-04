@@ -294,6 +294,20 @@ const TemplateFormFields = memo(function TemplateFormFields({
                   <field.TextField label="Kode Template" required />
                 )}
               </form.AppField>
+              <form.AppField name="request_type">
+                {(field: any) => (
+                  <field.SelectField
+                    label="Tipe Permintaan"
+                    required
+                    options={[
+                      { value: "leave_request", label: "Cuti" },
+                      { value: "permit_request", label: "Izin" },
+                      { value: "absence_request", label: "Absen" },
+                      { value: "overtime_request", label: "Lembur" },
+                    ]}
+                  />
+                )}
+              </form.AppField>
               <form.Field name="department_id">
                 {(field: any) => {
                   const errors = field.state.meta.errors
