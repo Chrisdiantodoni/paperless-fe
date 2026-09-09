@@ -1,6 +1,6 @@
 "use client"
 
-import { useId, useRef, useState } from "react"
+import { useId, useRef, useState, useEffect } from "react"
 import { useStore } from "@tanstack/react-form"
 import { FileIcon, Upload, X, Eye } from "lucide-react"
 import { useFieldContext } from "../forms/form-context"
@@ -10,12 +10,20 @@ import { Button } from "@workspace/ui/components/ui/button"
 import { FilePreviewModal } from "@workspace/ui/components/ui/file-preview-modal"
 import { getErrorMessage } from "../utils/get-error-message"
 
+interface FileMetadata {
+  name: string
+  size: number
+  type: string
+  lastModified: number
+}
+
 interface FileUploadFieldProps {
   label: string
   accept?: string
   multiple?: boolean
   maxSizeMb?: number
   required?: boolean
+  onFilesChange?: (files: File[]) => void
 }
 
 export function FileUploadField({
@@ -24,11 +32,13 @@ export function FileUploadField({
   multiple = false,
   maxSizeMb = 10,
   required = false,
+  onFilesChange,
 }: FileUploadFieldProps) {
-  const field = useFieldContext<File[]>()
+  const field = useFieldContext<FileMetadata[]>()
   const id = useId()
   const errorId = `${id}-error`
   const inputRef = useRef<HTMLInputElement>(null)
+  const filesRef = useRef<File[]>([])
   const errors = useStore(field.store, (state) => state.meta.errors)
   const [previewFile, setPreviewFile] = useState<File | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
@@ -37,22 +47,44 @@ export function FileUploadField({
     return file.type.startsWith("image/") || file.type === "application/pdf"
   }
 
+  useEffect(() => {
+    if (onFilesChange) {
+      onFilesChange(filesRef.current)
+    }
+  }, [field.state.value])
+
   function addFiles(fileList: FileList | null) {
     if (!fileList) return
     const incoming = Array.from(fileList)
+    const currentValue = field.state.value || []
+    const currentFiles = filesRef.current || []
+    
+    const newMetadata = incoming.map(f => ({
+      name: f.name,
+      size: f.size,
+      type: f.type,
+      lastModified: f.lastModified,
+    }))
+    
+    filesRef.current = multiple ? [...currentFiles, ...incoming] : incoming
     field.handleChange(
-      multiple ? [...field.state.value, ...incoming] : incoming
+      multiple ? [...currentValue, ...newMetadata] : newMetadata
     )
     field.validate("change")
   }
 
   function removeFile(index: number) {
-    field.handleChange(field.state.value.filter((_, i) => i !== index))
+    const currentValue = field.state.value || []
+    filesRef.current = filesRef.current.filter((_, i) => i !== index)
+    field.handleChange(currentValue.filter((_, i) => i !== index))
   }
 
-  const handlePreview = (file: File) => {
-    setPreviewFile(file)
-    setIsPreviewOpen(true)
+  const handlePreview = (index: number) => {
+    const file = filesRef.current[index]
+    if (file) {
+      setPreviewFile(file)
+      setIsPreviewOpen(true)
+    }
   }
 
   return (
@@ -102,43 +134,46 @@ export function FileUploadField({
         </p>
       </div>
 
-      {field.state.value.length > 0 && (
+      {(field.state.value || []).length > 0 && (
         <ul className="space-y-1">
-          {field.state.value.map((file, index) => (
-            <li
-              key={`${file.name}-${index}`}
-              className="flex items-center justify-between rounded-md border px-3 py-1.5 text-sm"
-            >
-              <span className="flex min-w-0 items-center gap-2">
-                <FileIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span className="truncate">{file.name}</span>
-              </span>
-              <div className="flex gap-1">
-                {isPreviewable(file) && (
+          {(field.state.value || []).map((metadata, index) => {
+            const file = filesRef.current[index]
+            return (
+              <li
+                key={`${metadata.name}-${index}`}
+                className="flex items-center justify-between rounded-md border px-3 py-1.5 text-sm"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <FileIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{metadata.name}</span>
+                </span>
+                <div className="flex gap-1">
+                  {file && isPreviewable(file) && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => handlePreview(index)}
+                      aria-label={`Preview ${metadata.name}`}
+                    >
+                      <Eye className="h-3 w-3" />
+                    </Button>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6"
-                    onClick={() => handlePreview(file)}
-                    aria-label={`Preview ${file.name}`}
+                    onClick={() => removeFile(index)}
+                    aria-label={`Remove ${metadata.name}`}
                   >
-                    <Eye className="h-3 w-3" />
+                    <X className="h-3 w-3" />
                   </Button>
-                )}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={() => removeFile(index)}
-                  aria-label={`Remove ${file.name}`}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            </li>
-          ))}
+                </div>
+              </li>
+            )
+          })}
         </ul>
       )}
 

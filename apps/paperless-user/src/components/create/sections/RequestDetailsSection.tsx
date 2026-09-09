@@ -10,17 +10,18 @@ import { PermitRequestForm } from "@/components/create/permit-request-form"
 import { AbsenceRequestForm } from "@/components/create/absence-request-form"
 import { OvertimeRequestForm } from "@/components/create/overtime-request-form"
 import { DynamicFormRenderer } from "@/components/create/dynamic-form-renderer"
+import type { IDynamicMailTemplate } from "@workspace/types"
 
 export interface RequestDetailsSectionProps {
   form: any
   requestType: string
-  formSchema?: any[]
+  template?: IDynamicMailTemplate
 }
 
 export function RequestDetailsSection({
   form,
   requestType,
-  formSchema = [],
+  template,
 }: RequestDetailsSectionProps) {
   const getRequestTypeLabel = (type: string) => {
     switch (type) {
@@ -33,6 +34,8 @@ export function RequestDetailsSection({
       case "overtime_request":
         return "Detail Lembur"
       case "dynamic":
+        return "Detail Permohonan"
+      case "dynamic_template":
         return "Detail Permohonan"
       default:
         return "Detail"
@@ -58,8 +61,8 @@ export function RequestDetailsSection({
         {requestType === "overtime_request" && (
           <OvertimeRequestForm form={form} />
         )}
-        {requestType === "dynamic" && (
-          <DynamicFormRenderer form={form} formSchema={formSchema} />
+        {requestType === "dynamic_template" && (
+          <DynamicFormRenderer form={form} template={template!} />
         )}
       </CardContent>
     </Card>

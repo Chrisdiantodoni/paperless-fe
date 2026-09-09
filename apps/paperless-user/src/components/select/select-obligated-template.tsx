@@ -111,6 +111,7 @@ export function ObligatedTemplateCombobox({
                     key={template.id}
                     value={template.id}
                     onSelect={() => {
+                      console.log(template)
                       onChange(template)
                       setOpen(false)
                     }}

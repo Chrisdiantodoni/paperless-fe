@@ -583,6 +583,69 @@ export function EditorToolbar({
               >
                 Delete table
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={!inTable}
+                onSelect={() => {
+                  const { state, dispatch } = editor.view
+                  const { selection } = state
+                  const cells = editor.state.schema.nodes.tableCell
+                  const headers = editor.state.schema.nodes.tableHeader
+
+                  const transaction = state.tr
+                  let modified = false
+
+                  state.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
+                    if (node.type === cells || node.type === headers) {
+                      const attrs = { ...node.attrs }
+                      delete attrs.colwidth
+                      transaction.setNodeMarkup(pos, undefined, attrs)
+                      modified = true
+                    }
+                  })
+
+                  if (!modified) {
+                    let tableNode: any = null
+                    let tablePos = 0
+                    state.doc.nodesBetween(0, state.doc.content.size, (node, pos) => {
+                      if (node.type.name === "table") {
+                        if (pos <= selection.from && pos + node.nodeSize >= selection.to) {
+                          tableNode = node
+                          tablePos = pos
+                          return false
+                        }
+                      }
+                    })
+
+                    if (tableNode) {
+                      tableNode.descendants((node: any, pos: number) => {
+                        const absolutePos = tablePos + pos + 1
+                        if (node.type === cells || node.type === headers) {
+                          const attrs = { ...node.attrs }
+                          delete attrs.colwidth
+                          transaction.setNodeMarkup(absolutePos, undefined, attrs)
+                        }
+                      })
+                    }
+                  }
+
+                  dispatch(transaction)
+                  editor.chain().focus().run()
+                }}
+              >
+                Auto width
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={!inTable}
+                onSelect={() => {
+                  const color = prompt("Cell background color (hex):", "#f3f4f6")
+                  if (color) {
+                    editor.chain().focus().setCellAttribute("backgroundColor", color).run()
+                  }
+                }}
+              >
+                Cell background color
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

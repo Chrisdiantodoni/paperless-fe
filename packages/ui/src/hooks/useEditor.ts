@@ -6,12 +6,10 @@ import { markdownToHtml } from "@workspace/ui/lib/markdown-utils"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
 import Image from "@tiptap/extension-image"
-import {
-  Table,
-  TableHeader,
-  TableCell,
-  TableRow,
-} from "@tiptap/extension-table"
+import { Table } from "@tiptap/extension-table"
+import { TableRow } from "@tiptap/extension-table-row"
+import { TableHeader } from "@tiptap/extension-table-header"
+import { TableCell } from "@tiptap/extension-table-cell"
 import Underline from "@tiptap/extension-underline"
 import { TextStyle, Color } from "@tiptap/extension-text-style"
 import TextAlign from "@tiptap/extension-text-align"
@@ -38,10 +36,34 @@ export function useEditor(initialContent?: string): Editor | null {
       }),
       Table.configure({
         resizable: true,
+        allowTableNodeSelection: true,
       }),
       TableRow,
-      TableHeader,
-      TableCell,
+      TableHeader.configure({
+        HTMLAttributes: {
+          style: "background-color: #f3f4f6;",
+        },
+      }),
+      TableCell.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            backgroundColor: {
+              default: null,
+              parseHTML: (element) =>
+                element.style.backgroundColor || null,
+              renderHTML: (attributes) => {
+                if (!attributes.backgroundColor) {
+                  return {}
+                }
+                return {
+                  style: `background-color: ${attributes.backgroundColor}`,
+                }
+              },
+            },
+          }
+        },
+      }),
       Underline,
       TextStyle,
       Color.configure({

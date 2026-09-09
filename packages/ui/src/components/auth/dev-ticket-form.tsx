@@ -44,7 +44,9 @@ export function DevTicketForm({
         const generatedTicket = await onGenerateTicket()
         setTicket(generatedTicket)
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal membuat tiket otomatis.")
+        setError(
+          err instanceof Error ? err.message : "Gagal membuat tiket otomatis."
+        )
       } finally {
         setGenerating(false)
       }
@@ -77,37 +79,43 @@ export function DevTicketForm({
         </div>
       )}
       <div className="flex min-h-screen w-full items-center justify-center bg-muted/40 p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-            <KeyRound className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <CardTitle className="text-lg">{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="dev-ticket">Ticket</Label>
-              <Input
-                id="dev-ticket"
-                type="text"
-                autoComplete="off"
-                placeholder="Paste ticket SSO..."
-                value={ticket}
-                onChange={(e) => setTicket(e.target.value)}
-                disabled={loading || generating}
-              />
+        <Card className="w-full max-w-sm">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+              <KeyRound className="h-6 w-6 text-muted-foreground" />
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={loading || generating}>
-              {(loading || generating) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {generating ? "Membuat tiket..." : "Masuk"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+            <CardTitle className="text-lg">{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="dev-ticket">Ticket</Label>
+                <Input
+                  id="dev-ticket"
+                  type="text"
+                  autoComplete="off"
+                  placeholder="Paste ticket SSO..."
+                  value={ticket}
+                  onChange={(e) => setTicket(e.target.value)}
+                  disabled={loading || generating}
+                />
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading || generating}
+              >
+                {(loading || generating) && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {generating ? "Membuat tiket..." : "Masuk"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </>
   )
 }

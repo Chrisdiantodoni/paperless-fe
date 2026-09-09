@@ -85,8 +85,8 @@ const TemplateFormFields = ({
   const fieldDefs = useStore(form.store, (s) => s.values.form_schema)
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      <div className="space-y-6 lg:col-span-2">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+      <div className="space-y-6 lg:col-span-3">
         <Card>
           <CardHeader>
             <CardTitle>Informasi Utama</CardTitle>
@@ -298,10 +298,7 @@ const TemplateFormFields = ({
               <div className="col-span-3">
                 <form.AppField name="content">
                   {(field: any) => (
-                    <field.RichTextEditorField
-                      label="Content"
-                      outputFormat="html"
-                    />
+                    <field.RichTextEditorField label="Content" />
                   )}
                 </form.AppField>
               </div>
@@ -463,7 +460,7 @@ export function DynamicMailTemplateForm({
       branchOptions: branches.map((b) => ({
         value: b.id,
         label: b.name_branch,
-        region: b.area.name_area,
+        regions: b.area.name_area,
       })),
       departmentOptions: departments.map((d) => ({
         value: d.id,

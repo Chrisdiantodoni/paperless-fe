@@ -4,15 +4,25 @@ import { Checkbox } from "@workspace/ui/components/ui/checkbox"
 import type { AllMailProps } from "@workspace/types/mail"
 import { getInitials } from "@workspace/ui/lib/utils"
 import { formatDate, getRequestTypeLabel } from "@workspace/utils"
+import { isMailReadByUser } from "@/utils/mail-helpers"
 
 export interface MailItemProps {
   mail: AllMailProps
   isSelected: boolean
+  currentUserId: string
+  localReadIds: Set<string>
   onSelect: (id: string) => void
 }
 
-export function MailItem({ mail, isSelected, onSelect }: MailItemProps) {
-  // Status mapping disesuaikan dengan kode Flutter
+export function MailItem({
+  mail,
+  isSelected,
+  currentUserId,
+  localReadIds,
+  onSelect,
+}: MailItemProps) {
+  const isRead =
+    localReadIds.has(mail.id) || isMailReadByUser(mail, currentUserId)
   const getBadgeClass = (status?: string) => {
     switch (status?.toLowerCase()) {
       case "approved":
@@ -49,22 +59,25 @@ export function MailItem({ mail, isSelected, onSelect }: MailItemProps) {
       }}
       className={`group relative flex w-full cursor-pointer items-start gap-3 border-b border-border p-3.5 text-left transition-colors hover:bg-muted/50 ${
         isSelected ? "bg-accent/60" : ""
-      }`}
+      } ${!isRead ? "bg-blue-50/30 dark:bg-blue-950/10" : ""}`}
     >
-      {/* Selection Checkbox & Avatar */}
+      {!isRead && (
+        <div className="absolute top-1/2 left-1 size-2 -translate-y-1/2 rounded-full bg-blue-500" />
+      )}
+
       <div className="flex items-center gap-2 pt-0.5">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
           {getInitials(mail.sent_by.name)}
         </div>
       </div>
 
-      {/* Main Mail Content */}
       <div className="min-w-0 flex-1">
-        {/* Header: Sender Name, Department & Date */}
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <p className="truncate text-sm font-semibold text-foreground">
+              <p
+                className={`truncate text-sm text-foreground ${!isRead ? "font-bold" : "font-semibold"}`}
+              >
                 {mail.sent_by?.name ?? "Pengirim Tidak Diketahui"}
               </p>
               {mail.sent_by?.department && (
@@ -73,7 +86,9 @@ export function MailItem({ mail, isSelected, onSelect }: MailItemProps) {
                 </span>
               )}
             </div>
-            <p className="truncate text-xs font-medium text-foreground/80">
+            <p
+              className={`truncate text-xs text-foreground/80 ${!isRead ? "font-semibold" : "font-medium"}`}
+            >
               {permitTitle}
             </p>
           </div>
@@ -83,7 +98,6 @@ export function MailItem({ mail, isSelected, onSelect }: MailItemProps) {
           </span>
         </div>
 
-        {/* Footer: Status Badge, Document Number & Branch */}
         <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-1.5">
             <Badge

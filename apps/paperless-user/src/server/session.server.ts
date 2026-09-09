@@ -4,6 +4,7 @@ import {
   setResponseHeader,
 } from "@tanstack/react-start/server"
 import { SESSION_COOKIE } from "@workspace/utils"
+
 const ONE_DAY = 60 * 60 * 24
 
 const secureFlag = import.meta.env.PROD ? "Secure" : ""
@@ -22,7 +23,7 @@ export function setSessionCookie(token: string) {
   )
 }
 
-export function clearSessionCookie() {
+export function clearSessionCookieServer() {
   setResponseHeader(
     "Set-Cookie",
     `${SESSION_COOKIE}=; HttpOnly; ${secureFlag ? `${secureFlag}; ` : ""}SameSite=Lax; Path=/; Max-Age=0`

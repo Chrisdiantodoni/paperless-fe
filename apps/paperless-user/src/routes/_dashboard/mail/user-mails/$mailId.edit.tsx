@@ -5,7 +5,7 @@ import { useUser } from "@/hooks/queries/use-user"
 import { handleApiError } from "@/lib/handle-api-error"
 import { Button } from "@workspace/ui/components/ui/button"
 import { toast } from "sonner"
-import { updateUserMail, deleteAttachment } from "@/server/mails"
+import { deleteAttachment, updateUserMail } from "@/server/mails"
 import { createMailPayloadSchema } from "@/schema/mail/create-mail-body.schema"
 import { getRequestTypeLabel } from "@workspace/utils"
 import { ArrowLeft } from "lucide-react"
@@ -17,8 +17,9 @@ import { AttachmentItem } from "@/components/mail/AttachmentItem"
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes"
 import { useStore } from "@tanstack/react-form"
 import { useMailDetail } from "@/hooks/queries/use-mails"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import type { AllMailProps } from "@workspace/types/mail"
+import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
 
 export const Route = createFileRoute(
   "/_dashboard/mail/user-mails/$mailId/edit"
@@ -26,9 +27,13 @@ export const Route = createFileRoute(
   component: RouteComponent,
 })
 
-function getDefaultFormValues(mail: AllMailProps & { mail_template?: { id: string } }) {
+function getDefaultFormValues(mail: AllMailProps) {
   const req = mail.request_data
-  const templateId = mail.mail_template?.id ?? ""
+
+  const formatTimeToHi = (time: string | null | undefined) => {
+    if (!time) return null
+    return time.slice(0, 5)
+  }
 
   return {
     request_type: req.type,
@@ -43,7 +48,6 @@ function getDefaultFormValues(mail: AllMailProps & { mail_template?: { id: strin
     leave_data:
       req.type === "leave_request"
         ? {
-            static_mail_template_id: templateId ?? "",
             start_date: req.start_date ?? "",
             end_date: req.end_date ?? "",
             days_taken: Number(req.quota_deducted) || 1,
@@ -55,13 +59,12 @@ function getDefaultFormValues(mail: AllMailProps & { mail_template?: { id: strin
     permit_data:
       req.type === "permit_request"
         ? {
-            static_mail_template_id: templateId ?? "",
-            date: req.date ? new Date(req.date).toISOString().split("T")[0] : "",
+            date: req.date ?? "",
             permit_type: (req.permit_type as any) ?? "Terlambat Masuk Kantor",
-            start_work_at: req.start_work_at ?? "",
-            exit_time: req.exit_time ?? "",
-            return_time: req.return_time ?? "",
-            end_work_at: req.end_work_at ?? "",
+            start_work_at: formatTimeToHi(req.start_work_at),
+            exit_time: formatTimeToHi(req.exit_time),
+            return_time: formatTimeToHi(req.return_time),
+            end_work_at: formatTimeToHi(req.end_work_at),
             reason: req.reason ?? "",
           }
         : undefined,
@@ -69,7 +72,6 @@ function getDefaultFormValues(mail: AllMailProps & { mail_template?: { id: strin
     absence_data:
       req.type === "absence_request"
         ? {
-            static_mail_template_id: templateId ?? "",
             start_date: req.start_date ?? "",
             end_date: req.end_date ?? "",
             reason: req.reason ?? "",
@@ -79,7 +81,6 @@ function getDefaultFormValues(mail: AllMailProps & { mail_template?: { id: strin
     overtime_data:
       req.type === "overtime_request"
         ? {
-            static_mail_template_id: templateId ?? "",
             reason: req.reason ?? "",
             details:
               req.table_details?.map((d: any) => ({
@@ -95,7 +96,6 @@ function getDefaultFormValues(mail: AllMailProps & { mail_template?: { id: strin
     dynamic_data:
       req.type === "dynamic"
         ? {
-            dynamic_mail_template_id: templateId ?? "",
             payload: "{}",
             form_schema: "[]",
           }
@@ -107,18 +107,21 @@ function RouteComponent() {
   const { mailId } = Route.useParams()
   const navigate = useNavigate()
   const { data: user } = useUser()
-  const { data: mail, isLoading } = useMailDetail(mailId)
+  const confirm = useConfirm()
+  const filesRef = useRef<File[]>([])
+
+  const { data: mailResponse, isLoading } = useMailDetail(mailId)
+  const mail = mailResponse?.success ? mailResponse.data : undefined
+  
   const [existingAttachments, setExistingAttachments] = useState<
     Array<{ id: string; name: string; url: string }>
   >([])
-  const [deletedAttachmentIds, setDeletedAttachmentIds] = useState<string[]>(
-    []
-  )
+  const [deletedAttachmentIds, setDeletedAttachmentIds] = useState<string[]>([])
 
   useEffect(() => {
     if (mail?.attachments) {
       setExistingAttachments(
-        mail.attachments.map((a) => ({
+        mail.attachments.map((a: any) => ({
           id: String(a.id),
           name: a.file_name,
           url: a.file_url,
@@ -137,11 +140,20 @@ function RouteComponent() {
     },
     canSubmitWhenInvalid: true,
     onSubmit: async ({ value }) => {
+      const confirmed = await confirm({
+        title: "Konfirmasi Update Mail",
+        description: "Apakah Anda yakin ingin menyimpan perubahan mail ini?",
+      })
+
+      if (!confirmed) return
+
       try {
         const formData = new FormData()
 
+        formData.append("id", mailId)
         formData.append("request_type", value.request_type)
         formData.append("user_id", user.id)
+
         if (value.notes) {
           formData.append("notes", value.notes)
         }
@@ -155,23 +167,23 @@ function RouteComponent() {
           })
         }
 
-        if (deletedAttachmentIds.length > 0) {
-          deletedAttachmentIds.forEach((id, index) => {
-            formData.append(`deleted_attachments[${index}]`, id)
-          })
-        }
+        const keepAttachmentIds = existingAttachments
+          .filter((a) => !deletedAttachmentIds.includes(a.id))
+          .map((a) => a.id)
 
-        if (value.attachments && value.attachments.length > 0) {
-          value.attachments.forEach((file) => {
-            if (file instanceof File) {
-              formData.append("attachments[]", file)
-            }
+        keepAttachmentIds.forEach((id, index) => {
+          formData.append(`keep_attachment_ids[${index}]`, id)
+        })
+
+        if (filesRef.current && filesRef.current.length > 0) {
+          filesRef.current.forEach((file) => {
+            formData.append("attachments[]", file)
           })
         }
 
         if (value.request_type === "leave_request" && value.leave_data) {
           Object.entries(value.leave_data).forEach(([k, v]) => {
-            if (v !== undefined && v !== null) {
+            if (v !== undefined && v !== null && v !== "") {
               formData.append(`leave_data[${k}]`, String(v))
             }
           })
@@ -179,7 +191,7 @@ function RouteComponent() {
 
         if (value.request_type === "permit_request" && value.permit_data) {
           Object.entries(value.permit_data).forEach(([k, v]) => {
-            if (v !== undefined && v !== null) {
+            if (v !== undefined && v !== null && v !== "") {
               formData.append(`permit_data[${k}]`, String(v))
             }
           })
@@ -187,7 +199,7 @@ function RouteComponent() {
 
         if (value.request_type === "absence_request" && value.absence_data) {
           Object.entries(value.absence_data).forEach(([k, v]) => {
-            if (v !== undefined && v !== null) {
+            if (v !== undefined && v !== null && v !== "") {
               formData.append(`absence_data[${k}]`, String(v))
             }
           })
@@ -195,12 +207,6 @@ function RouteComponent() {
 
         if (value.request_type === "overtime_request" && value.overtime_data) {
           const otData = value.overtime_data
-          if (otData.static_mail_template_id) {
-            formData.append(
-              "overtime_data[static_mail_template_id]",
-              otData.static_mail_template_id
-            )
-          }
           if (otData.reason) {
             formData.append("overtime_data[reason]", otData.reason)
           }
@@ -208,7 +214,7 @@ function RouteComponent() {
           if (Array.isArray(otData.details)) {
             otData.details.forEach((item: any, idx: number) => {
               Object.entries(item).forEach(([k, v]) => {
-                if (v !== undefined && v !== null) {
+                if (v !== undefined && v !== null && v !== "") {
                   formData.append(
                     `overtime_data[details][${idx}][${k}]`,
                     String(v)
@@ -219,15 +225,57 @@ function RouteComponent() {
           }
         }
 
-        if (value.request_type === "dynamic" && value.dynamic_data) {
-          Object.entries(value.dynamic_data).forEach(([k, v]) => {
-            if (v !== undefined && v !== null) {
-              formData.append(`dynamic_data[${k}]`, String(v))
-            }
-          })
+        if (
+          (value.request_type === "dynamic_template" ||
+            value.request_type === "dynamic") &&
+          value.dynamic_data
+        ) {
+          const dynamicData = value.dynamic_data as any
+          
+          if (dynamicData.dynamic_mail_template_id) {
+            formData.append(
+              "dynamic_data[dynamic_mail_template_id]",
+              dynamicData.dynamic_mail_template_id
+            )
+          }
+
+          if (dynamicData.payload) {
+            formData.append(
+              "dynamic_data[payload]",
+              dynamicData.payload
+            )
+          }
+
+          if (Array.isArray(dynamicData.form_schema)) {
+            formData.append(
+              "dynamic_data[form_schema]",
+              JSON.stringify(dynamicData.form_schema)
+            )
+          }
+        }
+        console.log("=== DUMP FORMDATA ===")
+        for (const [key, val] of formData.entries()) {
+          console.log(`${key}:`, val)
         }
 
-        await updateUserMail({ data: { id: mailId, payload: formData } })
+        const result = await updateUserMail({ data: formData })
+
+        if (!result.success) {
+          console.error("❌ Update mail failed:", result)
+
+          toast.error(result.error || "Gagal update mail")
+
+          if (result.details) {
+            console.error("Validation errors:", result.details)
+            const detailMessages = Object.entries(result.details)
+              .map(([field, errors]: [string, any]) => `${field}: ${errors.join(", ")}`)
+              .join("\n")
+            toast.error(`Detail errors:\n${detailMessages}`)
+          }
+
+          return
+        }
+
         toast.success("Mail berhasil diupdate")
         navigate({ to: "/mail/user-mails" })
       } catch (error) {
@@ -265,11 +313,16 @@ function RouteComponent() {
     form.store,
     (state) => state.values.leave_data?.end_date
   )
-  const singleDate = useStore(
-    form.store,
-    (state) =>
-      state.values.permit_data?.date || state.values.absence_data?.start_date
-  )
+  const singleDate = useStore(form.store, (state) => {
+    const permitDate = state.values.permit_data?.date
+    const absenceDate = state.values.absence_data?.start_date
+    const date = permitDate || absenceDate
+    return typeof date === "string"
+      ? date
+      : date instanceof Date
+        ? date.toISOString().split("T")[0]
+        : undefined
+  })
   const daysTaken = useStore(
     form.store,
     (state) => state.values.leave_data?.days_taken
@@ -284,8 +337,10 @@ function RouteComponent() {
   )
 
   const showDelegations =
-    mail?.request_data.type === "leave_request" ||
-    mail?.request_data.type === "permit_request"
+    mail && (
+      mail.request_data.type === "leave_request" ||
+      mail.request_data.type === "permit_request"
+    )
 
   if (isLoading || !mail) {
     return (
@@ -293,10 +348,6 @@ function RouteComponent() {
         <div className="text-center">Loading...</div>
       </div>
     )
-  }
-
-  const mailWithTemplate = mail as AllMailProps & {
-    mail_template?: { id: string; name: string; department_id: string; department?: { name: string } }
   }
 
   return (
@@ -317,10 +368,10 @@ function RouteComponent() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              Edit Mail: {mailWithTemplate.mail_template?.name ?? "Mail"}
+              Edit Mail: {mail.document_number}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {mailWithTemplate.mail_template?.department?.name ?? "-"} •{" "}
+              {mail.sent_by.department} •{" "}
               {getRequestTypeLabel(mail.request_data.type)}
             </p>
           </div>
@@ -366,29 +417,30 @@ function RouteComponent() {
 
             <BasicInfoSection
               form={form}
-              departmentId={mailWithTemplate.mail_template?.department_id ?? ""}
+              departmentId=""
               showDelegations={showDelegations}
+              onFilesChange={(files) => {
+                filesRef.current = files
+              }}
             />
 
             <RequestDetailsSection
               form={form}
               requestType={mail.request_data.type}
-              formSchema={[]}
+              template={undefined}
             />
           </div>
 
           <div className="hidden lg:block">
             <SummaryCard
-              templateLabel={mailWithTemplate.mail_template?.name ?? "Mail"}
-              departmentLabel={mailWithTemplate.mail_template?.department?.name ?? "-"}
+              templateLabel={mail.document_number}
+              departmentLabel={mail.sent_by.department}
               startDate={startDate}
               endDate={endDate}
               singleDate={singleDate}
               duration={daysTaken ? `${daysTaken} hari kerja` : undefined}
               delegations={delegations}
-              attachmentCount={
-                attachments.length + existingAttachments.length
-              }
+              attachmentCount={attachments.length + existingAttachments.length}
               status={isDirty ? "draft" : "ready"}
             />
           </div>

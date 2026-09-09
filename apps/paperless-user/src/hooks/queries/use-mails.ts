@@ -34,12 +34,15 @@ export const mailListQueryOptions = (
 
   return queryOptions({
     queryKey: mailKeys.list(search),
-    queryFn: () =>
-      isSent
-        ? getSentMails({ data: search })
+    queryFn: async () => {
+      const result = isSent
+        ? await getSentMails({ data: search })
         : isDraft
-          ? getDraftMails({ data: search })
-          : getMails({ data: search }),
+          ? await getDraftMails({ data: search })
+          : await getMails({ data: search })
+      
+      return result.success ? result.data : undefined
+    },
     placeholderData: keepPreviousData,
     staleTime: 30_000,
     initialData,
@@ -74,9 +77,10 @@ export const mailDetailQueryOptions = (id: string | null) =>
     queryKey: ["mail-detail", id],
     queryFn: async () => {
       if (!id) return null
-      return await getMailDetails({ data: id })
+      const result = await getMailDetails({ data: id })
+      return result
     },
-    enabled: !!id, // Hanya fetch jika id ada (tidak null)
+    enabled: !!id,
   })
 
 export function useMailDetail(id: string | null) {

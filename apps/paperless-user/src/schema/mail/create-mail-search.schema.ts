@@ -7,6 +7,7 @@ export const createMailSearchSchema = z.object({
   template_label: z.string(),
   request_type: z.enum([
     "dynamic",
+    "dynamic_template",
     "leave_request",
     "permit_request",
     "absence_request",

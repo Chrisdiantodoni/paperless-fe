@@ -9,18 +9,23 @@ import { Label } from "@workspace/ui/components/ui/label"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 import { FieldGroup } from "@workspace/ui/components/ui/field"
 import { DelegationMultiSelect } from "@/components/select/select-delegation-multi"
+import { useRef } from "react"
 
 export interface BasicInfoSectionProps {
   form: any
   departmentId: string
   showDelegations?: boolean
+  onFilesChange?: (files: File[]) => void
 }
 
 export function BasicInfoSection({
   form,
   departmentId,
   showDelegations = true,
+  onFilesChange,
 }: BasicInfoSectionProps) {
+  const filesRef = useRef<File[]>([])
+
   return (
     <Card>
       <CardHeader>
@@ -65,6 +70,10 @@ export function BasicInfoSection({
                     multiple
                     maxSizeMb={10}
                     accept="image/*,.pdf,.doc,.docx"
+                    onFilesChange={(files: File[]) => {
+                      filesRef.current = files
+                      onFilesChange?.(files)
+                    }}
                   />
                   <p className="text-xs text-muted-foreground">
                     Maksimal 5 file, masing-masing 10MB. Format: gambar, PDF,

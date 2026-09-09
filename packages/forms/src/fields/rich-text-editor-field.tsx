@@ -3,22 +3,19 @@ import { useFieldContext } from "../forms/form-context"
 import { Label } from "@workspace/ui/components/ui/label"
 import { useStore } from "@tanstack/react-form"
 import { cn } from "@workspace/ui/lib/utils"
-import { RichTextEditor } from "@workspace/ui/components/editor/RichTextEditor"
-import type { EditorOutputFormat } from "@workspace/ui/hooks/useEditor"
+import { TiptapEditor } from "@workspace/ui/components/editor/TiptapEditor"
+import { getErrorMessage } from "../utils/get-error-message"
 
 interface RichTextEditorFieldProps {
   label: string
   placeholder?: string
   required?: boolean
-  /** Format saved to the field. Defaults to "markdown". */
-  outputFormat?: EditorOutputFormat
 }
 
 export function RichTextEditorField({
   label,
   placeholder,
   required,
-  outputFormat = "markdown",
 }: RichTextEditorFieldProps) {
   const field = useFieldContext<string>()
   const id = useId()
@@ -32,18 +29,20 @@ export function RichTextEditorField({
         {label}
         {required && <span className="text-destructive"> *</span>}
       </Label>
-      <RichTextEditor
+      <TiptapEditor
         id={id}
-        outputFormat={outputFormat}
         placeholder={placeholder}
         value={field.state.value ?? ""}
         onBlur={field.handleBlur}
         onChange={(value) => field.handleChange(value)}
-        // aria-invalid={errors.length > 0}
         aria-describedby={errors.length ? errorId : undefined}
         className={cn(errors.length && "border-destructive")}
       />
-      {errors && <div id={errorId}>{errors}</div>}
+      {errors.length > 0 && (
+        <p id={errorId} role="alert" className="text-sm text-destructive">
+          {errors.map(getErrorMessage).join(", ")}
+        </p>
+      )}
     </div>
   )
 }

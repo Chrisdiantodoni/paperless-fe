@@ -3,7 +3,6 @@
 import { SidebarTrigger } from "@workspace/ui/components/ui/sidebar"
 import { Separator } from "@workspace/ui/components/ui/separator"
 import { AnimatedThemeToggler } from "@workspace/ui/components/ui/animated-theme-toggler"
-import { Input } from "@workspace/ui/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,11 +15,14 @@ import {
 import { Button } from "@workspace/ui/components/ui/button"
 import {
   BellIcon,
-  SparkleIcon,
-  CheckCircleIcon,
-  CreditCardIcon,
+  UserIcon,
+  GearIcon,
   SignOutIcon,
-  MagnifyingGlassIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  BriefcaseIcon,
+  BuildingsIcon,
+  IdentificationCardIcon,
 } from "@phosphor-icons/react"
 import {
   Avatar,
@@ -30,7 +32,8 @@ import {
 import type { UserData } from "@workspace/types/user.type"
 import { DynamicBreadcrumb } from "@/components/dynamic-breadcrumb"
 import type { NavPrimaryprops } from "@workspace/types/utilities"
-import { useState } from "react"
+import { logout } from "@/server/auth"
+import { setLoggingOut } from "@/lib/logout-flag"
 
 interface TopBarProps {
   user?: UserData
@@ -38,7 +41,11 @@ interface TopBarProps {
 }
 
 export function TopBar({ user, sidebar }: TopBarProps) {
-  const [searchOpen, setSearchOpen] = useState(false)
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    await logout()
+    window.location.href = import.meta.env.VITE_PORTAL_URL || "/"
+  }
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -96,10 +103,10 @@ export function TopBar({ user, sidebar }: TopBarProps) {
                 </span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-80">
               <DropdownMenuLabel className="p-0 font-normal">
-                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                  <Avatar className="h-8 w-8 rounded-md">
+                <div className="flex items-center gap-3 px-3 py-3">
+                  <Avatar className="h-12 w-12 rounded-md">
                     <AvatarImage
                       src={
                         user?.hris_user?.staff?.details?.photo_path ??
@@ -107,40 +114,83 @@ export function TopBar({ user, sidebar }: TopBarProps) {
                       }
                       alt={user?.hris_user.username}
                     />
-                    <AvatarFallback className="rounded-md">CN</AvatarFallback>
+                    <AvatarFallback className="rounded-md">
+                      {user?.hris_user.username?.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">
-                      {user?.hris_user.username}
-                    </span>
-                    <span className="truncate text-xs text-muted-foreground">
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm font-semibold">
+                      {user?.hris_user?.staff?.details?.name ?? user?.hris_user.username}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
                       {user?.roles.map((role) => role.name).join(", ")}
-                    </span>
+                    </p>
                   </div>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <SparkleIcon size={16} className="mr-2" />
-                  Upgrade to Pro
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
+              <div className="px-3 py-2 space-y-2 text-xs">
+                {user?.hris_user?.staff?.details?.nik && (
+                  <div className="flex items-start gap-2">
+                    <IdentificationCardIcon size={14} className="mt-0.5 text-muted-foreground shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-muted-foreground">NIK</p>
+                      <p className="font-medium">{user.hris_user.staff.details.nik}</p>
+                    </div>
+                  </div>
+                )}
+                {user?.hris_user?.staff?.details?.email && (
+                  <div className="flex items-start gap-2">
+                    <EnvelopeIcon size={14} className="mt-0.5 text-muted-foreground shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-muted-foreground">Email</p>
+                      <p className="font-medium break-all">{user.hris_user.staff.details.email}</p>
+                    </div>
+                  </div>
+                )}
+                {user?.hris_user?.staff?.details?.phone_number && (
+                  <div className="flex items-start gap-2">
+                    <PhoneIcon size={14} className="mt-0.5 text-muted-foreground shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-muted-foreground">Phone</p>
+                      <p className="font-medium">{user.hris_user.staff.details.phone_number}</p>
+                    </div>
+                  </div>
+                )}
+                {user?.hris_user?.staff?.occupation?.name && (
+                  <div className="flex items-start gap-2">
+                    <BriefcaseIcon size={14} className="mt-0.5 text-muted-foreground shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-muted-foreground">Jabatan</p>
+                      <p className="font-medium">{user.hris_user.staff.occupation.name}</p>
+                    </div>
+                  </div>
+                )}
+                {user?.hris_user?.staff?.work_unit?.name && (
+                  <div className="flex items-start gap-2">
+                    <BuildingsIcon size={14} className="mt-0.5 text-muted-foreground shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-muted-foreground">Unit Kerja</p>
+                      <p className="font-medium">{user.hris_user.staff.work_unit.name}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem>
-                  <CheckCircleIcon size={16} className="mr-2" />
-                  Account
+                  <UserIcon size={16} className="mr-2" />
+                  Profil
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <CreditCardIcon size={16} className="mr-2" />
-                  Billing
+                  <GearIcon size={16} className="mr-2" />
+                  Pengaturan
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
                 <SignOutIcon size={16} className="mr-2" />
-                Log out
+                Keluar
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

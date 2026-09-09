@@ -27,9 +27,17 @@ import {
   SignOutIcon,
 } from "@phosphor-icons/react"
 import type { UserData } from "@workspace/types/user.type"
+import { logout } from "@/server/auth"
+import { setLoggingOut } from "@/lib/logout-flag"
 
 export function NavUser({ user }: { user?: UserData }) {
   const { isMobile } = useSidebar()
+
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    await logout()
+    window.location.href = import.meta.env.VITE_PORTAL_URL || "/"
+  }
 
   return (
     <SidebarMenu>
@@ -112,7 +120,7 @@ export function NavUser({ user }: { user?: UserData }) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <SignOutIcon />
               Log out
             </DropdownMenuItem>

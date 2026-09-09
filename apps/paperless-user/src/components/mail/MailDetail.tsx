@@ -21,7 +21,73 @@ import {
 import { Avatar, AvatarFallback } from "@workspace/ui/components/ui/avatar"
 import { getInitials } from "@workspace/ui/lib/utils"
 import { formatDate } from "@workspace/utils"
-import type { AllMailProps } from "@workspace/types/mail"
+import type { AllMailProps, Recipient } from "@workspace/types/mail"
+import { useUser } from "@/hooks/queries/use-user"
+
+/**
+ * Helper function untuk menentukan apakah user dapat melakukan approval
+ * @param recipients - Array of recipients from mail detail
+ * @param currentUserId - ID of currently logged-in user
+ * @returns Object dengan status approval permission
+ */
+function getApproverStatus(
+  recipients: Recipient[],
+  currentUserId: string
+): {
+  canApprove: boolean
+  reason?:
+    | "not_in_approval_list"
+    | "already_responded"
+    | "waiting_for_previous_approver"
+    | "not_primary_recipient"
+  currentStatus?: string
+  sequence?: number
+  recipient?: Recipient
+} {
+  if (!recipients.length || !currentUserId) {
+    return { canApprove: false, reason: "not_in_approval_list" }
+  }
+
+  const currentUserRecipient = recipients.find(
+    (r) => r.recipient_user_id === currentUserId
+  )
+
+  if (!currentUserRecipient) {
+    return { canApprove: false, reason: "not_in_approval_list" }
+  }
+
+  if (currentUserRecipient.recipient_type !== "to") {
+    return { canApprove: false, reason: "not_primary_recipient" }
+  }
+
+  if (currentUserRecipient.status.toLowerCase() !== "pending") {
+    return {
+      canApprove: false,
+      reason: "already_responded",
+      currentStatus: currentUserRecipient.status,
+    }
+  }
+
+  const hasUnapprovedPreviousApprover = recipients.some(
+    (r) =>
+      r.sequence < currentUserRecipient.sequence &&
+      r.recipient_type === "to" &&
+      r.status.toLowerCase() !== "approved"
+  )
+
+  if (hasUnapprovedPreviousApprover) {
+    return {
+      canApprove: false,
+      reason: "waiting_for_previous_approver",
+    }
+  }
+
+  return {
+    canApprove: true,
+    sequence: currentUserRecipient.sequence,
+    recipient: currentUserRecipient,
+  }
+}
 
 export interface MailDetailProps {
   detail: AllMailProps | null
@@ -69,6 +135,7 @@ export function MailDetail({
       case "approved":
         return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
       case "revision":
+        return "bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20"
       case "sent":
         return "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
       case "rejected":
@@ -116,10 +183,16 @@ export function MailDetail({
 
   // Resolusi Waktu Jam (Khusus Permit)
   const resolveTimeDetails = () => {
-    if (req.start_work_at) return `Mulai Masuk: ${req.start_work_at}`
-    if (req.end_work_at) return `Pulang Jam: ${req.end_work_at}`
+    const formatTime = (time: string | null | undefined) => {
+      if (!time) return "-"
+      return time.slice(0, 5)
+    }
+
+    if (req.start_work_at)
+      return `Mulai Masuk: ${formatTime(req.start_work_at)}`
+    if (req.end_work_at) return `Pulang Jam: ${formatTime(req.end_work_at)}`
     if (req.exit_time || req.return_time) {
-      return `Keluar: ${req.exit_time ?? "-"} s/d Kembali: ${req.return_time ?? "-"}`
+      return `Keluar: ${formatTime(req.exit_time)} s/d Kembali: ${formatTime(req.return_time)}`
     }
     return null
   }
@@ -144,7 +217,31 @@ export function MailDetail({
     detail.status.toLowerCase() === "revision" ||
     detail.status.toLowerCase() === "rejected"
 
-  console.log(isEditable, detail.status)
+  const { data: userData } = useUser()
+  const currentUserId = userData.hris_user_id || ""
+
+  const readIndicatorId = userData.id
+
+  const approverStatus = getApproverStatus(
+    detail.recipients || [],
+    currentUserId
+  )
+
+  const canShowApprovalButtons = isSendMail && approverStatus.canApprove
+
+  console.log(approverStatus)
+
+  const toRecipients = (detail.recipients || [])
+    .filter((r) => r.recipient_type === "to")
+    .sort((a, b) => a.sequence - b.sequence)
+
+  const superiorRecipients = (detail.recipients || [])
+    .filter((r) => r.recipient_type === "superior")
+    .sort((a, b) => a.sequence - b.sequence)
+
+  const ccRecipients = (detail.recipients || [])
+    .filter((r) => r.recipient_type === "cc")
+    .sort((a, b) => a.sequence - b.sequence)
 
   return (
     <div className="flex h-full flex-col">
@@ -248,7 +345,7 @@ export function MailDetail({
                 <div className="border-t border-border pt-4">
                   <div className="space-y-4">
                     {/* Primary Action - Approve/Reject */}
-                    {isSendMail && (onApprove || onReject) && (
+                    {canShowApprovalButtons && (onApprove || onReject) && (
                       <div className="space-y-2">
                         {onApprove && (
                           <Button
@@ -286,6 +383,55 @@ export function MailDetail({
                             )}
                           </Button>
                         )}
+                        {onRevise && (
+                          <Button
+                            onClick={onRevise}
+                            disabled={isRevisingMail}
+                            variant="default"
+                            className="w-full gap-2 bg-blue-800 hover:bg-blue-900"
+                            size="sm"
+                          >
+                            {isRevisingMail ? (
+                              <>
+                                <Loader2 className="size-4 animate-spin" />
+                                Mengirim Revisi...
+                              </>
+                            ) : (
+                              <>
+                                <RotateCcw className="size-4" />
+                                Revise Mail
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Informational message ketika tombol approval tidak ditampilkan */}
+                    {isSendMail && !canShowApprovalButtons && (
+                      <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
+                        <p className="text-xs text-amber-700 dark:text-amber-400">
+                          {approverStatus.reason === "not_in_approval_list" &&
+                            "Anda bukan bagian dari alur persetujuan surat ini."}
+                          {approverStatus.reason === "already_responded" &&
+                            `Anda sudah ${
+                              approverStatus.currentStatus?.toLowerCase() ===
+                              "approved"
+                                ? "menyetujui"
+                                : approverStatus.currentStatus?.toLowerCase() ===
+                                    "rejected"
+                                  ? "menolak"
+                                  : approverStatus.currentStatus?.toLowerCase() ===
+                                      "revision"
+                                    ? "meminta revisi untuk"
+                                    : "merespons"
+                            } surat ini.`}
+                          {approverStatus.reason ===
+                            "waiting_for_previous_approver" &&
+                            "Menunggu persetujuan dari approver sebelumnya."}
+                          {approverStatus.reason === "not_primary_recipient" &&
+                            "Anda hanya sebagai penerima tembusan/diketahui, tidak dapat melakukan approval."}
+                        </p>
                       </div>
                     )}
 
@@ -309,27 +455,6 @@ export function MailDetail({
                               <>
                                 <Send className="size-4" />
                                 Send Mail
-                              </>
-                            )}
-                          </Button>
-                        )}
-                        {isRevisable && onRevise && (
-                          <Button
-                            onClick={onRevise}
-                            disabled={isRevisingMail}
-                            variant="default"
-                            className="w-full gap-2 bg-blue-600 hover:bg-blue-700"
-                            size="sm"
-                          >
-                            {isRevisingMail ? (
-                              <>
-                                <Loader2 className="size-4 animate-spin" />
-                                Mengirim Revisi...
-                              </>
-                            ) : (
-                              <>
-                                <RotateCcw className="size-4" />
-                                Revise Mail
                               </>
                             )}
                           </Button>
@@ -452,33 +577,171 @@ export function MailDetail({
                     <CardTitle>Riwayat Persetujuan</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
-                      {detail.recipients.map((rec) => (
-                        <div
-                          key={rec.id}
-                          className="flex items-center justify-between rounded-lg border border-border p-3"
-                        >
-                          <div className="flex-1">
-                            <div className="font-medium">
-                              {rec.sequence}. {rec.name ?? "Approver"}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {rec.position ?? "-"} • {rec.department ?? "-"}
-                            </div>
-                            {rec.notes && (
-                              <div className="mt-1 text-xs text-muted-foreground italic">
-                                Catatan: &ldquo;{rec.notes}&rdquo;
-                              </div>
-                            )}
+                    <div className="space-y-6">
+                      {/* Group 1: Kepada (TO) */}
+                      {toRecipients.length > 0 && (
+                        <div>
+                          <h4 className="mb-3 text-sm font-semibold text-muted-foreground uppercase">
+                            Kepada ({toRecipients.length})
+                          </h4>
+                          <div className="space-y-3">
+                            {toRecipients.map((rec) => {
+                              const isCurrentUser =
+                                rec.recipient_user_id === currentUserId
+                              const isActiveApprover =
+                                isCurrentUser &&
+                                rec.status?.toLowerCase() === "pending"
+
+                              return (
+                                <div
+                                  key={rec.id}
+                                  className={`flex items-center justify-between rounded-lg border p-3 ${
+                                    isActiveApprover
+                                      ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                      : "border-border"
+                                  }`}
+                                >
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">
+                                        {rec.sequence}. {rec.name ?? "Approver"}
+                                      </span>
+                                      {isCurrentUser && (
+                                        <Badge
+                                          variant="outline"
+                                          className="px-1.5 py-0 text-[10px]"
+                                        >
+                                          Anda
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {rec.position ?? "-"} •{" "}
+                                      {rec.department ?? "-"}
+                                    </div>
+                                    {rec.notes && (
+                                      <div
+                                        className={`mt-1 text-xs italic ${
+                                          rec.status?.toLowerCase() ===
+                                          "revision"
+                                            ? "font-medium text-orange-700 dark:text-orange-400"
+                                            : "text-muted-foreground"
+                                        }`}
+                                      >
+                                        Catatan: &ldquo;{rec.notes}&rdquo;
+                                      </div>
+                                    )}
+                                    {(rec.approved_at ||
+                                      rec.rejected_at ||
+                                      rec.revision_requested_at) && (
+                                      <div className="mt-1 text-[10px] text-muted-foreground">
+                                        {rec.approved_at &&
+                                          `Disetujui: ${formatDate(rec.approved_at)}`}
+                                        {rec.rejected_at &&
+                                          `Ditolak: ${formatDate(rec.rejected_at)}`}
+                                        {rec.revision_requested_at &&
+                                          `Revisi diminta: ${formatDate(rec.revision_requested_at)}`}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {rec.status && (
+                                    <Badge
+                                      variant="outline"
+                                      className={`ml-3 text-xs capitalize ${getBadgeClass(rec.status)}`}
+                                    >
+                                      {rec.status}
+                                    </Badge>
+                                  )}
+                                </div>
+                              )
+                            })}
                           </div>
-                          <Badge
-                            variant="outline"
-                            className={`ml-3 text-xs capitalize ${getBadgeClass(rec.status)}`}
-                          >
-                            {rec.status}
-                          </Badge>
                         </div>
-                      ))}
+                      )}
+
+                      {/* Group 2: Diketahui (SUPERIOR) */}
+                      {superiorRecipients.length > 0 && (
+                        <div>
+                          <h4 className="mb-3 text-sm font-semibold text-muted-foreground uppercase">
+                            Diketahui ({superiorRecipients.length})
+                          </h4>
+                          <div className="space-y-3">
+                            {superiorRecipients.map((rec) => {
+                              const isCurrentUser =
+                                rec.recipient_user_id === currentUserId
+
+                              return (
+                                <div
+                                  key={rec.id}
+                                  className="flex items-center justify-between rounded-lg border border-border p-3"
+                                >
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">
+                                        {rec.sequence}. {rec.name ?? "Approver"}
+                                      </span>
+                                      {isCurrentUser && (
+                                        <Badge
+                                          variant="outline"
+                                          className="px-1.5 py-0 text-[10px]"
+                                        >
+                                          Anda
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {rec.position ?? "-"} •{" "}
+                                      {rec.department ?? "-"}
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Group 3: Tembusan (CC) */}
+                      {ccRecipients.length > 0 && (
+                        <div>
+                          <h4 className="mb-3 text-sm font-semibold text-muted-foreground uppercase">
+                            Tembusan ({ccRecipients.length})
+                          </h4>
+                          <div className="space-y-3">
+                            {ccRecipients.map((rec) => {
+                              const isCurrentUser =
+                                rec.recipient_user_id === currentUserId
+
+                              return (
+                                <div
+                                  key={rec.id}
+                                  className="flex items-center justify-between rounded-lg border border-border p-3"
+                                >
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">
+                                        {rec.sequence}. {rec.name ?? "Approver"}
+                                      </span>
+                                      {isCurrentUser && (
+                                        <Badge
+                                          variant="outline"
+                                          className="px-1.5 py-0 text-[10px]"
+                                        >
+                                          Anda
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {rec.position ?? "-"} •{" "}
+                                      {rec.department ?? "-"}
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

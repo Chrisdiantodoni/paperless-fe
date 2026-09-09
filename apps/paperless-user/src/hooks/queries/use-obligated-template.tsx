@@ -15,7 +15,10 @@ export const obligatedTemplateQueryOptions = (
 ) =>
   queryOptions({
     queryKey: obligatedTemplateKeys.list(search),
-    queryFn: () => getObligatedTemplates({ data: search }),
+    queryFn: async () => {
+      const result = await getObligatedTemplates({ data: search })
+      return result.success ? result.data : undefined
+    },
     placeholderData: keepPreviousData,
     staleTime: 30_000,
     initialData,
@@ -33,7 +36,10 @@ export function useObligatedTemplatesSearch(
 ) {
   return useQuery({
     queryKey: obligatedTemplateKeys.list(params),
-    queryFn: () => getObligatedTemplates({ data: params }),
+    queryFn: async () => {
+      const result = await getObligatedTemplates({ data: params })
+      return result.success ? result.data : undefined
+    },
     placeholderData: keepPreviousData,
     staleTime: 30_000,
   })

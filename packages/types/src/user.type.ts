@@ -3,10 +3,12 @@
 export interface StaffDetails {
   id: string
   staff_id: string
+  name: string
   fullname: string
   nik: string | null
   email: string | null
   phone: string | null
+  phone_number: string | null
   ktp_address: string | null
   home_address: string | null
   religion: string | null
@@ -15,7 +17,7 @@ export interface StaffDetails {
   birth_place: string | null
   birth_date: string | null
   dependency_count: number
-  dependency_details: string | null // sesuaikan jika ada object interface tersendiri nanti
+  dependency_details: string | null
   npwp: string | null
   bpjs_kesehatan: string | null
   bpjs_kesehatan_mandiri: string | null
@@ -69,6 +71,16 @@ export interface AccessibleApp {
   pivot: AppPivot
 }
 
+export interface Occupation {
+  id: string
+  name: string
+}
+
+export interface WorkUnit {
+  id: string
+  name: string
+}
+
 export interface Staff {
   id: string
   branch_id: string
@@ -97,6 +109,8 @@ export interface Staff {
   leave_quota: number
   details: StaffDetails
   accessible_apps: AccessibleApp[]
+  occupation?: Occupation
+  work_unit?: WorkUnit
 }
 
 // ── 2. MIDDLE-INTERFACES (HRIS USER) ──

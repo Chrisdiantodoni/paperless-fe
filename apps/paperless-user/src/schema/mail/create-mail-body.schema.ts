@@ -103,11 +103,21 @@ export const createMailPermitDataSchema = z
   .transform((data) => {
     switch (data.permit_type) {
       case "Terlambat Masuk Kantor":
-        return { ...data, exit_time: null, return_time: null, end_work_at: null }
+        return {
+          ...data,
+          exit_time: null,
+          return_time: null,
+          end_work_at: null,
+        }
       case "Keluar Kantor pada Jam Kerja":
         return { ...data, start_work_at: null, end_work_at: null }
       case "Pulang Lebih Awal":
-        return { ...data, start_work_at: null, exit_time: null, return_time: null }
+        return {
+          ...data,
+          start_work_at: null,
+          exit_time: null,
+          return_time: null,
+        }
       default:
         return data
     }
@@ -147,8 +157,8 @@ export const createMailOvertimeDataSchema = z.object({
 
 export const createMailDynamicDataSchema = z.object({
   dynamic_mail_template_id: z.string().nullish(),
-  payload: z.string().min(1, "Payload wajib diisi"),
-  form_schema: z.string().min(1, "Form schema wajib diisi"),
+  payload: z.string().min(1, "Isi surat wajib diisi"),
+  form_schema: z.array(z.any()),
 })
 
 export const createMailDelegationSchema = z
@@ -169,6 +179,7 @@ export const createMailPayloadSchema = z
   .object({
     request_type: z.enum([
       "dynamic",
+      "dynamic_template",
       "leave_request",
       "permit_request",
       "absence_request",
@@ -211,7 +222,7 @@ export const createMailPayloadSchema = z
         path: ["overtime_data"],
       })
     }
-    if (data.request_type === "dynamic" && !data.dynamic_data) {
+    if (data.request_type === "dynamic_template" && !data.dynamic_data) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Data template dynamic wajib diisi",

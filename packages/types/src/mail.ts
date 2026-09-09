@@ -9,6 +9,21 @@ export interface AllMailProps {
   attachments: Attachment[]
   delegations: SentBy[]
   created_at: Date
+  logs: MailLog[]
+}
+
+export interface MailLog {
+  id: number
+  action: string
+  created_at: string
+  notes: Record<string, unknown>
+  performed_by: {
+    id: string
+    name: string
+    position: string
+    department: string
+    branch: string
+  }
 }
 
 export interface Attachment {
@@ -44,6 +59,7 @@ export interface Recipient {
   sequence: number
   status: string
   notes: string
+  recipient_type: "to" | "cc" | "superior"
 }
 
 export interface RequestData {
@@ -115,7 +131,10 @@ export interface CreateMailLeaveData {
 export interface CreateMailPermitData {
   static_mail_template_id: string
   date: string
-  permit_type: "Terlambat Masuk Kantor" | "Keluar Kantor pada Jam Kerja" | "Pulang Lebih Awal"
+  permit_type:
+    | "Terlambat Masuk Kantor"
+    | "Keluar Kantor pada Jam Kerja"
+    | "Pulang Lebih Awal"
   start_work_at: string | null
   exit_time: string | null
   return_time: string | null
@@ -155,7 +174,12 @@ export interface CreateMailDelegation {
 }
 
 export interface CreateMailPayload {
-  request_type: "dynamic" | "leave_request" | "permit_request" | "absence_request" | "overtime_request"
+  request_type:
+    | "dynamic"
+    | "leave_request"
+    | "permit_request"
+    | "absence_request"
+    | "overtime_request"
   user_id: string
   notes: string | null
   attachments?: File[]

@@ -10,10 +10,7 @@ import type {
   Subordinate,
 } from "@workspace/types/master"
 import { api } from "../api"
-import type {
-  DynamicMailTemplatePayload,
-  StaticMailTemplateFormSchema,
-} from "@/schema/master/schema"
+import type { DynamicMailTemplatePayload } from "@/schema/master/schema"
 
 class MasterService {
   async getArea(): Promise<APIResponse<LaravelPaginationData<Area[]>>> {

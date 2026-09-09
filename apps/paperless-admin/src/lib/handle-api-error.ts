@@ -1,5 +1,5 @@
 // src/utils/handle-api-error.ts
-import { clearSessionCookie } from "@/server/session.server"
+import { clearSessionCookie } from "@workspace/utils"
 import { redirect } from "@tanstack/react-router"
 
 type ApiErrorShape = {

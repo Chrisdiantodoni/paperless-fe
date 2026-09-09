@@ -7,9 +7,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/ui/tabs"
-import { ProfilePersonalTab } from "./components/ProfilePersonalTab"
-import { ProfileContactTab } from "./components/ProfileContactTab"
-import { ProfileSocialTab } from "./components/ProfileSocialTab"
+import { ProfilePersonalTab, ProfileContactTab, ProfileSocialTab } from "@/components/profile"
 
 export const Route = createFileRoute("/_dashboard/profile/")({
   component: RouteComponent,

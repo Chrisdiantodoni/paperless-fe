@@ -1,5 +1,6 @@
 import { createApi } from "./api"
 import { setupInterceptors } from "./interceptors"
+import { extractApiError } from "./utils"
 
 const setupApi = (
   baseUrl: string,
@@ -11,4 +12,4 @@ const setupApi = (
   return api
 }
 
-export { setupApi }
+export { setupApi, extractApiError }

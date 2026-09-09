@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from "react"
+import { isLoggingOut } from "@/lib/logout-flag"
 
 export interface UseUnsavedChangesOptions {
   isDirty: boolean
@@ -17,6 +18,10 @@ export function useUnsavedChanges({
     }
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (isLoggingOut()) {
+        return
+      }
+
       event.preventDefault()
       event.returnValue = message
       return message

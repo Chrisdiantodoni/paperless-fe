@@ -274,8 +274,8 @@ const TemplateFormFields = memo(function TemplateFormFields({
   const { branchOptions, departmentOptions, positionOptions } = options
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      <div className="space-y-6 lg:col-span-2">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+      <div className="space-y-6 lg:col-span-3">
         <Card>
           <CardHeader>
             <CardTitle>Informasi Utama</CardTitle>
@@ -509,7 +509,7 @@ export function StaticMailTemplateForm({
       branchOptions: branches.map((b) => ({
         value: b.id,
         label: b.name_branch,
-        region: b.area.name_area,
+        regions: b.area.name_area,
       })),
       departmentOptions: departments.map((d) => ({
         value: d.id,

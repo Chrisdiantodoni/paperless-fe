@@ -1,11 +1,12 @@
 import { verifySSOTicketSchema } from "@/schema/auth.schema"
 import sso from "@/services/API/sso"
 import { createServerFn } from "@tanstack/react-start"
-import { setSessionCookie } from "./session.server"
+import { setSessionCookie, clearSessionCookieServer } from "./session.server"
 import type { APIResponse } from "@workspace/types/api"
 import type { UserData, UserResponse } from "@workspace/types/user.type"
 import auth from "@/services/API/auth"
 import { handleApiError } from "@/lib/handle-api-error"
+import { api } from "@/services/api"
 
 export const verifySSOTicket = createServerFn({ method: "POST" })
   .validator(verifySSOTicketSchema)
@@ -41,6 +42,18 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(
       return response.data.user
     } catch (error: any) {
       handleApiError(error)
+    }
+  }
+)
+
+export const logout = createServerFn({ method: "POST" }).handler(
+  async (): Promise<void> => {
+    try {
+      await api.post("/logout")
+    } catch (error) {
+      console.error("Logout API error:", error)
+    } finally {
+      clearSessionCookieServer()
     }
   }
 )

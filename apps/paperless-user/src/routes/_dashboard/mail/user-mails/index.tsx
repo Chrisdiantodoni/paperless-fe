@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { zodValidator } from "@tanstack/zod-adapter"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 import {
   MailHeader,
@@ -29,12 +29,15 @@ import type { AllMailProps } from "@workspace/types/mail"
 import type { MailFilterState } from "@/components/mail/MailHeader"
 import { toast } from "sonner"
 import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
+import { useDebounce } from "@workspace/utils"
+import { useUser } from "@/hooks/queries/use-user"
+import { isMailReadByUser } from "@/utils/mail-helpers"
 
 export const Route = createFileRoute("/_dashboard/mail/user-mails/")({
   validateSearch: zodValidator(listRequestQuerySchema),
   loaderDeps: ({ search }) => search,
   loader: async ({ context: { queryClient }, deps: search }) => {
-    let data: LaravelPaginationData<AllMailProps[]>
+    let data: LaravelPaginationData<AllMailProps[]> | undefined
     if (search.type === "all") {
       data = await queryClient.ensureQueryData(allMailQueryOptions(search))
     } else if (search.type === "sent") {
@@ -51,17 +54,14 @@ function RouteComponent() {
   const { data: initialData } = Route.useLoaderData()
   const search = Route.useSearch()
 
-  const isSent = search.type === "sent"
-
   const {
     data: mailPagination,
     isFetching,
     refetch,
   } = useMailList(search, initialData)
 
-  const mailDataList = mailPagination.data
-
   const navigate = Route.useNavigate()
+  console.log(initialData)
 
   const {
     activeNav,
@@ -82,6 +82,18 @@ function RouteComponent() {
     setRefreshing,
   } = useMailData(search)
 
+  const debouncedQuery = useDebounce(query, 500)
+
+  useEffect(() => {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        search: debouncedQuery || undefined,
+        page: 1,
+      }),
+    })
+  }, [debouncedQuery])
+
   const { data: mailDetail, isLoading: isLoadingDetail } =
     useMailDetail(selectedId)
 
@@ -96,6 +108,23 @@ function RouteComponent() {
   const [rejectReason, setRejectReason] = useState("")
   const confirm = useConfirm()
 
+  const { data: userData } = useUser()
+  const currentUserId = userData.id || ""
+
+  const [localReadIds, setLocalReadIds] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (mailPagination?.data) {
+      const readIds = new Set<string>()
+      mailPagination.data.forEach((mail: AllMailProps) => {
+        if (isMailReadByUser(mail, currentUserId)) {
+          readIds.add(mail.id)
+        }
+      })
+      setLocalReadIds(readIds)
+    }
+  }, [mailPagination?.data, currentUserId])
+
   const handleClose = () => {
     setSelectedId(null)
     setShowDetail(false)
@@ -104,26 +133,46 @@ function RouteComponent() {
   const handleNavChange = (nav: "all" | "sent" | "draft") => {
     setActiveNav(nav)
     navigate({
-      search: (prev) => ({
-        ...prev,
+      search: {
+        ...search,
         type: nav,
         page: 1,
-      }),
+      },
     })
+  }
+
+  const handleQueryChange = (newQuery: string) => {
+    setQuery(newQuery)
   }
 
   const handleFiltersChange = (filters: MailFilterState) => {
     navigate({
-      search: (prev) => ({
-        ...prev,
-        request_type: filters.request_type ?? undefined,
-        status: filters.status ?? undefined,
+      search: {
+        ...search,
+        request_type: filters.request_type as
+          | "leave_request"
+          | "permit_request"
+          | "absence_request"
+          | "overtime_request"
+          | "dynamic_template"
+          | undefined,
+        status: filters.status as
+          | "Draft"
+          | "Sent"
+          | "Revision"
+          | "Approved"
+          | "Rejected"
+          | undefined,
         start_date: filters.start_date ?? undefined,
         end_date: filters.end_date ?? undefined,
-        sort_by: filters.sort_by,
-        sort_dir: filters.sort_dir,
+        sort_by: filters.sort_by as
+          | "status"
+          | "created_at"
+          | "document_number"
+          | undefined,
+        sort_dir: filters.sort_dir as "asc" | "desc" | undefined,
         page: 1,
-      }),
+      },
     })
   }
 
@@ -155,6 +204,7 @@ function RouteComponent() {
   const handleMailClick = async (id: string) => {
     setSelectedId(id)
     setShowDetail(true)
+    setLocalReadIds((prev) => new Set(prev).add(id))
   }
 
   const handleEdit = () => {
@@ -259,32 +309,33 @@ function RouteComponent() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-background text-foreground">
+    <main className="flex h-screen flex-col bg-background text-foreground">
       <MailHeader
         activeNav={activeNav}
         query={query}
         refreshing={refreshing}
         filters={filters}
         onNavChange={handleNavChange}
-        onQueryChange={setQuery}
+        onQueryChange={handleQueryChange}
         onRefresh={handleRefresh}
         onFiltersChange={handleFiltersChange}
-        onCompose={() => {}}
       />
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-stretch">
         <div
-          className={`w-full shrink-0 border-b border-border lg:block lg:w-[360px] lg:border-r lg:border-b-0 xl:w-[400px] ${
+          className={`min-h-0 w-full border-b border-border lg:flex lg:w-[360px] lg:flex-col lg:border-r lg:border-b-0 xl:w-[400px] ${
             showDetail ? "hidden" : "flex flex-col"
           }`}
         >
           <MailList
             isLoading={isFetching}
-            pageCount={mailPagination.last_page}
-            pageSize={mailPagination.per_page}
-            mails={mailPagination}
+            pageCount={mailPagination?.last_page || 1}
+            pageSize={mailPagination?.per_page || 10}
+            mails={mailPagination!}
             page={page}
             selectedId={selectedId}
+            currentUserId={currentUserId}
+            localReadIds={localReadIds}
             onPageChange={handlePageChange}
             onItemClick={handleMailClick}
           />
@@ -295,7 +346,7 @@ function RouteComponent() {
         >
           {selectedId ? (
             <MailDetail
-              detail={mailDetail!}
+              detail={mailDetail?.success ? mailDetail.data : null}
               isLoading={isLoadingDetail}
               isSendingMail={sendMailMutation.isPending}
               isRevisingMail={reviseMailMutation.isPending}

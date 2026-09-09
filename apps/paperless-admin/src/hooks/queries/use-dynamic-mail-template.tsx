@@ -19,6 +19,7 @@ import {
 import type { LaravelPaginationData } from "@workspace/types/api"
 import type { IDynamicMailTemplate } from "@workspace/types/master"
 import { toast } from "sonner"
+import { extractApiError } from "@workspace/utils/errors"
 
 export const dynamicMailTemplateQueryOptions = (
   search: DynamicMailTemplateSearch,
@@ -53,7 +54,7 @@ export function useDeleteDynamicMailTemplateMutation() {
       })
     },
     onError: (error) => {
-      toast.error(error.message || "Terjadi kesalahan saat menghapus data")
+      toast.error(extractApiError(error))
     },
   })
 }
@@ -73,7 +74,7 @@ export function useSubmitForApprovalMutation() {
       toast.success("Template berhasil diajukan untuk approval")
     },
     onError: (error) => {
-      toast.error(error.message || "Terjadi kesalahan saat mengajukan approval")
+      toast.error(extractApiError(error))
     },
   })
 }
@@ -90,10 +91,10 @@ export function useApproveDynamicMailTemplateMutation() {
         queryKey: dynamicMailTemplateKeys.lists(),
         exact: false,
       })
-      toast.success("Template berhasil di-approve")
+      toast.success("Template berhasil disetujui")
     },
     onError: (error) => {
-      toast.error(error.message || "Terjadi kesalahan saat approve template")
+      toast.error(extractApiError(error))
     },
   })
 }
@@ -101,8 +102,8 @@ export function useApproveDynamicMailTemplateMutation() {
 export function useRejectDynamicMailTemplateMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
-      const response = await rejectDynamicMailTemplate({ data: { id, reason } })
+    mutationFn: async (id: string) => {
+      const response = await rejectDynamicMailTemplate({ data: id })
       return response
     },
     onSuccess: () => {
@@ -113,7 +114,7 @@ export function useRejectDynamicMailTemplateMutation() {
       toast.success("Template berhasil ditolak")
     },
     onError: (error) => {
-      toast.error(error.message || "Terjadi kesalahan saat menolak template")
+      toast.error(extractApiError(error))
     },
   })
 }
@@ -122,7 +123,7 @@ export function useRequestRevisionMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: RevisionRequestForm }) => {
-      const response = await requestDynamicMailTemplateRevision({ data: { id, data } })
+      const response = await requestDynamicMailTemplateRevision({ data: { id, ...data } })
       return response
     },
     onSuccess: () => {
@@ -133,7 +134,7 @@ export function useRequestRevisionMutation() {
       toast.success("Request revisi berhasil dikirim")
     },
     onError: (error) => {
-      toast.error(error.message || "Terjadi kesalahan saat request revisi")
+      toast.error(extractApiError(error))
     },
   })
 }

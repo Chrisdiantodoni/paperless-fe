@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { zodValidator } from "@tanstack/zod-adapter"
 import { subordinateSearchSchema } from "@/schema/list.schema"
-import { subordinateQueryOptions } from "@/hooks/queries/use-subordinates"
-import { useSubordinates } from "@/hooks/queries/use-subordinates"
+import { subordinateQueryOptions, useSubordinates  } from "@/hooks/queries/use-subordinates"
 import {
-  columns,
-  type SubordinateRow,
+  columns
+  
 } from "@/components/table/subordinate-column"
+import type {SubordinateRow} from "@/components/table/subordinate-column";
 import { DataTable } from "@workspace/ui/components/ui/data-table"
 import { DataTablePagination } from "@workspace/ui/components/ui/data-table-pagination"
 import { Button } from "@workspace/ui/components/ui/button"

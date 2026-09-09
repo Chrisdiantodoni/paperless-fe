@@ -29,8 +29,11 @@ export const setupInterceptors = (
       const status = error?.response?.status
       const responseData = error?.response?.data
 
-      const message = responseData?.message
-      const code = responseData?.code
+      const message = responseData?.message || responseData?.meta?.message
+      const code = responseData?.code || responseData?.meta?.code
+      const errors = responseData?.errors
+      const errorMessage = responseData?.error
+      const meta = responseData?.meta
 
       // ==========================================================
       // JIKA DI SERVER: Jangan diam diam reject, beri tahu "Arah Redirect" nya
@@ -52,14 +55,16 @@ export const setupInterceptors = (
           redirectTo = "/under-construction"
         }
 
-        // Lemparkan error objek yang membawa info `redirectTo`
-        return Promise.reject({
-          status,
-          code,
-          message,
-          redirectTo, // <--- Aplikasi di atas tinggal baca property ini
-          originalError: error,
-        })
+      return Promise.reject({
+        status,
+        code,
+        message,
+        errors,
+        errorMessage,
+        meta,
+        redirectTo,
+        responseData,
+      })
       }
 
       // ==========================================================
@@ -94,7 +99,9 @@ export const setupInterceptors = (
         status,
         code,
         message,
-        originalError: error,
+        errors,
+        errorMessage,
+        responseData,
       })
     }
   )

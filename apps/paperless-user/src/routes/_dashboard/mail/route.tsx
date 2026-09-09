@@ -1,5 +1,4 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router"
-import { Button } from "@workspace/ui/components/ui/button"
 
 export const Route = createFileRoute("/_dashboard/mail")({
   component: RouteComponent,

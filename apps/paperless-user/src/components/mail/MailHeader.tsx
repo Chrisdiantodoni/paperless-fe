@@ -1,6 +1,6 @@
 import { useState } from "react"
+import { Link } from "@tanstack/react-router"
 import {
-  // eslint-disable-next-line no-unused-vars
   FileText,
   Inbox,
   Plus,
@@ -27,7 +27,6 @@ import {
 } from "@workspace/ui/components/ui/select"
 import CreateMail from "../create/create-mail"
 import { getRequestTypeOptions } from "@workspace/utils"
-import { StaffCombobox } from "../select/select-staff"
 
 export type MailNav = "all" | "sent" | "draft"
 
@@ -49,7 +48,6 @@ export interface MailHeaderProps {
   onQueryChange: (query: string) => void
   onRefresh: () => void
   onFiltersChange: (filters: MailFilterState) => void
-  onCompose: () => void
 }
 
 const NAV_ITEMS: { value: MailNav; label: string; icon: typeof Inbox }[] = [
@@ -83,7 +81,6 @@ export function MailHeader({
   onQueryChange,
   onRefresh,
   onFiltersChange,
-  onCompose,
 }: MailHeaderProps) {
   const [draft, setDraft] = useState<MailFilterState>(filters)
   const [open, setOpen] = useState(false)
@@ -124,9 +121,11 @@ export function MailHeader({
         {/* Left: Compose button & nav tabs */}
         <div className="flex flex-wrap items-center gap-2">
           <CreateMail />
-          <Button className="gap-2 shadow-sm">
-            <Plus className="h-4 w-4" />
-            <span>Non Template</span>
+          <Button asChild className="gap-2 shadow-sm">
+            <Link to="/mail/user-mails/compose">
+              <Plus className="h-4 w-4" />
+              <span>Non Template</span>
+            </Link>
           </Button>
           <div className="mx-1 hidden h-4 w-[1px] bg-border sm:block" />
           <Tabs

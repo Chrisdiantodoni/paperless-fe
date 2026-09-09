@@ -41,19 +41,52 @@ class mails {
   }
 
   async createMail(
-    payload: CreateMailPayload
+    payload: CreateMailPayload | FormData
   ): Promise<APIResponse<AllMailProps>> {
-    const res = await api.post("/mail/user-mail/user-mails", payload, {
-      headers: { "Content-Type": "multipart/form-data" },
-    })
-    return res.data
+    console.log("\n🌐 API CLIENT: Sending request to backend")
+    console.log("Endpoint: POST /mail/user-mail/user-mails")
+
+    if (payload instanceof FormData) {
+      console.log("Payload type: FormData")
+      const entries: any = {}
+      for (const [key, value] of payload.entries()) {
+        entries[key] = value instanceof File ? `<File: ${value.name}>` : value
+      }
+      console.log("FormData entries:", JSON.stringify(entries, null, 2))
+    } else {
+      console.log("Payload type: Object")
+      console.log("Payload:", JSON.stringify(payload, null, 2))
+    }
+
+    try {
+      const res = await api.post("/mail/user-mail/user-mails", payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+
+      console.log("\n✅ API CLIENT: Response received")
+      console.log("Status:", res.status)
+      console.log("Data preview:", JSON.stringify(res.data, null, 2).substring(0, 500))
+
+      return res.data
+    } catch (error: any) {
+      console.error("\n🔴 API CLIENT: Request failed")
+      console.error("Error object:", {
+        status: error?.status,
+        code: error?.code,
+        message: error?.message,
+        errors: error?.errors,
+        errorMessage: error?.errorMessage,
+        responseData: error?.responseData,
+      })
+      throw error
+    }
   }
 
   async updateMail(
     id: string,
-    payload: CreateMailPayload
+    payload: CreateMailPayload | FormData
   ): Promise<APIResponse<AllMailProps>> {
-    const res = await api.put(`/mail/user-mail/user-mails/${id}`, payload, {
+    const res = await api.post(`/mail/user-mail/user-mails/${id}`, payload, {
       headers: { "Content-Type": "multipart/form-data" },
     })
     return res.data
@@ -96,6 +129,19 @@ class mails {
     }
   ): Promise<APIResponse<void>> {
     const res = await api.post(`/mail/user-mail/revise-mail/${id}`, payload)
+    return res.data
+  }
+
+  async createNonTemplateMail(
+    payload: FormData
+  ): Promise<APIResponse<AllMailProps>> {
+    const res = await api.post(
+      "/mail/user-mail/create-non-template-mail",
+      payload,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    )
     return res.data
   }
 }

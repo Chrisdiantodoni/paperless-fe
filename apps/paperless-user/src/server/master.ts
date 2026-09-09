@@ -11,9 +11,11 @@ import {
   dynamicMailTemplateSchema,
   staticMailTemplateFormSchema,
   updateTemplateValidator,
-  type DynamicMailTemplateForm,
-  type DynamicMailTemplateInferProps,
-  type StaticMailTemplateFormSchema,
+} from "@/schema/master/schema"
+import type {
+  DynamicMailTemplateForm,
+  DynamicMailTemplateInferProps,
+  StaticMailTemplateFormSchema,
 } from "@/schema/master/schema"
 import master from "@/services/API/master"
 import { createServerFn } from "@tanstack/react-start"
@@ -238,48 +240,38 @@ export const deleteDynamicMailTemplate = createServerFn({
 
 export const getObligatedStaticTemplate = createServerFn({ method: "GET" })
   .validator((data: any) => {
-    console.log('[getObligatedStaticTemplate] Validating data:', data)
     try {
       const parsed = staticMailTemplateSearchSchema.parse(data)
-      console.log('[getObligatedStaticTemplate] Validation success:', parsed)
       return parsed
     } catch (error) {
-      console.error('[getObligatedStaticTemplate] Validation error:', error)
+      console.error("[getObligatedStaticTemplate] Validation error:", error)
       throw error
     }
   })
   .handler(async ({ data }) => {
     try {
-      console.log('[getObligatedStaticTemplate] Calling API with:', data)
       const response = await master.getObligatedStaticTemplate(data)
-      console.log('[getObligatedStaticTemplate] API response:', response)
       return response.data
     } catch (error: any) {
-      console.error('[getObligatedStaticTemplate] API error:', error)
       throw new Error(error.message)
     }
   })
 
 export const getObligatedDynamicTemplate = createServerFn({ method: "GET" })
   .validator((data: any) => {
-    console.log('[getObligatedDynamicTemplate] Validating data:', data)
     try {
       const parsed = dynamicMailTemplateSearchSchema.parse(data)
-      console.log('[getObligatedDynamicTemplate] Validation success:', parsed)
       return parsed
     } catch (error) {
-      console.error('[getObligatedDynamicTemplate] Validation error:', error)
+      console.error("[getObligatedDynamicTemplate] Validation error:", error)
       throw error
     }
   })
   .handler(async ({ data }) => {
     try {
-      console.log('[getObligatedDynamicTemplate] Calling API with:', data)
       const response = await master.getObligatedDynamicTemplate(data)
-      console.log('[getObligatedDynamicTemplate] API response:', response)
       return response.data
     } catch (error: any) {
-      console.error('[getObligatedDynamicTemplate] API error:', error)
       throw new Error(error.message)
     }
   })

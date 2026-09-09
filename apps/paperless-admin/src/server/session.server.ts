@@ -22,7 +22,7 @@ export function setSessionCookie(token: string) {
   )
 }
 
-export function clearSessionCookie() {
+export function clearSessionCookieServer() {
   setResponseHeader(
     "Set-Cookie",
     `${SESSION_COOKIE}=; HttpOnly; ${secureFlag ? `${secureFlag}; ` : ""}SameSite=Lax; Path=/; Max-Age=0`

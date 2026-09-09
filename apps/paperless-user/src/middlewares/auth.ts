@@ -3,7 +3,7 @@ import { redirect } from "@tanstack/react-router"
 import auth from "@/services/API/auth"
 import { readSessionToken } from "@/server/session"
 import { handleApiError } from "@/lib/handle-api-error"
-import { clearSessionCookie } from "@/server/session.server"
+import { clearSessionCookieServer } from "@/server/session.server"
 import type { UserData } from "@workspace/types/user.type"
 
 const loginHref = import.meta.env.DEV
@@ -24,7 +24,7 @@ export const authMiddleware = createMiddleware({ type: "request" }).server(
     try {
       userResponse = await auth.me()
     } catch (err) {
-      await clearSessionCookie()
+      await clearSessionCookieServer()
       handleApiError(err)
     }
 
@@ -33,7 +33,7 @@ export const authMiddleware = createMiddleware({ type: "request" }).server(
       userResponse as { data?: { user?: UserData } } | null | undefined
     )?.data?.user
     if (!user) {
-      await clearSessionCookie()
+      await clearSessionCookieServer()
       throw redirect({
         href: loginHref,
       })
