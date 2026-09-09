@@ -1,19 +1,24 @@
 import {
-  Archive,
-  MoreHorizontal,
-  Star,
   FileText,
-  Paperclip,
   Calendar,
   X,
-  Clock,
-  UserCheck,
-  Building2,
-  Download,
+  User,
+  Mail,
+  Edit,
+  Send,
+  RotateCcw,
+  Loader2,
 } from "lucide-react"
+import { AttachmentItem } from "./AttachmentItem"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Badge } from "@workspace/ui/components/ui/badge"
-import { Separator } from "@workspace/ui/components/ui/separator"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/ui/card"
+import { Avatar, AvatarFallback } from "@workspace/ui/components/ui/avatar"
 import { getInitials } from "@workspace/ui/lib/utils"
 import { formatDate } from "@workspace/utils"
 import type { AllMailProps } from "@workspace/types/mail"
@@ -21,7 +26,15 @@ import type { AllMailProps } from "@workspace/types/mail"
 export interface MailDetailProps {
   detail: AllMailProps | null
   isLoading: boolean
-  onOpenApproval: () => void
+  isSendingMail?: boolean
+  isRevisingMail?: boolean
+  isApprovingMail?: boolean
+  isRejectingMail?: boolean
+  onApprove?: () => void
+  onReject?: () => void
+  onEdit?: () => void
+  onSend?: () => void
+  onRevise?: () => void
   onClose?: () => void
   showCloseButton?: boolean
 }
@@ -29,7 +42,15 @@ export interface MailDetailProps {
 export function MailDetail({
   detail,
   isLoading,
-  onOpenApproval,
+  isSendingMail = false,
+  isRevisingMail = false,
+  isApprovingMail = false,
+  isRejectingMail = false,
+  onApprove,
+  onReject,
+  onEdit,
+  onSend,
+  onRevise,
   onClose,
   showCloseButton = false,
 }: MailDetailProps) {
@@ -89,8 +110,8 @@ export function MailDetail({
         : `${formatDate(req.start_date)} – ${formatDate(req.end_date)}`
     }
     if (req.start_date) return formatDate(req.start_date)
-    if (req.date) return formatDate(req.date)
-    return formatDate(detail.created_at)
+    if (req.date) return formatDate(req.date.toString())
+    return formatDate(detail.created_at.toString())
   }
 
   // Resolusi Waktu Jam (Khusus Permit)
@@ -108,9 +129,26 @@ export function MailDetail({
   const timeDetails = resolveTimeDetails()
   const reason = req.reason || req.notes || "-"
 
+  const approvedCount =
+    detail.recipients?.filter((r) => r.status === "approved").length || 0
+  const totalApprovers = detail.recipients?.length || 0
+
+  const isEditable =
+    detail.status.toLowerCase() === "pending" ||
+    detail.status.toLowerCase() === "draft" ||
+    detail.status.toLowerCase() === "revision"
+
+  const isSendable = detail.status.toLowerCase() === "draft"
+  const isSendMail = detail.status.toLowerCase() === "sent"
+  const isRevisable =
+    detail.status.toLowerCase() === "revision" ||
+    detail.status.toLowerCase() === "rejected"
+
+  console.log(isEditable, detail.status)
+
   return (
     <div className="flex h-full flex-col">
-      {/* Action Header */}
+      {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-6 py-3.5">
         <div className="flex items-center gap-2">
           {showCloseButton && (
@@ -130,245 +168,349 @@ export function MailDetail({
         </div>
       </div>
 
-      {/* Konten Utama */}
-      <div className="flex-1 overflow-y-auto p-6 xl:p-8">
-        <div className="flex min-w-0 flex-1 flex-col">
-          {/* Status & Judul Dokumen */}
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <Badge
-                variant="outline"
-                className={`px-2 py-0.5 text-xs font-medium capitalize ${getBadgeClass(
-                  detail.status
-                )}`}
-              >
-                {detail.status}
-              </Badge>
-              <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
-                {title}
-              </h2>
-              <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                <FileText className="size-3.5" />
-                <span>Dibuat pada {formatDate(detail.created_at)}</span>
-                {detail.branch?.name && (
-                  <>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Building2 className="size-3" />
-                      {detail.branch.name}
-                    </span>
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
-
-          <Separator className="my-5" />
-
-          {/* Profil Pengirim */}
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-              {getInitials(senderName)}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-foreground">
-                {senderName}
-              </p>
-              <p className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-                {detail.sent_by.position && (
-                  <span>{detail.sent_by.position}</span>
-                )}
-                {detail.sent_by.department && (
-                  <span>• {detail.sent_by.department}</span>
-                )}
-                {detail.sent_by.branch && (
-                  <span>• {detail.sent_by.branch}</span>
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* Banner Tombol Aksi Persetujuan */}
-          <div className="mt-5 flex items-center justify-between gap-4 rounded-lg border border-border bg-muted/20 p-4">
-            <div>
-              <h3 className="text-sm font-semibold">Tinjau Permohonan</h3>
-              <p className="text-xs text-muted-foreground">
-                Beri persetujuan atau catatan revisi untuk permohonan ini.
-              </p>
-            </div>
-            <Button onClick={onOpenApproval} size="sm">
-              Review Request
-            </Button>
-          </div>
-
-          {/* Detail Ringkasan Permohonan */}
-          <div className="mt-6 rounded-lg border border-border bg-muted/30 p-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <dt className="text-xs text-muted-foreground">
-                  Jenis Permohonan
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-foreground">
-                  {title}
-                </dd>
-              </div>
-
-              <div>
-                <dt className="text-xs text-muted-foreground">
-                  Periode / Tanggal
-                </dt>
-                <dd className="mt-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
-                  <Calendar className="size-3.5 text-muted-foreground" />
-                  {dateRange}
-                </dd>
-              </div>
-
-              {timeDetails && (
-                <div>
-                  <dt className="text-xs text-muted-foreground">
-                    Keterangan Jam
-                  </dt>
-                  <dd className="mt-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
-                    <Clock className="size-3.5 text-muted-foreground" />
-                    {timeDetails}
-                  </dd>
-                </div>
-              )}
-
-              {typeof req.quota_deducted === "number" && (
-                <div>
-                  <dt className="text-xs text-muted-foreground">
-                    Potong Kuota Cuti
-                  </dt>
-                  <dd className="mt-1 text-sm font-medium text-foreground">
-                    {req.quota_deducted} Hari
-                  </dd>
-                </div>
-              )}
-
-              <div className="sm:col-span-2">
-                <dt className="text-xs text-muted-foreground">
-                  Alasan / Catatan
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-foreground">
-                  {reason}
-                </dd>
-              </div>
-            </div>
-          </div>
-
-          {/* Tabel Detail Lembur (Jika mail_type = overtime_request) */}
-          {req.type === "overtime_request" &&
-            Array.isArray(req.table_details) && (
-              <div className="mt-6">
-                <h4 className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                  Daftar Staf Lembur ({req.table_details.length})
-                </h4>
-                <div className="overflow-x-auto rounded-lg border border-border">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-muted/50 text-muted-foreground">
-                      <tr>
-                        <th className="p-2.5 font-medium">Nama Staf</th>
-                        <th className="p-2.5 font-medium">Jabatan</th>
-                        <th className="p-2.5 font-medium">Tanggal</th>
-                        <th className="p-2.5 font-medium">Jam</th>
-                        <th className="p-2.5 font-medium">Alasan</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {req.table_details.map((staff) => (
-                        <tr key={staff.id} className="hover:bg-muted/20">
-                          <td className="p-2.5 font-medium text-foreground">
-                            {staff.fullname}
-                          </td>
-                          <td className="p-2.5 text-muted-foreground">
-                            {staff.position}
-                          </td>
-                          <td className="p-2.5 whitespace-nowrap">
-                            {formatDate(staff.date)}
-                          </td>
-                          <td className="p-2.5 whitespace-nowrap">
-                            {staff.start_time} - {staff.end_time}
-                          </td>
-                          <td className="p-2.5 text-muted-foreground">
-                            {staff.reason}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-          {/* Alur Penyetuju / Penerima (Recipients) */}
-          {Array.isArray(detail.recipients) && detail.recipients.length > 0 && (
-            <div className="mt-6">
-              <h4 className="mb-3 flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                <UserCheck className="size-3.5" />
-                Daftar Persetujuan
-              </h4>
-              <div className="space-y-2">
-                {detail.recipients.map((rec) => (
-                  <div
-                    key={rec.id}
-                    className="flex items-center justify-between rounded-md border border-border bg-card p-3 text-xs"
-                  >
-                    <div>
-                      <p className="font-medium text-foreground">
-                        {rec.sequence}. {rec.name ?? "Approver"}
-                      </p>
-                      <p className="text-muted-foreground">
-                        {rec.position ?? "-"} • {rec.department ?? "-"}
-                      </p>
-                      {rec.notes && (
-                        <p className="mt-1 text-muted-foreground italic">
-                          Catatan: &ldquo;{rec.notes}&rdquo;
-                        </p>
-                      )}
+      {/* 2-Column Layout */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[320px_1fr]">
+          {/* Left Column - Summary Card (Sticky) */}
+          <div>
+            <Card className="sticky top-0">
+              <CardHeader className="pb-4">
+                <Badge
+                  variant="outline"
+                  className={`w-fit text-xs font-medium capitalize ${getBadgeClass(detail.status)}`}
+                >
+                  {detail.status}
+                </Badge>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-start gap-3">
+                  <Avatar className="size-12">
+                    <AvatarFallback>{getInitials(senderName)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="font-semibold">{senderName}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {detail.sent_by.position || "Staff"}
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={`px-1.5 py-0 text-[10px] capitalize ${getBadgeClass(
-                        rec.status
-                      )}`}
-                    >
-                      {rec.status}
-                    </Badge>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Lampiran File (Attachments dari S3) */}
-          {Array.isArray(detail.attachments) &&
-            detail.attachments.length > 0 && (
-              <div className="mt-6">
-                <h4 className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                  Lampiran ({detail.attachments.length})
-                </h4>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {detail.attachments.map((file) => (
-                    <a
-                      key={file.id}
-                      href={file.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center justify-between rounded-lg border border-border bg-background p-3 text-xs transition-colors hover:bg-muted/50"
-                    >
-                      <div className="flex min-w-0 items-center gap-2">
-                        <Paperclip className="size-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
-                        <span className="truncate font-medium text-foreground">
-                          {file.file_name}
-                        </span>
-                      </div>
-                      <Download className="size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-                    </a>
-                  ))}
                 </div>
-              </div>
-            )}
+
+                <div className="space-y-3 border-t border-border pt-4">
+                  <div className="flex items-start gap-3">
+                    <FileText className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                    <div className="flex-1">
+                      <div className="text-xs text-muted-foreground">
+                        Jenis Permintaan
+                      </div>
+                      <div className="text-sm font-medium">{title}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <Mail className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                    <div className="flex-1">
+                      <div className="text-xs text-muted-foreground">
+                        Nomor Surat
+                      </div>
+                      <div className="text-sm font-medium">
+                        {detail.document_number}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <Calendar className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                    <div className="flex-1">
+                      <div className="text-xs text-muted-foreground">
+                        Tanggal Dibuat
+                      </div>
+                      <div className="text-sm font-medium">
+                        {formatDate(detail.created_at.toString())}
+                      </div>
+                    </div>
+                  </div>
+
+                  {totalApprovers > 0 && (
+                    <div className="flex items-start gap-3">
+                      <User className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                      <div className="flex-1">
+                        <div className="text-xs text-muted-foreground">
+                          Persetujuan
+                        </div>
+                        <div className="text-sm font-medium">
+                          {approvedCount} dari {totalApprovers} menyetujui
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-border pt-4">
+                  <div className="space-y-4">
+                    {/* Primary Action - Approve/Reject */}
+                    {isSendMail && (onApprove || onReject) && (
+                      <div className="space-y-2">
+                        {onApprove && (
+                          <Button
+                            onClick={onApprove}
+                            disabled={isApprovingMail}
+                            variant="default"
+                            className="w-full"
+                            size="sm"
+                          >
+                            {isApprovingMail ? (
+                              <>
+                                <Loader2 className="size-4 animate-spin" />
+                                Menyetujui...
+                              </>
+                            ) : (
+                              "Setujui"
+                            )}
+                          </Button>
+                        )}
+                        {onReject && (
+                          <Button
+                            onClick={onReject}
+                            disabled={isRejectingMail}
+                            variant="destructive"
+                            className="w-full"
+                            size="sm"
+                          >
+                            {isRejectingMail ? (
+                              <>
+                                <Loader2 className="size-4 animate-spin" />
+                                Menolak...
+                              </>
+                            ) : (
+                              "Tolak"
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Mail Actions */}
+                    {(isSendable || isRevisable) && (
+                      <div className="space-y-2">
+                        {isSendable && onSend && (
+                          <Button
+                            onClick={onSend}
+                            disabled={isSendingMail}
+                            variant="default"
+                            className="w-full gap-2"
+                            size="sm"
+                          >
+                            {isSendingMail ? (
+                              <>
+                                <Loader2 className="size-4 animate-spin" />
+                                Mengirim...
+                              </>
+                            ) : (
+                              <>
+                                <Send className="size-4" />
+                                Send Mail
+                              </>
+                            )}
+                          </Button>
+                        )}
+                        {isRevisable && onRevise && (
+                          <Button
+                            onClick={onRevise}
+                            disabled={isRevisingMail}
+                            variant="default"
+                            className="w-full gap-2 bg-blue-600 hover:bg-blue-700"
+                            size="sm"
+                          >
+                            {isRevisingMail ? (
+                              <>
+                                <Loader2 className="size-4 animate-spin" />
+                                Mengirim Revisi...
+                              </>
+                            ) : (
+                              <>
+                                <RotateCcw className="size-4" />
+                                Revise Mail
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Edit Action */}
+                    {isEditable && onEdit && (
+                      <Button
+                        onClick={onEdit}
+                        variant="outline"
+                        className="w-full gap-2"
+                        size="sm"
+                      >
+                        <Edit className="size-4" />
+                        Edit Mail
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Details */}
+          <div className="space-y-6">
+            {/* Request Details Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Detail Permintaan</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Periode / Tanggal
+                    </div>
+                    <div className="mt-1 text-sm">{dateRange}</div>
+                  </div>
+
+                  {timeDetails && (
+                    <div>
+                      <div className="text-sm font-medium text-muted-foreground">
+                        Keterangan Jam
+                      </div>
+                      <div className="mt-1 text-sm">{timeDetails}</div>
+                    </div>
+                  )}
+
+                  {typeof req.quota_deducted === "number" && (
+                    <div>
+                      <div className="text-sm font-medium text-muted-foreground">
+                        Potong Kuota Cuti
+                      </div>
+                      <div className="mt-1 text-sm">
+                        {req.quota_deducted} Hari
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="sm:col-span-2">
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Alasan / Catatan
+                    </div>
+                    <div className="mt-1 text-sm">{reason}</div>
+                  </div>
+                </div>
+
+                {req.type === "overtime_request" &&
+                  Array.isArray(req.table_details) && (
+                    <div className="mt-6">
+                      <div className="mb-2 text-sm font-medium text-muted-foreground">
+                        Daftar Staf Lembur ({req.table_details.length})
+                      </div>
+                      <div className="overflow-x-auto rounded-lg border border-border">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-muted/50 text-muted-foreground">
+                            <tr>
+                              <th className="p-2.5 font-medium">Nama Staf</th>
+                              <th className="p-2.5 font-medium">Jabatan</th>
+                              <th className="p-2.5 font-medium">Tanggal</th>
+                              <th className="p-2.5 font-medium">Jam</th>
+                              <th className="p-2.5 font-medium">Alasan</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border">
+                            {req.table_details.map((staff) => (
+                              <tr key={staff.id} className="hover:bg-muted/20">
+                                <td className="p-2.5 font-medium text-foreground">
+                                  {staff.fullname}
+                                </td>
+                                <td className="p-2.5 text-muted-foreground">
+                                  {staff.position}
+                                </td>
+                                <td className="p-2.5 whitespace-nowrap">
+                                  {formatDate(staff.date)}
+                                </td>
+                                <td className="p-2.5 whitespace-nowrap">
+                                  {staff.start_time} - {staff.end_time}
+                                </td>
+                                <td className="p-2.5 text-muted-foreground">
+                                  {staff.reason}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+              </CardContent>
+            </Card>
+
+            {/* Approval Flow Card */}
+            {Array.isArray(detail.recipients) &&
+              detail.recipients.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Riwayat Persetujuan</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {detail.recipients.map((rec) => (
+                        <div
+                          key={rec.id}
+                          className="flex items-center justify-between rounded-lg border border-border p-3"
+                        >
+                          <div className="flex-1">
+                            <div className="font-medium">
+                              {rec.sequence}. {rec.name ?? "Approver"}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {rec.position ?? "-"} • {rec.department ?? "-"}
+                            </div>
+                            {rec.notes && (
+                              <div className="mt-1 text-xs text-muted-foreground italic">
+                                Catatan: &ldquo;{rec.notes}&rdquo;
+                              </div>
+                            )}
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className={`ml-3 text-xs capitalize ${getBadgeClass(rec.status)}`}
+                          >
+                            {rec.status}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+            {/* Attachments Card */}
+            {Array.isArray(detail.attachments) &&
+              detail.attachments.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      Lampiran ({detail.attachments.length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {detail.attachments.map((file) => (
+                        <AttachmentItem
+                          key={file.id}
+                          file={{
+                            id: file.id,
+                            name: file.file_name,
+                            url: file.file_url,
+                          }}
+                          mode="view"
+                        />
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+          </div>
         </div>
       </div>
     </div>

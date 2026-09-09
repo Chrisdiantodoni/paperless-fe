@@ -12,4 +12,5 @@ export type {
   ObligatedTemplateListResponse,
 }
 
+export * from "./master"
 export type SelectValue = { value: string; label: string }

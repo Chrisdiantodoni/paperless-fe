@@ -3,7 +3,7 @@ import { Badge } from "@workspace/ui/components/ui/badge"
 import { Checkbox } from "@workspace/ui/components/ui/checkbox"
 import type { AllMailProps } from "@workspace/types/mail"
 import { getInitials } from "@workspace/ui/lib/utils"
-import { formatDate } from "@workspace/utils"
+import { formatDate, getRequestTypeLabel } from "@workspace/utils"
 
 export interface MailItemProps {
   mail: AllMailProps
@@ -33,7 +33,7 @@ export function MailItem({ mail, isSelected, onSelect }: MailItemProps) {
   // Ambil label judul request (misal: "Terlambat Masuk Kantor" atau default request type)
   const permitTitle =
     mail.request_data?.permit_type ||
-    mail.request_data?.type?.replace(/_/g, " ") ||
+    getRequestTypeLabel(mail.request_data?.type) ||
     "Surat Permohonan"
 
   return (
@@ -79,7 +79,7 @@ export function MailItem({ mail, isSelected, onSelect }: MailItemProps) {
           </div>
 
           <span className="shrink-0 text-[11px] whitespace-nowrap text-muted-foreground">
-            {formatDate(mail.created_at)}
+            {formatDate(mail.created_at.toString())}
           </span>
         </div>
 

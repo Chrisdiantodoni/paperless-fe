@@ -34,6 +34,98 @@ pnpm + Turborepo monorepo. TanStack Start + Router (React 19, SSR), Tailwind v4,
 - `.env*` gitignored; admin needs `VITE_BASE_URL` + `VITE_PORTAL_URL` (see `apps/paperless-admin/.env`)
 - Build artifacts: `.output/`, `.tanstack/`, `dist/`, `dist-ssr/`, `apps/*/src/**/*.js`, `packages/*/src/**/*.js`, `graphify-out/`
 
+## UI Patterns
+
+### Confirmation Dialogs (useConfirm)
+
+Use `useConfirm` from `@workspace/ui/components/ui/confirm-dialog` for destructive or important actions that need user confirmation.
+
+**Import:**
+```tsx
+import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
+```
+
+**Usage:**
+```tsx
+const confirm = useConfirm()
+
+const handleAction = async () => {
+  const confirmed = await confirm({
+    title: "Konfirmasi Aksi",
+    description: "Apakah Anda yakin ingin melakukan aksi ini?",
+  })
+  
+  if (confirmed) {
+    // Proceed with action
+  }
+}
+```
+
+**When to use:**
+- Sending/submitting critical forms (mail, approvals, transactions)
+- Destructive actions (delete, revoke, cancel)
+- State changes that can't be easily undone
+- Actions that trigger notifications or external updates
+
+**Implementation examples:**
+- `apps/paperless-user/src/routes/_dashboard/mail/user-mails/create.tsx` — Confirm before sending new mail
+- `apps/paperless-user/src/routes/_dashboard/mail/user-mails/index.tsx` — Confirm before sending or revising mail
+
+**Best practices:**
+- Use clear, action-specific titles and descriptions in Indonesian
+- Always check if `confirmed` is true before proceeding
+- Use `async/await` pattern for cleaner code
+- Don't overuse — only for actions that truly need confirmation
+
+### Dialog State Management
+
+Dialogs should reset their state on every close/open cycle to prevent stale data.
+
+**Pattern:**
+```tsx
+const [dialogOpen, setDialogOpen] = useState(false)
+const [formData, setFormData] = useState("")
+
+const closeDialog = () => {
+  setDialogOpen(false)
+  setFormData("")
+}
+
+const submitDialog = () => {
+  if (formData.trim()) {
+    mutation.mutate(formData, {
+      onSuccess: () => {
+        closeDialog()
+        toast.success("Berhasil")
+      }
+    })
+  }
+}
+
+<Dialog open={dialogOpen} onClose={closeDialog}>
+  <Input value={formData} onChange={setFormData} />
+  <Button onClick={submitDialog}>Submit</Button>
+</Dialog>
+```
+
+**Key rules:**
+- **Reset state on close** — create dedicated close handler that resets both dialog state and form data
+- **No double confirmation** — if opening a dialog is already a confirmation step, don't use `useConfirm` inside the dialog submit handler
+- **State isolation** — each dialog cycle should start fresh
+
+**When NOT to use useConfirm inside dialogs:**
+- Approval/rejection dialogs with form inputs (dialog itself is confirmation)
+- Multi-step dialogs where user already confirmed intent
+- Dialogs with "Cancel" and "Submit" buttons (explicit choice already present)
+
+**When to use useConfirm:**
+- Direct button actions without dialogs
+- Inline table row actions
+- Navigation-away warnings
+
+**Implementation example:**
+- `apps/paperless-user/src/routes/_dashboard/mail/user-mails/index.tsx` — ApprovalDialog, RejectDialog, RevisionDialog with state reset
+
 ## Graphify Workflow
 
 Graphify generates code knowledge graphs per-app (not at root) for focused context and faster queries.

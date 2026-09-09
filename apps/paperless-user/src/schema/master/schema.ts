@@ -6,15 +6,10 @@ const selectValueSchema = z.object({
 })
 
 const recipientItemSchema = z.object({
-  user_id: z
-    .object({
-      value: z.string(),
-      label: z.string(),
-    })
-    .refine((val) => val.value.length > 0, {
-      message: "Penerima wajib dipilih",
-      path: [], // penting: bikin error nempel di department_id, bukan department_id.value
-    }),
+  user_id: z.object({
+    value: z.string().min(1, "Penerima wajib dipilih"),
+    label: z.string(),
+  }),
   recipient_type: z.enum(["to", "cc"]),
   sequence: z.number(),
 })
@@ -22,15 +17,10 @@ const recipientItemSchema = z.object({
 export const staticMailTemplateFormSchema = z.object({
   name: z.string().min(1, { message: "Nama template wajib diisi" }).max(255),
   code: z.string().min(1, { message: "Kode wajib diisi" }).max(50),
-  department_id: z
-    .object({
-      value: z.string(),
-      label: z.string(),
-    })
-    .refine((val) => val.value.length > 0, {
-      message: "Departemen wajib dipilih",
-      path: [], // penting: bikin error nempel di department_id, bukan department_id.value
-    }),
+  department_id: z.object({
+    value: z.string().min(1, "Departemen wajib dipilih"),
+    label: z.string(),
+  }),
 
   description: z.string().optional(),
   content: z.string().optional(),
@@ -103,9 +93,9 @@ const dynamicMailTemplateObject = z.object({
   name: z.string().min(1, { message: "Nama template wajib diisi" }).max(255),
   code: z.string().min(1, { message: "Kode wajib diisi" }).max(50),
   description: z.string().optional(),
-  department: selectValueSchema.refine((val) => val.value.length > 0, {
-    message: "Departemen wajib dipilih",
-    path: [],
+  department: z.object({
+    value: z.string().min(1, "Departemen wajib dipilih"),
+    label: z.string(),
   }),
   form_schema: z
     .array(fieldDefinitionSchema)

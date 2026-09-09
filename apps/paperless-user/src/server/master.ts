@@ -5,6 +5,7 @@ import {
   positionSearchSchema,
   staffSearchSchema,
   staticMailTemplateSearchSchema,
+  subordinateSearchSchema,
 } from "@/schema/list.schema"
 import {
   dynamicMailTemplateSchema,
@@ -280,5 +281,16 @@ export const getObligatedDynamicTemplate = createServerFn({ method: "GET" })
     } catch (error: any) {
       console.error('[getObligatedDynamicTemplate] API error:', error)
       throw new Error(error.message)
+    }
+  })
+
+export const getSubordinates = createServerFn({ method: "GET" })
+  .validator(subordinateSearchSchema)
+  .handler(async ({ data }) => {
+    try {
+      const response = await master.getSubordinates(data)
+      return response.data
+    } catch (error: any) {
+      handleApiError(error)
     }
   })

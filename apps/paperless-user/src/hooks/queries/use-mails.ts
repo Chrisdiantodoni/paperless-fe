@@ -5,12 +5,18 @@ import {
   getMailDetails,
   getMails,
   getSentMails,
+  sendMail,
+  reviseMail,
+  approveMail,
+  rejectMail,
 } from "@/server/mails"
 import {
   keepPreviousData,
   queryOptions,
   useQuery,
   useSuspenseQuery,
+  useMutation,
+  useQueryClient,
 } from "@tanstack/react-query"
 import type { LaravelPaginationData } from "@workspace/types/api"
 import type { AllMailProps } from "@workspace/types/mail"
@@ -75,4 +81,55 @@ export const mailDetailQueryOptions = (id: string | null) =>
 
 export function useMailDetail(id: string | null) {
   return useQuery(mailDetailQueryOptions(id))
+}
+
+export function useSendMail() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: (id: string) => sendMail({ data: id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mailKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: ["mail-detail"] })
+    },
+  })
+}
+
+export function useReviseMail() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => 
+      reviseMail({ data: { id, reason } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mailKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: ["mail-detail"] })
+    },
+  })
+}
+
+export function useApproveMail() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ id, notes }: { id: string; notes?: string }) => 
+      approveMail({ data: { id, notes } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mailKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: ["mail-detail"] })
+    },
+  })
+}
+
+export function useRejectMail() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => 
+      rejectMail({ data: { id, reason } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mailKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: ["mail-detail"] })
+    },
+  })
 }

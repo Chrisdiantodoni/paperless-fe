@@ -48,12 +48,19 @@ export interface Recipient {
 
 export interface RequestData {
   type: string
-  leave_type: string
-  start_date: string
-  end_date: string
-  reason: string
-  quota_deducted: string
-  notes: string
+  leave_type?: string
+  start_date?: string
+  end_date?: string
+  reason?: string
+  quota_deducted?: string
+  notes?: string
+  permit_type?: string
+  date?: Date
+  start_work_at?: string
+  end_work_at?: string
+  exit_time?: string
+  return_time?: string
+  table_details?: any[]
 }
 
 export interface ObligatedTemplate {
@@ -94,4 +101,68 @@ export interface ObligatedTemplateListResponse {
     total: number
     last_page: number
   }
+}
+
+export interface CreateMailLeaveData {
+  static_mail_template_id: string
+  start_date: string
+  end_date: string
+  days_taken: number
+  leave_type: string
+  reason: string
+}
+
+export interface CreateMailPermitData {
+  static_mail_template_id: string
+  date: string
+  permit_type: "Terlambat Masuk Kantor" | "Keluar Kantor pada Jam Kerja" | "Pulang Lebih Awal"
+  start_work_at: string | null
+  exit_time: string | null
+  return_time: string | null
+  end_work_at: string | null
+  reason: string
+}
+
+export interface CreateMailAbsenceData {
+  static_mail_template_id: string
+  start_date: string
+  end_date: string
+  reason: string
+}
+
+export interface CreateMailOvertimeDetail {
+  user_id: string
+  date: string
+  start_time: string
+  end_time: string
+  reason: string
+}
+
+export interface CreateMailOvertimeData {
+  static_mail_template_id: string
+  details: CreateMailOvertimeDetail[]
+  reason: string
+}
+
+export interface CreateMailDynamicData {
+  dynamic_mail_template_id: string
+  payload: string
+  form_schema: string
+}
+
+export interface CreateMailDelegation {
+  user_id: string
+}
+
+export interface CreateMailPayload {
+  request_type: "dynamic" | "leave_request" | "permit_request" | "absence_request" | "overtime_request"
+  user_id: string
+  notes: string | null
+  attachments?: File[]
+  delegations: CreateMailDelegation[] | null
+  leave_data?: CreateMailLeaveData
+  permit_data?: CreateMailPermitData
+  absence_data?: CreateMailAbsenceData
+  overtime_data?: CreateMailOvertimeData
+  dynamic_data?: CreateMailDynamicData
 }

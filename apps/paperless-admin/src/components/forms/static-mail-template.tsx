@@ -30,6 +30,7 @@ import type { SelectValue } from "@workspace/types"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { GroupedSelectPreview } from "../grouped-select-preview"
 import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
+import { getStaticRequestTypeOptions } from "@workspace/utils"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FormApi = any
@@ -299,12 +300,7 @@ const TemplateFormFields = memo(function TemplateFormFields({
                   <field.SelectField
                     label="Tipe Permintaan"
                     required
-                    options={[
-                      { value: "leave_request", label: "Cuti" },
-                      { value: "permit_request", label: "Izin" },
-                      { value: "absence_request", label: "Absen" },
-                      { value: "overtime_request", label: "Lembur" },
-                    ]}
+                    options={getStaticRequestTypeOptions()}
                   />
                 )}
               </form.AppField>

@@ -10,6 +10,7 @@
     "noEmit": true,
     "paths": {
       "@workspace/ui/*": ["./src/*"],
+      "@workspace/types/*": ["../types/src/*"],
     },
   },
   "include": [".", "../forms/src/forms", "../forms/src/fields"],

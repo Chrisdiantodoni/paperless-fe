@@ -1,26 +1,23 @@
 import { z } from "zod"
 
 export const createMailTemplateSchema = z.object({
-  department: z
-    .object({
-      value: z.string(),
-      label: z.string(),
-    })
-    .refine((val) => val.value.length > 0, {
-      message: "Departemen wajib dipilih",
-      path: [],
-    }),
+  department: z.object({
+    value: z.string().min(1, "Departemen wajib dipilih"),
+    label: z.string(),
+  }),
   template: z
     .object({
-      value: z.string(),
-      label: z.string(),
+      id: z.string(),
+      name: z.string(),
+      type: z.string(),
+      request_type: z.string(),
     })
-    .refine((val) => val.value.length > 0, {
+    .nullable()
+    .refine((val) => val !== null, {
       message: "Template wajib dipilih",
-      path: [],
     }),
 })
 
 export const sendMailSchema = z.object({
-  ...createMailTemplateSchema,
+  ...createMailTemplateSchema.shape,
 })

@@ -90,3 +90,11 @@ export const staffSearchSchema = z.object({
 })
 
 export type StaffSearch = z.infer<typeof staffSearchSchema>
+
+export const subordinateSearchSchema = z.object({
+  page: z.number().catch(1).optional(),
+  search: z.string().catch("").optional(),
+  per_page: z.number().catch(10).optional(),
+})
+
+export type SubordinateSearch = z.infer<typeof subordinateSearchSchema>

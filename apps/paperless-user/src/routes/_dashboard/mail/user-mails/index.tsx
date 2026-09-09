@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { zodValidator } from "@tanstack/zod-adapter"
+import { useState } from "react"
 
 import {
   MailHeader,
@@ -7,9 +8,10 @@ import {
   MailDetail,
   MailEmptyState,
   ApprovalDialog,
+  RejectDialog,
+  RevisionDialog,
 } from "@/components/mail"
 import { useMailData } from "@/hooks/queries/use-mail-data"
-import { QueryClient } from "@tanstack/react-query"
 import { listRequestQuerySchema } from "@/schema/mail/schema"
 import {
   AllDraftMailQueryOptions,
@@ -17,11 +19,16 @@ import {
   allSentMailQueryOptions,
   useMailDetail,
   useMailList,
+  useSendMail,
+  useReviseMail,
+  useApproveMail,
+  useRejectMail,
 } from "@/hooks/queries/use-mails"
 import type { LaravelPaginationData } from "@workspace/types/api"
 import type { AllMailProps } from "@workspace/types/mail"
-import { getMailDetails } from "@/server/mails"
 import type { MailFilterState } from "@/components/mail/MailHeader"
+import { toast } from "sonner"
+import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
 
 export const Route = createFileRoute("/_dashboard/mail/user-mails/")({
   validateSearch: zodValidator(listRequestQuerySchema),
@@ -71,14 +78,23 @@ function RouteComponent() {
     approvalOpen,
     setApprovalOpen,
     setShowDetail,
-    current,
-    submitApproval,
     showDetail,
     setRefreshing,
   } = useMailData(search)
 
   const { data: mailDetail, isLoading: isLoadingDetail } =
     useMailDetail(selectedId)
+
+  const sendMailMutation = useSendMail()
+  const reviseMailMutation = useReviseMail()
+  const approveMailMutation = useApproveMail()
+  const rejectMailMutation = useRejectMail()
+
+  const [revisionOpen, setRevisionOpen] = useState(false)
+  const [revisionReason, setRevisionReason] = useState("")
+  const [rejectOpen, setRejectOpen] = useState(false)
+  const [rejectReason, setRejectReason] = useState("")
+  const confirm = useConfirm()
 
   const handleClose = () => {
     setSelectedId(null)
@@ -141,6 +157,107 @@ function RouteComponent() {
     setShowDetail(true)
   }
 
+  const handleEdit = () => {
+    if (selectedId) {
+      navigate({
+        to: "/mail/user-mails/$mailId/edit",
+        params: { mailId: String(selectedId) },
+      })
+    }
+  }
+
+  const handleSend = async () => {
+    if (selectedId) {
+      const confirmed = await confirm({
+        title: "Konfirmasi Kirim Mail",
+        description: "Apakah Anda yakin ingin mengirim mail ini?",
+      })
+      if (confirmed) {
+        sendMailMutation.mutate(selectedId, {
+          onSuccess: () => {
+            handleClose()
+            toast.success("Mail dikirim")
+          },
+        })
+      }
+    }
+  }
+
+  const handleRevise = () => {
+    setRevisionOpen(true)
+  }
+
+  const submitRevision = () => {
+    if (selectedId && revisionReason.trim()) {
+      reviseMailMutation.mutate(
+        { id: selectedId, reason: revisionReason },
+        {
+          onSuccess: () => {
+            setRevisionOpen(false)
+            setRevisionReason("")
+            toast.success("Revisi dikirim")
+            handleClose()
+          },
+        }
+      )
+    }
+  }
+
+  const handleApprove = () => {
+    setApprovalOpen(true)
+  }
+
+  const submitApproval = () => {
+    if (selectedId) {
+      approveMailMutation.mutate(
+        { id: selectedId, notes: approvalNote || undefined },
+        {
+          onSuccess: () => {
+            setApprovalOpen(false)
+            setApprovalNote("")
+            toast.success("Surat disetujui")
+            handleClose()
+          },
+        }
+      )
+    }
+  }
+
+  const handleReject = () => {
+    setRejectOpen(true)
+  }
+
+  const submitRejection = () => {
+    if (selectedId && rejectReason.trim()) {
+      rejectMailMutation.mutate(
+        { id: selectedId, reason: rejectReason },
+        {
+          onSuccess: () => {
+            setRejectOpen(false)
+            setRejectReason("")
+            toast.success("Surat ditolak")
+            handleClose()
+          },
+        }
+      )
+    }
+  }
+
+  const closeApprovalDialog = () => {
+    setApprovalOpen(false)
+    setApprovalNote("")
+  }
+
+  const closeRejectDialog = () => {
+    setRejectOpen(false)
+    setRejectReason("")
+  }
+
+  const closeRevisionDialog = () => {
+    setRevisionOpen(false)
+    setRevisionReason("")
+  }
+
   return (
     <main className="flex min-h-screen flex-col bg-background text-foreground">
       <MailHeader
@@ -180,7 +297,15 @@ function RouteComponent() {
             <MailDetail
               detail={mailDetail!}
               isLoading={isLoadingDetail}
-              onOpenApproval={() => setApprovalOpen(true)}
+              isSendingMail={sendMailMutation.isPending}
+              isRevisingMail={reviseMailMutation.isPending}
+              isApprovingMail={approveMailMutation.isPending}
+              isRejectingMail={rejectMailMutation.isPending}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              onEdit={handleEdit}
+              onSend={handleSend}
+              onRevise={handleRevise}
               onClose={handleClose}
               showCloseButton
             />
@@ -194,15 +319,24 @@ function RouteComponent() {
         open={approvalOpen}
         approvalNote={approvalNote}
         onNoteChange={setApprovalNote}
-        onClose={() => setApprovalOpen(false)}
-        onApprove={() => {
-          submitApproval("Approved")
-          setApprovalOpen(false)
-        }}
-        onReject={() => {
-          submitApproval("Rejected")
-          setApprovalOpen(false)
-        }}
+        onClose={closeApprovalDialog}
+        onApprove={submitApproval}
+      />
+
+      <RejectDialog
+        open={rejectOpen}
+        rejectReason={rejectReason}
+        onReasonChange={setRejectReason}
+        onClose={closeRejectDialog}
+        onSubmit={submitRejection}
+      />
+
+      <RevisionDialog
+        open={revisionOpen}
+        revisionReason={revisionReason}
+        onReasonChange={setRevisionReason}
+        onClose={closeRevisionDialog}
+        onSubmit={submitRevision}
       />
     </main>
   )

@@ -61,16 +61,22 @@ export function StaffCombobox({
   })
   const options = (data?.data ?? []).filter((d) => d.user_account?.id != null)
 
-  const resolvedLabel =
-    extractLabel(value) ||
-    options.find((d) => d.user_account?.id === resolvedValue)?.biodata?.fullname
+  const selectedStaff = options.find(
+    (d) => d.user_account?.id === resolvedValue
+  )
+  const fallbackLabel = selectedStaff
+    ? `${selectedStaff.biodata?.fullname} - ${selectedStaff.employment_data?.position?.name}`
+    : ""
+
+  const resolvedLabel = extractLabel(value) || fallbackLabel
+
   return (
     <>
       <Popover
         open={open}
         onOpenChange={(next) => {
           setOpen(next)
-          if (!next) onBlur?.() // trigger blur saat popover ditutup
+          if (!next) onBlur?.()
         }}
       >
         <PopoverTrigger asChild>
@@ -121,30 +127,34 @@ export function StaffCombobox({
                   Loading...
                 </div>
               ) : options.length === 0 ? (
-                <CommandEmpty>No staff found.</CommandEmpty>
+                <CommandEmpty>Staff tidak ditemukan</CommandEmpty>
               ) : (
-                options.map((staff) => (
-                  <CommandItem
-                    key={staff.id}
-                    value={String(staff.user_account?.id ?? "")}
-                    onSelect={() => {
-                      onChange({
-                        value: staff.user_account?.id ?? "",
-                        label: `${staff.biodata?.fullname} (${staff.nip})`,
-                      })
-                      setOpen(false)
-                    }}
-                  >
-                    <Check
-                      className={`mr-2 h-4 w-4 ${
-                        resolvedValue === staff.user_account?.id
-                          ? "opacity-100"
-                          : "opacity-0"
-                      }`}
-                    />
-                    {staff.biodata?.fullname} ({staff.nip})
-                  </CommandItem>
-                ))
+                options.map((staff) => {
+                  const staffLabel = `${staff.biodata?.fullname} - ${staff.employment_data?.position?.name}`
+
+                  return (
+                    <CommandItem
+                      key={staff.id}
+                      value={String(staff.user_account?.id ?? "")}
+                      onSelect={() => {
+                        onChange({
+                          value: staff.user_account?.id ?? "",
+                          label: staffLabel,
+                        })
+                        setOpen(false)
+                      }}
+                    >
+                      <Check
+                        className={`mr-2 h-4 w-4 ${
+                          resolvedValue === staff.user_account?.id
+                            ? "opacity-100"
+                            : "opacity-0"
+                        }`}
+                      />
+                      {staffLabel}
+                    </CommandItem>
+                  )
+                })
               )}
             </CommandGroup>
           </Command>

@@ -7,6 +7,7 @@ import type {
   Position,
   StaticMailTemplate,
   IDynamicMailTemplate,
+  Subordinate,
 } from "@workspace/types/master"
 import { api } from "../api"
 import type {
@@ -135,6 +136,13 @@ class MasterService {
     const res = await api.get(`/mail/static/obligated-templates`, {
       params,
     })
+    return res.data
+  }
+
+  async getSubordinates(
+    params?: Record<string, string | number | undefined>
+  ): Promise<APIResponse<LaravelPaginationData<Subordinate[]>>> {
+    const res = await api.get("/subordinates", { params })
     return res.data
   }
 }

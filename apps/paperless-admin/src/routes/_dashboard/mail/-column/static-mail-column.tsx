@@ -7,6 +7,7 @@ import { Eye, Pencil, Trash } from "lucide-react"
 import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
 import { toast } from "sonner"
 import { useDeleteStaticMailMutation } from "@/hooks/queries/use-static-mail-template"
+import { getRequestTypeLabel } from "@workspace/utils"
 
 export type StaticMailTemplateRow = StaticMailTemplate & {
   current_page: number
@@ -85,16 +86,10 @@ export const columns: ColumnDef<StaticMailTemplateRow>[] = [
     accessorKey: "request_type",
     header: "Tipe Permintaan",
     cell: ({ row }) => {
-      const typeLabels = {
-        leave_request: "Cuti",
-        permit_request: "Izin",
-        absence_request: "Absen",
-        overtime_request: "Lembur",
-      }
       const type = row.original.request_type
       return (
         <Badge variant="outline" className="rounded-md">
-          {typeLabels[type] || type}
+          {getRequestTypeLabel(type)}
         </Badge>
       )
     },

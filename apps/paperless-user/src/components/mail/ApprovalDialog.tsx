@@ -7,7 +7,6 @@ interface ApprovalDialogProps {
   onNoteChange: (note: string) => void
   onClose: () => void
   onApprove: () => void
-  onReject: () => void
 }
 
 export function ApprovalDialog({
@@ -16,7 +15,6 @@ export function ApprovalDialog({
   onNoteChange,
   onClose,
   onApprove,
-  onReject,
 }: ApprovalDialogProps) {
   if (!open) return null
 
@@ -35,10 +33,10 @@ export function ApprovalDialog({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h3 id="approval-title" className="text-lg font-semibold">
-              Tinjau Permohonan
+              Setujui Permohonan
             </h3>
             <p className="text-sm text-muted-foreground">
-              Pilih tindakan dan beri catatan opsional.
+              Tambahkan catatan persetujuan (opsional).
             </p>
           </div>
           <Button
@@ -60,8 +58,8 @@ export function ApprovalDialog({
         />
 
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button variant="outline" onClick={onReject}>
-            Tolak
+          <Button variant="outline" onClick={onClose}>
+            Batal
           </Button>
           <Button onClick={onApprove}>Setujui</Button>
         </div>

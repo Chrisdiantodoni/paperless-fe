@@ -188,3 +188,10 @@ export const updateTemplateValidator = z.object({
   id: z.string(),
   form: dynamicMailTemplateSchema,
 })
+
+export const revisionRequestSchema = z.object({
+  reason: z.string().min(1, { message: "Alasan revisi wajib diisi" }),
+  scope_changes: z.array(z.string()).optional(),
+})
+
+export type RevisionRequestForm = z.infer<typeof revisionRequestSchema>

@@ -19,6 +19,7 @@ import { Route as DashboardSubordinatesIndexRouteImport } from './routes/_dashbo
 import { Route as DashboardProfileIndexRouteImport } from './routes/_dashboard/profile/index'
 import { Route as DashboardMailUserMailsIndexRouteImport } from './routes/_dashboard/mail/user-mails/index'
 import { Route as DashboardMailUserMailsCreateRouteImport } from './routes/_dashboard/mail/user-mails/create'
+import { Route as DashboardMailUserMailsMailIdEditRouteImport } from './routes/_dashboard/mail/user-mails/$mailId.edit'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/_dashboard',
@@ -72,6 +73,12 @@ const DashboardMailUserMailsCreateRoute =
     path: '/user-mails/create',
     getParentRoute: () => DashboardMailRouteRoute,
   } as any)
+const DashboardMailUserMailsMailIdEditRoute =
+  DashboardMailUserMailsMailIdEditRouteImport.update({
+    id: '/user-mails/$mailId/edit',
+    path: '/user-mails/$mailId/edit',
+    getParentRoute: () => DashboardMailRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof DashboardIndexRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/subordinates/': typeof DashboardSubordinatesIndexRoute
   '/mail/user-mails/create': typeof DashboardMailUserMailsCreateRoute
   '/mail/user-mails/': typeof DashboardMailUserMailsIndexRoute
+  '/mail/user-mails/$mailId/edit': typeof DashboardMailUserMailsMailIdEditRoute
 }
 export interface FileRoutesByTo {
   '/mail': typeof DashboardMailRouteRouteWithChildren
@@ -94,6 +102,7 @@ export interface FileRoutesByTo {
   '/subordinates': typeof DashboardSubordinatesIndexRoute
   '/mail/user-mails/create': typeof DashboardMailUserMailsCreateRoute
   '/mail/user-mails': typeof DashboardMailUserMailsIndexRoute
+  '/mail/user-mails/$mailId/edit': typeof DashboardMailUserMailsMailIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +116,7 @@ export interface FileRoutesById {
   '/_dashboard/subordinates/': typeof DashboardSubordinatesIndexRoute
   '/_dashboard/mail/user-mails/create': typeof DashboardMailUserMailsCreateRoute
   '/_dashboard/mail/user-mails/': typeof DashboardMailUserMailsIndexRoute
+  '/_dashboard/mail/user-mails/$mailId/edit': typeof DashboardMailUserMailsMailIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/subordinates/'
     | '/mail/user-mails/create'
     | '/mail/user-mails/'
+    | '/mail/user-mails/$mailId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/mail'
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/subordinates'
     | '/mail/user-mails/create'
     | '/mail/user-mails'
+    | '/mail/user-mails/$mailId/edit'
   id:
     | '__root__'
     | '/_dashboard'
@@ -143,6 +155,7 @@ export interface FileRouteTypes {
     | '/_dashboard/subordinates/'
     | '/_dashboard/mail/user-mails/create'
     | '/_dashboard/mail/user-mails/'
+    | '/_dashboard/mail/user-mails/$mailId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -223,17 +236,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardMailUserMailsCreateRouteImport
       parentRoute: typeof DashboardMailRouteRoute
     }
+    '/_dashboard/mail/user-mails/$mailId/edit': {
+      id: '/_dashboard/mail/user-mails/$mailId/edit'
+      path: '/user-mails/$mailId/edit'
+      fullPath: '/mail/user-mails/$mailId/edit'
+      preLoaderRoute: typeof DashboardMailUserMailsMailIdEditRouteImport
+      parentRoute: typeof DashboardMailRouteRoute
+    }
   }
 }
 
 interface DashboardMailRouteRouteChildren {
   DashboardMailUserMailsCreateRoute: typeof DashboardMailUserMailsCreateRoute
   DashboardMailUserMailsIndexRoute: typeof DashboardMailUserMailsIndexRoute
+  DashboardMailUserMailsMailIdEditRoute: typeof DashboardMailUserMailsMailIdEditRoute
 }
 
 const DashboardMailRouteRouteChildren: DashboardMailRouteRouteChildren = {
   DashboardMailUserMailsCreateRoute: DashboardMailUserMailsCreateRoute,
   DashboardMailUserMailsIndexRoute: DashboardMailUserMailsIndexRoute,
+  DashboardMailUserMailsMailIdEditRoute: DashboardMailUserMailsMailIdEditRoute,
 }
 
 const DashboardMailRouteRouteWithChildren =

@@ -106,7 +106,7 @@ export function DepartmentCombobox({
                   Loading...
                 </div>
               ) : options.length === 0 ? (
-                <CommandEmpty>No department found.</CommandEmpty>
+                <CommandEmpty>Departemen tidak ditemukan</CommandEmpty>
               ) : (
                 options.map((dept) => (
                   <CommandItem

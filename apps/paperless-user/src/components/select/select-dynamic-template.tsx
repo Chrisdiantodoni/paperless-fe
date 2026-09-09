@@ -128,7 +128,7 @@ export function DynamicTemplateCombobox({
                   Loading...
                 </div>
               ) : options.length === 0 ? (
-                <CommandEmpty>No template found.</CommandEmpty>
+                <CommandEmpty>Template tidak ditemukan</CommandEmpty>
               ) : (
                 options.map((dept) => (
                   <CommandItem

@@ -91,7 +91,7 @@ export function BranchCombobox({ value, onChange }: BranchComboboxProps) {
                 Loading...
               </div>
             ) : options.length === 0 ? (
-              <CommandEmpty>No branch found.</CommandEmpty>
+              <CommandEmpty>Cabang tidak ditemukan</CommandEmpty>
             ) : (
               options.map((branch) => (
                 <CommandItem

@@ -118,6 +118,44 @@ class MasterService {
     const res = await api.delete(`/mail/dynamic/dynamic-mail-templates/${id}`)
     return res.data
   }
+
+  async submitDynamicMailTemplateForApproval(
+    id: string
+  ): Promise<APIResponse<any>> {
+    const res = await api.post(
+      `/mail/dynamic/dynamic-mail-templates/${id}/submit-for-approval`
+    )
+    return res.data
+  }
+
+  async approveDynamicMailTemplate(id: string): Promise<APIResponse<any>> {
+    const res = await api.post(
+      `/mail/dynamic/dynamic-mail-templates/${id}/approve`
+    )
+    return res.data
+  }
+
+  async rejectDynamicMailTemplate(
+    id: string,
+    data: { reason: string }
+  ): Promise<APIResponse<any>> {
+    const res = await api.post(
+      `/mail/dynamic/dynamic-mail-templates/${id}/reject`,
+      data
+    )
+    return res.data
+  }
+
+  async requestDynamicMailTemplateRevision(
+    id: string,
+    data: { reason: string; scope_changes?: string[] }
+  ): Promise<APIResponse<any>> {
+    const res = await api.post(
+      `/mail/dynamic/dynamic-mail-templates/${id}/request-revision`,
+      data
+    )
+    return res.data
+  }
 }
 
 export default new MasterService()

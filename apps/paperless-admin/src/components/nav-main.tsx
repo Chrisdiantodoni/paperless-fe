@@ -14,6 +14,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@workspace/ui/components/ui/sidebar"
+import { Badge } from "@workspace/ui/components/ui/badge"
 import * as PhosphorIcons from "@phosphor-icons/react"
 import type { NavPrimaryprops } from "@workspace/types/utilities"
 import { Link } from "@tanstack/react-router"
@@ -47,6 +48,11 @@ export function NavMain({ sidebar }: { sidebar: NavPrimaryprops["items"] }) {
                       <SidebarMenuButton tooltip={item.title} size={"sm"}>
                         {Icon && <Icon size={18} />}
                         <span>{item.title}</span>
+                        {item.badge && (
+                          <Badge variant={item.badge.variant ?? "default"} className="ml-auto">
+                            {item.badge.count ?? item.badge.label}
+                          </Badge>
+                        )}
                         <CaretRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
@@ -63,6 +69,11 @@ export function NavMain({ sidebar }: { sidebar: NavPrimaryprops["items"] }) {
                                 activeOptions={subItem.activeOptions}
                               >
                                 <span>{subItem.title}</span>
+                                {subItem.badge && (
+                                  <Badge variant={subItem.badge.variant ?? "default"} className="ml-auto">
+                                    {subItem.badge.count ?? subItem.badge.label}
+                                  </Badge>
+                                )}
                               </Link>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
@@ -86,6 +97,11 @@ export function NavMain({ sidebar }: { sidebar: NavPrimaryprops["items"] }) {
                       >
                         {Icon && <Icon size={18} />}
                         <span>{item.title}</span>
+                        {item.badge && (
+                          <Badge variant={item.badge.variant ?? "default"} className="ml-auto">
+                            {item.badge.count ?? item.badge.label}
+                          </Badge>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

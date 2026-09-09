@@ -104,7 +104,7 @@ export function PositionCombobox({
                 Loading...
               </div>
             ) : options.length === 0 ? (
-              <CommandEmpty>No position found.</CommandEmpty>
+              <CommandEmpty>Posisi tidak ditemukan</CommandEmpty>
             ) : (
               options.map((pos) => (
                 <CommandItem

@@ -1,6 +1,6 @@
 // app/routes/auth/sso.tsx
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
 import {
   Card,
@@ -31,23 +31,19 @@ export const Route = createFileRoute("/auth/sso")({
 
 function SSOCallbackComponent() {
   const { ticket } = Route.useSearch()
-  const [countdown, setCountdown] = useState(3)
-  const [redirecting, setRedirecting] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>
 
     const startRedirect = () => {
-      setRedirecting(true)
+      let count = 3
       interval = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval)
-            window.location.href = `${import.meta.env.VITE_PORTAL_URL}`
-          }
-          return prev - 1
-        })
+        count -= 1
+        if (count <= 0) {
+          clearInterval(interval)
+          window.location.href = `${import.meta.env.VITE_PORTAL_URL}`
+        }
       }, 1000)
     }
 
@@ -82,12 +78,12 @@ function SSOCallbackComponent() {
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
           <CardTitle className="text-lg">
-            {redirecting ? "Sesi tidak valid" : "Memverifikasi sesi"}
+            {ticket ? "Memverifikasi sesi" : "Sesi tidak valid"}
           </CardTitle>
           <CardDescription>
-            {redirecting
-              ? `Mengalihkan ke portal dalam ${countdown} detik...`
-              : "Harap tunggu sebentar..."}
+            {ticket
+              ? "Harap tunggu sebentar..."
+              : "Mengalihkan ke portal..."}
           </CardDescription>
         </CardHeader>
       </Card>

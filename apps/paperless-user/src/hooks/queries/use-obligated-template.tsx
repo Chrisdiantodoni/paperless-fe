@@ -29,24 +29,12 @@ export function useObligatedTemplates(
 }
 
 export function useObligatedTemplatesSearch(
-  searchQuery: string,
-  isDropdownOpen: boolean,
-  deps?: ObligatedTemplateListSchema
+  params: ObligatedTemplateListSchema
 ) {
   return useQuery({
-    queryKey: obligatedTemplateKeys.search(searchQuery, deps),
-    queryFn: async () => {
-      try {
-        console.log("[useObligatedTemplatesSearch] Calling with deps:", deps)
-        const result = await getObligatedTemplates({ data: deps! })
-        console.log("[useObligatedTemplatesSearch] Success:", result)
-        return result
-      } catch (error) {
-        console.error("[useObligatedTemplatesSearch] Error:", error)
-        throw error
-      }
-    },
-    enabled: (isDropdownOpen || searchQuery.length > 0) && deps !== undefined,
-    staleTime: 1000 * 60 * 5,
+    queryKey: obligatedTemplateKeys.list(params),
+    queryFn: () => getObligatedTemplates({ data: params }),
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
   })
 }

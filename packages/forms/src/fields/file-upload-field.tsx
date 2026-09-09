@@ -1,12 +1,13 @@
 "use client"
 
-import { useId, useRef } from "react"
+import { useId, useRef, useState } from "react"
 import { useStore } from "@tanstack/react-form"
-import { FileIcon, Upload, X } from "lucide-react"
+import { FileIcon, Upload, X, Eye } from "lucide-react"
 import { useFieldContext } from "../forms/form-context"
 import { Label } from "@workspace/ui/components/ui/label"
 import { cn } from "@workspace/ui/lib/utils"
 import { Button } from "@workspace/ui/components/ui/button"
+import { FilePreviewModal } from "@workspace/ui/components/ui/file-preview-modal"
 import { getErrorMessage } from "../utils/get-error-message"
 
 interface FileUploadFieldProps {
@@ -19,7 +20,7 @@ interface FileUploadFieldProps {
 
 export function FileUploadField({
   label,
-  accept,
+  accept = ".pdf,image/*",
   multiple = false,
   maxSizeMb = 10,
   required = false,
@@ -29,6 +30,12 @@ export function FileUploadField({
   const errorId = `${id}-error`
   const inputRef = useRef<HTMLInputElement>(null)
   const errors = useStore(field.store, (state) => state.meta.errors)
+  const [previewFile, setPreviewFile] = useState<File | null>(null)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  
+  const isPreviewable = (file: File) => {
+    return file.type.startsWith("image/") || file.type === "application/pdf"
+  }
 
   function addFiles(fileList: FileList | null) {
     if (!fileList) return
@@ -41,6 +48,11 @@ export function FileUploadField({
 
   function removeFile(index: number) {
     field.handleChange(field.state.value.filter((_, i) => i !== index))
+  }
+
+  const handlePreview = (file: File) => {
+    setPreviewFile(file)
+    setIsPreviewOpen(true)
   }
 
   return (
@@ -80,9 +92,11 @@ export function FileUploadField({
           className="sr-only"
           onBlur={field.handleBlur}
           onChange={(e) => addFiles(e.target.files)}
-          // aria-invalid={errors.length > 0}
           aria-describedby={errors.length ? errorId : undefined}
         />
+        <p className="text-xs text-muted-foreground">
+          Hanya file PDF dan gambar yang diperbolehkan
+        </p>
         <p className="text-xs text-muted-foreground">
           Max {maxSizeMb}MB per file
         </p>
@@ -99,16 +113,30 @@ export function FileUploadField({
                 <FileIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span className="truncate">{file.name}</span>
               </span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => removeFile(index)}
-                aria-label={`Remove ${file.name}`}
-              >
-                <X className="h-3 w-3" />
-              </Button>
+              <div className="flex gap-1">
+                {isPreviewable(file) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => handlePreview(file)}
+                    aria-label={`Preview ${file.name}`}
+                  >
+                    <Eye className="h-3 w-3" />
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => removeFile(index)}
+                  aria-label={`Remove ${file.name}`}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
             </li>
           ))}
         </ul>
@@ -119,6 +147,12 @@ export function FileUploadField({
           {errors.map(getErrorMessage).join(", ")}
         </p>
       )}
+
+      <FilePreviewModal
+        file={previewFile}
+        isOpen={isPreviewOpen}
+        onOpenChange={setIsPreviewOpen}
+      />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { UserData } from "./user.type"
+import type { UserData } from "./user.type"
 
 export interface NavPrimaryprops {
   items: {
@@ -9,6 +9,11 @@ export interface NavPrimaryprops {
     permission?: null | string
     children?: Child[]
     activeOptions?: { exact: boolean }
+    badge?: {
+      label: string
+      variant?: "default" | "secondary" | "destructive" | "outline" | "ghost" | "link"
+      count?: number
+    }
   }[]
 }
 
@@ -20,4 +25,9 @@ export interface Child {
   url: string
   permission: string
   activeOptions?: { exact: boolean }
+  badge?: {
+    label: string
+    variant?: "default" | "secondary" | "destructive" | "outline" | "ghost" | "link"
+    count?: number
+  }
 }

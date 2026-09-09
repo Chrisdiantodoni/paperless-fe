@@ -26,6 +26,8 @@ import {
   SelectValue,
 } from "@workspace/ui/components/ui/select"
 import CreateMail from "../create/create-mail"
+import { getRequestTypeOptions } from "@workspace/utils"
+import { StaffCombobox } from "../select/select-staff"
 
 export type MailNav = "all" | "sent" | "draft"
 
@@ -56,13 +58,7 @@ const NAV_ITEMS: { value: MailNav; label: string; icon: typeof Inbox }[] = [
   { value: "draft", label: "Draft", icon: FileText },
 ]
 
-const REQUEST_TYPES = [
-  { value: "dynamic_template", label: "Template Dinamis" },
-  { value: "leave_request", label: "Cuti" },
-  { value: "permit_request", label: "Izin" },
-  { value: "overtime_request", label: "Lembur" },
-  { value: "absence_request", label: "Absensi" },
-]
+const REQUEST_TYPES = getRequestTypeOptions()
 
 const STATUS_OPTIONS = [
   { value: "Draft", label: "Draft", dot: "bg-muted" },
@@ -128,6 +124,10 @@ export function MailHeader({
         {/* Left: Compose button & nav tabs */}
         <div className="flex flex-wrap items-center gap-2">
           <CreateMail />
+          <Button className="gap-2 shadow-sm">
+            <Plus className="h-4 w-4" />
+            <span>Non Template</span>
+          </Button>
           <div className="mx-1 hidden h-4 w-[1px] bg-border sm:block" />
           <Tabs
             value={activeNav}

@@ -14,20 +14,12 @@ import {
 } from "@workspace/ui/components/ui/popover"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Check, ChevronsUpDown, X } from "lucide-react"
-import type { SelectValue } from "@workspace/types"
+import type { ObligatedTemplate } from "@workspace/types"
 import { useObligatedTemplatesSearch } from "@/hooks/queries/use-obligated-template"
 
-function extractValue(val?: string | SelectValue): string {
-  return typeof val === "string" ? val : (val?.value ?? "")
-}
-
-function extractLabel(val?: string | SelectValue): string {
-  return typeof val === "object" ? val.label : ""
-}
-
 interface ObligatedTemplateComboboxProps {
-  value?: string | SelectValue
-  onChange: (value: SelectValue) => void
+  value?: ObligatedTemplate | null
+  onChange: (value: ObligatedTemplate | null) => void
   onBlur?: () => void
   invalid?: boolean
   error?: string
@@ -44,29 +36,16 @@ export function ObligatedTemplateCombobox({
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebounce(search, 300)
-  const resolvedValue = extractValue(value)
-  const shouldFetch = open || (!!resolvedValue && !extractLabel(value))
 
-  const deps = {
+  const { data: templates, isLoading } = useObligatedTemplatesSearch({
     page: 1,
     search: debouncedSearch,
-    per_page: 50,
+    per_page: 20,
     type: "",
     request_type: "",
     category_id: categoryId || "",
-    is_active: "true" as const,
-  }
-
-  console.log("[ObligatedTemplateCombobox] deps:", deps, "shouldFetch:", shouldFetch)
-
-  const { data, isFetching } = useObligatedTemplatesSearch(
-    debouncedSearch,
-    shouldFetch,
-    deps
-  )
-  const options = data?.data ?? []
-  const resolvedLabel =
-    extractLabel(value) || options.find((d) => d.id === resolvedValue)?.name
+    is_active: "true",
+  })
 
   return (
     <>
@@ -88,10 +67,10 @@ export function ObligatedTemplateCombobox({
             }`}
           >
             <span className="truncate">
-              {resolvedLabel || "Pilih template wajib..."}
+              {value?.name || "Pilih template wajib..."}
             </span>
             <span className="flex shrink-0 items-center gap-0.5">
-              {resolvedValue && (
+              {value && (
                 <span
                   role="button"
                   tabIndex={0}
@@ -101,7 +80,7 @@ export function ObligatedTemplateCombobox({
                   }}
                   onClick={(e) => {
                     e.stopPropagation()
-                    onChange({ value: "", label: "" })
+                    onChange(null)
                   }}
                   className="flex size-4 items-center justify-center rounded-full text-muted-foreground/60 hover:bg-muted-foreground/20 hover:text-foreground"
                 >
@@ -120,25 +99,25 @@ export function ObligatedTemplateCombobox({
               onValueChange={setSearch}
             />
             <CommandGroup>
-              {isFetching ? (
+              {isLoading ? (
                 <div className="p-2 text-sm text-muted-foreground">
                   Loading...
                 </div>
-              ) : options.length === 0 ? (
-                <CommandEmpty>No template found.</CommandEmpty>
+              ) : !templates?.data || templates.data.length === 0 ? (
+                <CommandEmpty>Template tidak ditemukan</CommandEmpty>
               ) : (
-                options.map((template) => (
+                templates.data.map((template) => (
                   <CommandItem
                     key={template.id}
                     value={template.id}
                     onSelect={() => {
-                      onChange({ value: template.id, label: template.name })
+                      onChange(template)
                       setOpen(false)
                     }}
                   >
                     <Check
                       className={`mr-2 h-4 w-4 ${
-                        resolvedValue === template.id ? "opacity-100" : "opacity-0"
+                        value?.id === template.id ? "opacity-100" : "opacity-0"
                       }`}
                     />
                     {template.name}

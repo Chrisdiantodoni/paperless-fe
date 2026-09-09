@@ -16,10 +16,11 @@ import { Plus } from "lucide-react"
 import { createMailTemplateSchema } from "@/schema/mail/create-mail.schema"
 import { DepartmentCombobox } from "../select/select-departments"
 import { ObligatedTemplateCombobox } from "../select/select-obligated-template"
-import type { SelectValue } from "@workspace/types"
+import type { ObligatedTemplate } from "@workspace/types"
 import { useStore } from "@tanstack/react-form"
 import { useEffect } from "react"
 import { useNavigate } from "@tanstack/react-router"
+import { toast } from "sonner"
 
 export default function CreateMail() {
   const navigate = useNavigate()
@@ -27,19 +28,32 @@ export default function CreateMail() {
   const form = useAppForm({
     defaultValues: {
       department: { value: "", label: "" },
-      template: { value: "", label: "" },
+      template: null as ObligatedTemplate | null,
     },
     validators: {
       onSubmit: createMailTemplateSchema,
     },
+    canSubmitWhenInvalid: true,
     onSubmit: async ({ value }) => {
-      navigate({
-        to: "/mail/user-mails/create",
-        search: {
-          department: value.department,
-          template: value.template,
-        },
-      })
+      const template = value.template
+      if (!template) {
+        return
+      }
+      try {
+        navigate({
+          to: "/mail/user-mails/create",
+          search: {
+            department_id: value.department.value,
+            department_label: value.department.label,
+            template_id: template.id,
+            template_label: template.name,
+            request_type: template.request_type as any,
+            type: template.type === "dynamic" ? "dynamic" : "static",
+          },
+        })
+      } catch (error) {
+        toast.success(error)
+      }
     },
   })
 
@@ -47,10 +61,11 @@ export default function CreateMail() {
     form.store,
     (state) => state.values.department
   )
+  const templateValue = useStore(form.store, (state) => state.values.template)
 
   // Reset template when department changes
   useEffect(() => {
-    form.setFieldValue("template", { value: "", label: "" })
+    form.setFieldValue("template", null)
   }, [departmentValue])
 
   return (
@@ -117,15 +132,13 @@ export default function CreateMail() {
                   <div className="mt-1 flex w-full flex-col space-y-1.5">
                     <Label required>Template</Label>
                     <ObligatedTemplateCombobox
-                      value={field.state.value as SelectValue}
+                      value={field.state.value}
                       onChange={field.handleChange}
                       onBlur={field.handleBlur}
                       categoryId={categoryId}
                       invalid={showError}
                       error={
-                        showError
-                          ? String(errors[0]?.message ?? "")
-                          : undefined
+                        showError ? String(errors[0]?.message ?? "") : undefined
                       }
                     />
                   </div>

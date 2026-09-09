@@ -10,6 +10,7 @@ import {
   dynamicMailTemplateSchema,
   staticMailTemplateFormSchema,
   updateTemplateValidator,
+  revisionRequestSchema,
   type DynamicMailTemplateForm,
   type DynamicMailTemplateInferProps,
   type StaticMailTemplateFormSchema,
@@ -17,6 +18,7 @@ import {
 import master from "@/services/API/master"
 import { createServerFn } from "@tanstack/react-start"
 import { handleApiError } from "@/lib/handle-api-error"
+import { z } from "zod"
 
 export const getArea = createServerFn({ method: "GET" }).handler(async () => {
   try {
@@ -228,6 +230,63 @@ export const deleteDynamicMailTemplate = createServerFn({
   .handler(async ({ data: id }) => {
     try {
       const response = await master.deleteDynamicMailTemplate(id)
+      return response
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  })
+
+export const submitDynamicMailTemplateForApproval = createServerFn({
+  method: "POST",
+})
+  .validator((id: string) => id)
+  .handler(async ({ data: id }) => {
+    try {
+      const response = await master.submitDynamicMailTemplateForApproval(id)
+      return response
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  })
+
+export const approveDynamicMailTemplate = createServerFn({
+  method: "POST",
+})
+  .validator((id: string) => id)
+  .handler(async ({ data: id }) => {
+    try {
+      const response = await master.approveDynamicMailTemplate(id)
+      return response
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  })
+
+export const rejectDynamicMailTemplate = createServerFn({
+  method: "POST",
+})
+  .validator(z.object({ id: z.string(), reason: z.string() }))
+  .handler(async ({ data: { id, reason } }) => {
+    try {
+      const response = await master.rejectDynamicMailTemplate(id, { reason })
+      return response
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  })
+
+export const requestDynamicMailTemplateRevision = createServerFn({
+  method: "POST",
+})
+  .validator(
+    z.object({
+      id: z.string(),
+      data: revisionRequestSchema,
+    })
+  )
+  .handler(async ({ data: { id, data } }) => {
+    try {
+      const response = await master.requestDynamicMailTemplateRevision(id, data)
       return response
     } catch (error: any) {
       throw new Error(error.message)

@@ -333,3 +333,7 @@
     line-height: 1.6;
   }
 }
+  ::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}

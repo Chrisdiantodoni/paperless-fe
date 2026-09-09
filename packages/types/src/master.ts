@@ -1,4 +1,23 @@
-import { UserData } from "./user.type"
+import type { UserData } from "./user.type"
+
+export interface Subordinate {
+  id: string
+  fullname: string
+  nip: string
+  branch: {
+    id: string
+    name: string
+  }
+  position: {
+    id: string
+    name: string
+  }
+  department: {
+    id: string
+    name: string
+  }
+  status: string
+}
 
 export interface Area {
   id: string
@@ -74,6 +93,16 @@ export interface StaticMailTemplate {
   updated_at: string
 }
 
+export interface ApprovalHistoryItem {
+  id: string
+  status: "draft" | "pending" | "approved" | "rejected"
+  reason?: string
+  scope_changes?: string[]
+  created_at: string
+  created_by: string
+  created_by_name: string
+}
+
 export interface IDynamicMailTemplate {
   id: string
   type: string
@@ -98,6 +127,13 @@ export interface IDynamicMailTemplate {
     position: string
     nip: string
   }[]
+  approval_status: "draft" | "pending" | "approved" | "rejected"
+  approval_history: ApprovalHistoryItem[]
+  rejected_reason?: string
+  rejected_at?: string
+  rejected_by?: string
+  approved_at?: string
+  approved_by?: string
   created_at: string
   updated_at: string
 }

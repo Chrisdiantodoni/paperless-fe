@@ -13,7 +13,7 @@ export const setupInterceptors = (
     async (config) => {
       // await supaya handle baik sync (client) maupun async (server)
       const token = (await getToken?.()) ?? Cookies.get(SESSION_COOKIE)
-
+      console.log({ token })
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`
       }
@@ -43,11 +43,11 @@ export const setupInterceptors = (
           (code === "MUST_CHANGE_PASSWORD" ||
             message?.includes("MUST_CHANGE_PASSWORD"))
         ) {
-          redirectTo = `${portalUrl}/portal`
+          // redirectTo = `${portalUrl}/portal`
         } else if (status === 403) {
           redirectTo = "/403"
         } else if (status === 401 || message === "Unauthenticated.") {
-          redirectTo = `${portalUrl}/portal`
+          // redirectTo = `${portalUrl}/portal`
         } else if (status === 503) {
           redirectTo = "/under-construction"
         }
@@ -81,8 +81,8 @@ export const setupInterceptors = (
         return new Promise(() => {})
       } else if (status === 401 || message === "Unauthenticated.") {
         if (window.location.pathname !== "/login") {
-          Cookies.remove(SESSION_COOKIE)
-          window.location.href = `${portalUrl}/portal`
+          // Cookies.remove(SESSION_COOKIE)
+          // window.location.href = `${portalUrl}/portal`
           return new Promise(() => {})
         }
       } else if (status === 503) {
