@@ -55,10 +55,7 @@ export function RichTextEditor({
           hasError && "border-destructive ring-1 ring-destructive"
         )}
       >
-        <div className="flex items-center justify-between border-b border-input bg-muted/30 px-3 py-2">
-          <div className="text-sm font-medium text-muted-foreground">
-            {isPreview ? "Preview" : "Editor"}
-          </div>
+        <div className="flex items-center justify-end border-b border-input bg-muted/30 px-3 py-2">
           <Button
             type="button"
             variant="ghost"

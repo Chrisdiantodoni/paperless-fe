@@ -20,6 +20,7 @@ import { Route as DashboardProfileIndexRouteImport } from './routes/_dashboard/p
 import { Route as DashboardMailUserMailsIndexRouteImport } from './routes/_dashboard/mail/user-mails/index'
 import { Route as DashboardMailUserMailsCreateRouteImport } from './routes/_dashboard/mail/user-mails/create'
 import { Route as DashboardMailUserMailsComposeRouteImport } from './routes/_dashboard/mail/user-mails/compose'
+import { Route as DashboardMailUserMailsMailIdEditNonTemplateRouteImport } from './routes/_dashboard/mail/user-mails/$mailId.edit-non-template'
 import { Route as DashboardMailUserMailsMailIdEditRouteImport } from './routes/_dashboard/mail/user-mails/$mailId.edit'
 
 const DashboardRoute = DashboardRouteImport.update({
@@ -80,6 +81,12 @@ const DashboardMailUserMailsComposeRoute =
     path: '/user-mails/compose',
     getParentRoute: () => DashboardMailRouteRoute,
   } as any)
+const DashboardMailUserMailsMailIdEditNonTemplateRoute =
+  DashboardMailUserMailsMailIdEditNonTemplateRouteImport.update({
+    id: '/user-mails/$mailId/edit-non-template',
+    path: '/user-mails/$mailId/edit-non-template',
+    getParentRoute: () => DashboardMailRouteRoute,
+  } as any)
 const DashboardMailUserMailsMailIdEditRoute =
   DashboardMailUserMailsMailIdEditRouteImport.update({
     id: '/user-mails/$mailId/edit',
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/mail/user-mails/create': typeof DashboardMailUserMailsCreateRoute
   '/mail/user-mails/': typeof DashboardMailUserMailsIndexRoute
   '/mail/user-mails/$mailId/edit': typeof DashboardMailUserMailsMailIdEditRoute
+  '/mail/user-mails/$mailId/edit-non-template': typeof DashboardMailUserMailsMailIdEditNonTemplateRoute
 }
 export interface FileRoutesByTo {
   '/mail': typeof DashboardMailRouteRouteWithChildren
@@ -112,6 +120,7 @@ export interface FileRoutesByTo {
   '/mail/user-mails/create': typeof DashboardMailUserMailsCreateRoute
   '/mail/user-mails': typeof DashboardMailUserMailsIndexRoute
   '/mail/user-mails/$mailId/edit': typeof DashboardMailUserMailsMailIdEditRoute
+  '/mail/user-mails/$mailId/edit-non-template': typeof DashboardMailUserMailsMailIdEditNonTemplateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -127,6 +136,7 @@ export interface FileRoutesById {
   '/_dashboard/mail/user-mails/create': typeof DashboardMailUserMailsCreateRoute
   '/_dashboard/mail/user-mails/': typeof DashboardMailUserMailsIndexRoute
   '/_dashboard/mail/user-mails/$mailId/edit': typeof DashboardMailUserMailsMailIdEditRoute
+  '/_dashboard/mail/user-mails/$mailId/edit-non-template': typeof DashboardMailUserMailsMailIdEditNonTemplateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/mail/user-mails/create'
     | '/mail/user-mails/'
     | '/mail/user-mails/$mailId/edit'
+    | '/mail/user-mails/$mailId/edit-non-template'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/mail'
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/mail/user-mails/create'
     | '/mail/user-mails'
     | '/mail/user-mails/$mailId/edit'
+    | '/mail/user-mails/$mailId/edit-non-template'
   id:
     | '__root__'
     | '/_dashboard'
@@ -169,6 +181,7 @@ export interface FileRouteTypes {
     | '/_dashboard/mail/user-mails/create'
     | '/_dashboard/mail/user-mails/'
     | '/_dashboard/mail/user-mails/$mailId/edit'
+    | '/_dashboard/mail/user-mails/$mailId/edit-non-template'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -256,6 +269,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardMailUserMailsComposeRouteImport
       parentRoute: typeof DashboardMailRouteRoute
     }
+    '/_dashboard/mail/user-mails/$mailId/edit-non-template': {
+      id: '/_dashboard/mail/user-mails/$mailId/edit-non-template'
+      path: '/user-mails/$mailId/edit-non-template'
+      fullPath: '/mail/user-mails/$mailId/edit-non-template'
+      preLoaderRoute: typeof DashboardMailUserMailsMailIdEditNonTemplateRouteImport
+      parentRoute: typeof DashboardMailRouteRoute
+    }
     '/_dashboard/mail/user-mails/$mailId/edit': {
       id: '/_dashboard/mail/user-mails/$mailId/edit'
       path: '/user-mails/$mailId/edit'
@@ -271,6 +291,7 @@ interface DashboardMailRouteRouteChildren {
   DashboardMailUserMailsCreateRoute: typeof DashboardMailUserMailsCreateRoute
   DashboardMailUserMailsIndexRoute: typeof DashboardMailUserMailsIndexRoute
   DashboardMailUserMailsMailIdEditRoute: typeof DashboardMailUserMailsMailIdEditRoute
+  DashboardMailUserMailsMailIdEditNonTemplateRoute: typeof DashboardMailUserMailsMailIdEditNonTemplateRoute
 }
 
 const DashboardMailRouteRouteChildren: DashboardMailRouteRouteChildren = {
@@ -278,6 +299,8 @@ const DashboardMailRouteRouteChildren: DashboardMailRouteRouteChildren = {
   DashboardMailUserMailsCreateRoute: DashboardMailUserMailsCreateRoute,
   DashboardMailUserMailsIndexRoute: DashboardMailUserMailsIndexRoute,
   DashboardMailUserMailsMailIdEditRoute: DashboardMailUserMailsMailIdEditRoute,
+  DashboardMailUserMailsMailIdEditNonTemplateRoute:
+    DashboardMailUserMailsMailIdEditNonTemplateRoute,
 }
 
 const DashboardMailRouteRouteWithChildren =

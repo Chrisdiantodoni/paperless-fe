@@ -81,6 +81,7 @@ export const mailDetailQueryOptions = (id: string | null) =>
       return result
     },
     enabled: !!id,
+    refetchOnMount: "always",
   })
 
 export function useMailDetail(id: string | null) {

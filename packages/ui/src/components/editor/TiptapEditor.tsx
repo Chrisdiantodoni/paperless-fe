@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
 import { cn } from "@workspace/ui/lib/utils"
 import { useEditor, getMarkdownFromEditor, setEditorContent } from "@workspace/ui/hooks/useEditor"
 import { EditorToolbar } from "./EditorToolbar"
 import { EditorArea } from "./EditorArea"
+import { MarkdownPreview } from "./MarkdownPreview"
 
 interface TiptapEditorProps {
   initialContent?: string
@@ -18,6 +19,10 @@ interface TiptapEditorProps {
   className?: string
 }
 
+function normalizeMarkdown(md: string): string {
+  return md.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim()
+}
+
 export function TiptapEditor({
   initialContent = "",
   id: _id,
@@ -27,14 +32,21 @@ export function TiptapEditor({
   value,
   hasError = false,
   className,
+  placeholder,
 }: TiptapEditorProps) {
-  const editor = useEditor(value || initialContent)
+  const editor = useEditor(value || initialContent, placeholder)
+  const [isPreview, setIsPreview] = useState(false)
+  const skipSyncRef = useRef(false)
 
   useEffect(() => {
     if (!editor || value === undefined) return
+    if (skipSyncRef.current) {
+      skipSyncRef.current = false
+      return
+    }
 
-    const currentMarkdown = getMarkdownFromEditor(editor)
-    if (value !== currentMarkdown) {
+    const current = getMarkdownFromEditor(editor)
+    if (normalizeMarkdown(value) !== normalizeMarkdown(current)) {
       setEditorContent(editor, value, "markdown")
     }
   }, [editor, value])
@@ -44,6 +56,7 @@ export function TiptapEditor({
 
     const handleUpdate = () => {
       const markdown = getMarkdownFromEditor(editor)
+      skipSyncRef.current = true
       onContentChange?.(markdown)
       onChange?.(markdown)
     }
@@ -71,11 +84,20 @@ export function TiptapEditor({
 
   return (
     <div className={cn("w-full space-y-2", className)}>
-      <EditorToolbar editor={editor} format="markdown" />
-      <EditorArea
-        editor={editor}
-        className={cn(hasError && "border-destructive ring-1 ring-destructive")}
+      <EditorToolbar 
+        editor={editor} 
+        format="markdown"
+        isPreview={isPreview}
+        onPreviewChange={setIsPreview}
       />
+      {isPreview ? (
+        <MarkdownPreview markdown={getMarkdownFromEditor(editor)} />
+      ) : (
+        <EditorArea
+          editor={editor}
+          className={cn(hasError && "border-destructive ring-1 ring-destructive")}
+        />
+      )}
       <div className="text-right text-xs text-muted-foreground">
         {words} kata &middot; {characters} karakter
       </div>

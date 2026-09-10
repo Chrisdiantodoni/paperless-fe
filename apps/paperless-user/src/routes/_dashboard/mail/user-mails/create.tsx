@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { createMailSearchSchema } from "@/schema/mail/create-mail-search.schema"
 import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import { Badge } from "@workspace/ui/components/ui/badge"
 import { useAppForm } from "@workspace/forms/src/forms"
 import { useUser } from "@/hooks/queries/use-user"
 import { handleApiError } from "@/lib/handle-api-error"
@@ -19,6 +20,7 @@ import { useStore } from "@tanstack/react-form"
 import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
 import { useRef } from "react"
 import { getDynamicMailTemplateById } from "@/server/master"
+import { getFormFieldErrors, useFormFieldErrors } from "@/hooks/use-form-errors"
 
 export const Route = createFileRoute("/_dashboard/mail/user-mails/create")({
   component: RouteComponent,
@@ -143,11 +145,25 @@ function RouteComponent() {
     validators: {
       onChange: createMailPayloadSchema as any,
     },
-    onSubmitInvalid: (value) => {
-      console.log(value)
+    onSubmitInvalid: ({ formApi }) => {
+      const errors = getFormFieldErrors(formApi)
+      if (errors.length > 0) {
+        toast.error(
+          `Form tidak valid: ${errors
+            .map((e) => `${e.label}: ${e.message}`)
+            .join("; ")}`
+        )
+      }
     },
     canSubmitWhenInvalid: true,
     onSubmit: async ({ value }) => {
+      const confirmed = await confirm({
+        title: "Konfirmasi Kirim Mail",
+        description: "Apakah Anda yakin ingin mengirim mail ini?",
+      })
+
+      if (!confirmed) return
+
       try {
         const formData = new FormData()
 
@@ -245,19 +261,6 @@ function RouteComponent() {
           }
         }
         if (value.request_type === "dynamic_template" && value.dynamic_data) {
-          console.log("🔍 DEBUG: dynamic_data object SEBELUM processing:")
-          console.log(JSON.stringify(value.dynamic_data, null, 2))
-
-          console.log("\n🔍 DEBUG: dynamic_data fields breakdown:")
-          console.log("  - dynamic_mail_template_id:", value.dynamic_data.dynamic_mail_template_id)
-          console.log("  - payload type:", typeof value.dynamic_data.payload)
-          console.log("  - payload length:", value.dynamic_data.payload?.length)
-          console.log("  - payload preview (first 200 chars):", value.dynamic_data.payload?.substring(0, 200))
-          console.log("  - form_schema type:", typeof value.dynamic_data.form_schema)
-          console.log("  - form_schema is array:", Array.isArray(value.dynamic_data.form_schema))
-          console.log("  - form_schema length:", value.dynamic_data.form_schema?.length)
-          console.log("  - form_schema content:", JSON.stringify(value.dynamic_data.form_schema, null, 2))
-
           const dynamicData = value.dynamic_data
           const dtTemplateId =
             dynamicData.dynamic_mail_template_id || templateId
@@ -270,10 +273,7 @@ function RouteComponent() {
           }
 
           if (dynamicData.payload) {
-            formData.append(
-              "dynamic_data[payload]",
-              dynamicData.payload
-            )
+            formData.append("dynamic_data[content]", dynamicData.payload)
           }
 
           if (Array.isArray(dynamicData.form_schema)) {
@@ -284,34 +284,17 @@ function RouteComponent() {
           }
         }
 
-        console.log("\n✅ DEBUG: FormData entries untuk dynamic_data:")
-        const dynamicEntries: any = {}
-        for (const [key, value] of formData.entries()) {
-          if (key.startsWith("dynamic_data")) {
-            dynamicEntries[key] = value instanceof File ? `<File: ${value.name}>` : value
-          }
-        }
-        console.log(JSON.stringify(dynamicEntries, null, 2))
-
-        console.log("\n📤 FormData being sent:")
-        for (const [key, value] of formData.entries()) {
-          console.log(
-            `  ${key}:`,
-            value instanceof File ? `<File: ${value.name}>` : value
-          )
-        }
-
         const result = await createUserMail({ data: formData })
 
         if (!result.success) {
-          console.error("❌ Create mail failed:", result)
-
           toast.error(result.error || "Gagal membuat mail")
 
           if (result.details) {
-            console.error("Validation errors:", result.details)
             const detailMessages = Object.entries(result.details)
-              .map(([field, errors]: [string, any]) => `${field}: ${errors.join(", ")}`)
+              .map(
+                ([field, errors]: [string, any]) =>
+                  `${field}: ${errors.join(", ")}`
+              )
               .join("\n")
             toast.error(`Detail errors:\n${detailMessages}`)
           }
@@ -322,7 +305,6 @@ function RouteComponent() {
         toast.success("Mail berhasil dibuat")
         navigate({ to: "/mail/user-mails" })
       } catch (error) {
-        console.error("Submit Mail Error:", error)
         handleApiError(error)
       }
     },
@@ -360,15 +342,14 @@ function RouteComponent() {
     form.store,
     (state) => state.values.attachments || []
   )
-
-  console.log({ template })
+  const fieldErrors = useFormFieldErrors(form)
 
   const showDelegations =
     search.request_type === "leave_request" ||
     search.request_type === "permit_request"
 
   return (
-    <div className="container mx-auto max-w-7xl p-4">
+    <div className="container mx-auto py-6">
       <div className="mb-6">
         <Button
           variant="ghost"
@@ -393,23 +374,20 @@ function RouteComponent() {
             </p>
           </div>
           {isDirty && (
-            <span className="rounded-md bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-600">
-              Draft - Belum Disimpan
-            </span>
+            <Badge
+              variant="outline"
+              className="shrink-0 border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+            >
+              Belum disimpan
+            </Badge>
           )}
         </div>
       </div>
 
       <form
-        onSubmit={async (e) => {
+        onSubmit={(e) => {
           e.preventDefault()
-          const confirmed = await confirm({
-            title: "Konfirmasi Kirim Mail",
-            description: "Apakah Anda yakin ingin mengirim mail ini?",
-          })
-          if (confirmed) {
-            form.handleSubmit()
-          }
+          form.handleSubmit()
         }}
       >
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -446,7 +424,7 @@ function RouteComponent() {
 
         <Card className="mt-6">
           <CardContent className="pt-6">
-            <ErrorSummaryCard errors={[]} />
+            <ErrorSummaryCard errors={fieldErrors} />
 
             <div className="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button

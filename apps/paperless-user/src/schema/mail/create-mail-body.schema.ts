@@ -177,14 +177,17 @@ export const createMailDelegationSchema = z
 
 export const createMailPayloadSchema = z
   .object({
-    request_type: z.enum([
-      "dynamic",
-      "dynamic_template",
-      "leave_request",
-      "permit_request",
-      "absence_request",
-      "overtime_request",
-    ]),
+    request_type: z
+      .enum([
+        "dynamic",
+        "non_template",
+        "dynamic_template",
+        "leave_request",
+        "permit_request",
+        "absence_request",
+        "overtime_request",
+      ])
+      .transform((val) => (val === "dynamic_template" ? "dynamic" : val)),
     notes: optionalString,
     delegations: z.array(createMailDelegationSchema).nullish(),
     leave_data: createMailLeaveDataSchema.optional(),

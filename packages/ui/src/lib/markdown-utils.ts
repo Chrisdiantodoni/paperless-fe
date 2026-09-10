@@ -1,6 +1,6 @@
 import MarkdownIt from "markdown-it"
 
-const md = new MarkdownIt()
+const md = new MarkdownIt({ html: true })
 
 /**
  * Convert editor HTML to Markdown
@@ -84,5 +84,5 @@ export function validateMarkdown(markdown: string): boolean {
  * Convert markdown to HTML for preview
  */
 export function markdownToHtml(markdown: string): string {
-  return md.render(markdown)
+  return md.render(markdown.replace(/\r\n/g, "\n"))
 }

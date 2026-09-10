@@ -1,5 +1,7 @@
+// route: /_dashboard/mail/user-mails/$mailId/edit
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/ui/card"
+import { Badge } from "@workspace/ui/components/ui/badge"
 import { useAppForm } from "@workspace/forms/src/forms"
 import { useUser } from "@/hooks/queries/use-user"
 import { handleApiError } from "@/lib/handle-api-error"
@@ -20,6 +22,10 @@ import { useMailDetail } from "@/hooks/queries/use-mails"
 import { useState, useEffect, useRef } from "react"
 import type { AllMailProps } from "@workspace/types/mail"
 import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
+import {
+  getFormFieldErrors,
+  useFormFieldErrors,
+} from "@/hooks/use-form-errors"
 
 export const Route = createFileRoute(
   "/_dashboard/mail/user-mails/$mailId/edit"
@@ -94,10 +100,27 @@ function getDefaultFormValues(mail: AllMailProps) {
         : undefined,
 
     dynamic_data:
-      req.type === "dynamic"
+      req.type === "dynamic" || req.type === "dynamic_template"
         ? {
-            payload: "{}",
-            form_schema: "[]",
+            dynamic_mail_template_id:
+              (req as any).dynamic_mail_template_id ?? null,
+            payload: req.content ?? "",
+            form_schema: (() => {
+              try {
+                const parsed = JSON.parse(req.form_schema ?? "[]")
+                return Array.isArray(parsed)
+                  ? parsed.map((field: any) => ({
+                      key: field.key ?? "",
+                      value: field.value ?? "",
+                      label: field.label ?? "",
+                      type: field.type ?? "text",
+                      is_required: field.is_required ?? false,
+                    }))
+                  : []
+              } catch {
+                return []
+              }
+            })(),
           }
         : undefined,
   }
@@ -112,7 +135,7 @@ function RouteComponent() {
 
   const { data: mailResponse, isLoading } = useMailDetail(mailId)
   const mail = mailResponse?.success ? mailResponse.data : undefined
-  
+
   const [existingAttachments, setExistingAttachments] = useState<
     Array<{ id: string; name: string; url: string }>
   >([])
@@ -135,8 +158,15 @@ function RouteComponent() {
     validators: {
       onChange: createMailPayloadSchema as any,
     },
-    onSubmitInvalid: ({ value }) => {
-      console.log(value)
+    onSubmitInvalid: ({ formApi }) => {
+      const errors = getFormFieldErrors(formApi)
+      if (errors.length > 0) {
+        toast.error(
+          `Form tidak valid: ${errors
+            .map((e) => `${e.label}: ${e.message}`)
+            .join("; ")}`
+        )
+      }
     },
     canSubmitWhenInvalid: true,
     onSubmit: async ({ value }) => {
@@ -151,7 +181,12 @@ function RouteComponent() {
         const formData = new FormData()
 
         formData.append("id", mailId)
-        formData.append("request_type", value.request_type)
+        formData.append(
+          "request_type",
+          value.request_type === "dynamic_template"
+            ? "dynamic"
+            : value.request_type
+        )
         formData.append("user_id", user.id)
 
         if (value.notes) {
@@ -231,7 +266,7 @@ function RouteComponent() {
           value.dynamic_data
         ) {
           const dynamicData = value.dynamic_data as any
-          
+
           if (dynamicData.dynamic_mail_template_id) {
             formData.append(
               "dynamic_data[dynamic_mail_template_id]",
@@ -240,10 +275,7 @@ function RouteComponent() {
           }
 
           if (dynamicData.payload) {
-            formData.append(
-              "dynamic_data[payload]",
-              dynamicData.payload
-            )
+            formData.append("dynamic_data[content]", dynamicData.payload)
           }
 
           if (Array.isArray(dynamicData.form_schema)) {
@@ -253,22 +285,18 @@ function RouteComponent() {
             )
           }
         }
-        console.log("=== DUMP FORMDATA ===")
-        for (const [key, val] of formData.entries()) {
-          console.log(`${key}:`, val)
-        }
 
         const result = await updateUserMail({ data: formData })
 
         if (!result.success) {
-          console.error("❌ Update mail failed:", result)
-
           toast.error(result.error || "Gagal update mail")
 
           if (result.details) {
-            console.error("Validation errors:", result.details)
             const detailMessages = Object.entries(result.details)
-              .map(([field, errors]: [string, any]) => `${field}: ${errors.join(", ")}`)
+              .map(
+                ([field, errors]: [string, any]) =>
+                  `${field}: ${errors.join(", ")}`
+              )
               .join("\n")
             toast.error(`Detail errors:\n${detailMessages}`)
           }
@@ -279,7 +307,6 @@ function RouteComponent() {
         toast.success("Mail berhasil diupdate")
         navigate({ to: "/mail/user-mails" })
       } catch (error) {
-        console.error("Update Mail Error:", error)
         handleApiError(error)
       }
     },
@@ -335,17 +362,19 @@ function RouteComponent() {
     form.store,
     (state) => state.values.attachments || []
   )
+  const fieldErrors = useFormFieldErrors(form)
 
   const showDelegations =
-    mail && (
-      mail.request_data.type === "leave_request" ||
-      mail.request_data.type === "permit_request"
-    )
+    mail &&
+    (mail.request_data.type === "leave_request" ||
+      mail.request_data.type === "permit_request")
 
   if (isLoading || !mail) {
     return (
       <div className="container mx-auto max-w-7xl p-4">
-        <div className="text-center">Loading...</div>
+        <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground">
+          Memuat data mail...
+        </div>
       </div>
     )
   }
@@ -365,10 +394,11 @@ function RouteComponent() {
           Kembali
         </Button>
 
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
+            <p className="text-sm text-muted-foreground">Edit mail</p>
             <h1 className="text-2xl font-semibold tracking-tight">
-              Edit Mail: {mail.document_number}
+              {mail.document_number}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {mail.sent_by.department} •{" "}
@@ -376,9 +406,12 @@ function RouteComponent() {
             </p>
           </div>
           {isDirty && (
-            <span className="rounded-md bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-600">
-              Draft - Belum Disimpan
-            </span>
+            <Badge
+              variant="outline"
+              className="shrink-0 border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+            >
+              Belum disimpan
+            </Badge>
           )}
         </div>
       </div>
@@ -393,24 +426,22 @@ function RouteComponent() {
           <div className="space-y-6">
             {existingAttachments.length > 0 && (
               <Card>
-                <CardContent className="pt-6">
-                  <h3 className="mb-3 text-sm font-medium">
-                    Existing Attachments
-                  </h3>
-                  <div className="space-y-2">
-                    {existingAttachments.map((attachment) => (
-                      <AttachmentItem
-                        key={attachment.id}
-                        file={{
-                          id: attachment.id,
-                          name: attachment.name,
-                          url: attachment.url,
-                        }}
-                        mode="edit"
-                        onDelete={handleDeleteExistingAttachment}
-                      />
-                    ))}
-                  </div>
+                <CardHeader>
+                  <CardTitle className="text-base">Lampiran Saat Ini</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {existingAttachments.map((attachment) => (
+                    <AttachmentItem
+                      key={attachment.id}
+                      file={{
+                        id: attachment.id,
+                        name: attachment.name,
+                        url: attachment.url,
+                      }}
+                      mode="edit"
+                      onDelete={handleDeleteExistingAttachment}
+                    />
+                  ))}
                 </CardContent>
               </Card>
             )}
@@ -427,7 +458,7 @@ function RouteComponent() {
             <RequestDetailsSection
               form={form}
               requestType={mail.request_data.type}
-              template={undefined}
+              template={mail.request_data}
             />
           </div>
 
@@ -448,7 +479,7 @@ function RouteComponent() {
 
         <Card className="mt-6">
           <CardContent className="pt-6">
-            <ErrorSummaryCard errors={[]} />
+            <ErrorSummaryCard errors={fieldErrors} />
 
             <div className="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button

@@ -124,7 +124,7 @@ export function MailHeader({
           <Button asChild className="gap-2 shadow-sm">
             <Link to="/mail/user-mails/compose">
               <Plus className="h-4 w-4" />
-              <span>Non Template</span>
+              <span>Memo Internal</span>
             </Link>
           </Button>
           <div className="mx-1 hidden h-4 w-[1px] bg-border sm:block" />

@@ -3,7 +3,8 @@ export const REQUEST_TYPE_LABELS: Record<string, string> = {
   permit_request: "Izin",
   absence_request: "Absen",
   overtime_request: "Lembur",
-  dynamic_template: "Template Dinamis",
+  dynamic_template: "Memo Internal",
+  non_template: "Memo Internal (Non Template)",
 }
 
 export function getRequestTypeLabel(type: string | undefined): string {
@@ -13,7 +14,8 @@ export function getRequestTypeLabel(type: string | undefined): string {
 
 export function getRequestTypeOptions() {
   return [
-    { value: "dynamic_template", label: "Template Dinamis" },
+    { value: "dynamic_template", label: "Memo Internal" },
+    { value: "non_template", label: "Memo Internal (Non Template)" },
     { value: "leave_request", label: "Cuti" },
     { value: "permit_request", label: "Izin" },
     { value: "absence_request", label: "Absen" },

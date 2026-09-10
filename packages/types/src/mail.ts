@@ -16,7 +16,7 @@ export interface MailLog {
   id: number
   action: string
   created_at: string
-  notes: Record<string, unknown>
+  notes: string | null
   performed_by: {
     id: string
     name: string
@@ -42,6 +42,7 @@ export interface Branch {
 export interface SentBy {
   id: string
   user_id?: string
+  hris_user_id?: string
   name: string
   position: string
   department: string
@@ -60,10 +61,16 @@ export interface Recipient {
   status: string
   notes: string
   recipient_type: "to" | "cc" | "superior"
+  approved_at?: string
+  rejected_at?: string
+  revision_requested_at?: string
 }
 
 export interface RequestData {
   type: string
+  content?: string
+  form_schema?: string
+  description?: string
   leave_type?: string
   start_date?: string
   end_date?: string

@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { Input } from "@workspace/ui/components/ui/input"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 import { DateTimePicker } from "@workspace/ui/components/ui/date-time-picker"
@@ -6,21 +7,46 @@ import { FieldGroup } from "@workspace/ui/components/ui/field"
 import { StaffCombobox } from "../select/select-staff"
 import { DepartmentCombobox } from "../select/select-departments"
 import type { IDynamicMailTemplate, SelectValue } from "@workspace/types"
+import type { MailRequestTemplateShape } from "./sections/RequestDetailsSection"
 
 interface DynamicFormRendererProps {
   form: any
-  template: IDynamicMailTemplate
+  template: IDynamicMailTemplate | MailRequestTemplateShape
 }
 
 export function DynamicFormRenderer({
   form,
   template,
 }: DynamicFormRendererProps) {
+  // Parsing otomatis jika form_schema bertipe string JSON
+  const schemaList = useMemo(() => {
+    if (!template?.form_schema) return []
+
+    if (Array.isArray(template.form_schema)) {
+      return template.form_schema
+    }
+
+    if (typeof template.form_schema === "string") {
+      try {
+        const parsed = JSON.parse(template.form_schema)
+        return Array.isArray(parsed) ? parsed : []
+      } catch {
+        return []
+      }
+    }
+
+    return []
+  }, [template?.form_schema])
+
   const renderField = (field: any, index: number) => {
     const fieldName = `dynamic_data.form_schema[${index}].value`
 
     return (
-      <form.Field key={index} name={fieldName}>
+      <form.Field
+        key={index}
+        name={fieldName}
+        defaultValue={field?.value ?? ""}
+      >
         {(formField: any) => {
           const errors = formField.state.meta.errors
           const showError = formField.state.meta.isTouched && errors.length > 0
@@ -143,8 +169,10 @@ export function DynamicFormRenderer({
   return (
     <FieldGroup className="gap-4">
       <div className="space-y-6">
-        {template.form_schema.length > 0 &&
-          template.form_schema.map((field, index) => renderField(field, index))}
+        {schemaList.length > 0 &&
+          schemaList.map((field: any, index: number) =>
+            renderField(field, index)
+          )}
       </div>
       <div>
         <form.AppField

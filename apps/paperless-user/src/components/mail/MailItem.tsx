@@ -1,10 +1,10 @@
-import { Paperclip, Building2 } from "lucide-react"
+import { Building2 } from "lucide-react"
 import { Badge } from "@workspace/ui/components/ui/badge"
-import { Checkbox } from "@workspace/ui/components/ui/checkbox"
 import type { AllMailProps } from "@workspace/types/mail"
 import { getInitials } from "@workspace/ui/lib/utils"
 import { formatDate, getRequestTypeLabel } from "@workspace/utils"
 import { isMailReadByUser } from "@/utils/mail-helpers"
+import { getBadgeClass } from "./MailDetail"
 
 export interface MailItemProps {
   mail: AllMailProps
@@ -23,22 +23,6 @@ export function MailItem({
 }: MailItemProps) {
   const isRead =
     localReadIds.has(mail.id) || isMailReadByUser(mail, currentUserId)
-  const getBadgeClass = (status?: string) => {
-    switch (status?.toLowerCase()) {
-      case "approved":
-        return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
-      case "revision":
-      case "sent":
-        return "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
-      case "rejected":
-        return "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20"
-      case "pending":
-        return "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/20"
-      case "draft":
-      default:
-        return "bg-muted text-muted-foreground border-border"
-    }
-  }
 
   // Ambil label judul request (misal: "Terlambat Masuk Kantor" atau default request type)
   const permitTitle =

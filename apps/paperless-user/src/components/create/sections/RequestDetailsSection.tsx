@@ -12,10 +12,15 @@ import { OvertimeRequestForm } from "@/components/create/overtime-request-form"
 import { DynamicFormRenderer } from "@/components/create/dynamic-form-renderer"
 import type { IDynamicMailTemplate } from "@workspace/types"
 
+export interface MailRequestTemplateShape {
+  content?: string
+  form_schema?: string | unknown[]
+}
+
 export interface RequestDetailsSectionProps {
   form: any
   requestType: string
-  template?: IDynamicMailTemplate
+  template?: IDynamicMailTemplate | MailRequestTemplateShape
 }
 
 export function RequestDetailsSection({
@@ -34,9 +39,9 @@ export function RequestDetailsSection({
       case "overtime_request":
         return "Detail Lembur"
       case "dynamic":
-        return "Detail Permohonan"
+        return "Detail Memo Internal"
       case "dynamic_template":
-        return "Detail Permohonan"
+        return "Detail Memo Internal"
       default:
         return "Detail"
     }

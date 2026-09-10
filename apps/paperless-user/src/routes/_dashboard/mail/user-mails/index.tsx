@@ -32,6 +32,7 @@ import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
 import { useDebounce } from "@workspace/utils"
 import { useUser } from "@/hooks/queries/use-user"
 import { isMailReadByUser } from "@/utils/mail-helpers"
+import { useQueryClient } from "@tanstack/react-query"
 
 export const Route = createFileRoute("/_dashboard/mail/user-mails/")({
   validateSearch: zodValidator(listRequestQuerySchema),
@@ -110,6 +111,7 @@ function RouteComponent() {
 
   const { data: userData } = useUser()
   const currentUserId = userData.id || ""
+  const queryClient = useQueryClient()
 
   const [localReadIds, setLocalReadIds] = useState<Set<string>>(new Set())
 
@@ -202,18 +204,27 @@ function RouteComponent() {
   }
 
   const handleMailClick = async (id: string) => {
+    queryClient.refetchQueries({ queryKey: ["mail-detail", id] })
     setSelectedId(id)
     setShowDetail(true)
     setLocalReadIds((prev) => new Set(prev).add(id))
   }
 
   const handleEdit = () => {
-    if (selectedId) {
-      navigate({
-        to: "/mail/user-mails/$mailId/edit",
-        params: { mailId: String(selectedId) },
-      })
-    }
+    if (!selectedId) return
+    const listMail = mailPagination?.data?.find(
+      (m) => String(m.id) === String(selectedId)
+    )
+    const type =
+      listMail?.request_data.type ??
+      (mailDetail?.success ? mailDetail.data.request_data.type : undefined)
+    navigate({
+      to:
+        type === "non_template"
+          ? "/mail/user-mails/$mailId/edit-non-template"
+          : "/mail/user-mails/$mailId/edit",
+      params: { mailId: String(selectedId) },
+    })
   }
 
   const handleSend = async () => {

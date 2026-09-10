@@ -7,10 +7,10 @@ import {
   CardTitle,
 } from "@workspace/ui/components/ui/card"
 import { Button } from "@workspace/ui/components/ui/button"
+import { Badge } from "@workspace/ui/components/ui/badge"
 import { toast } from "sonner"
 import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
 import { handleApiError } from "@/lib/handle-api-error"
-import mailService from "@/services/API/mail"
 import {
   emptyRecipient,
   emptyCcRecipient,
@@ -22,6 +22,13 @@ import { StaffCombobox } from "@/components/select/select-staff"
 import { ArrowLeft, GripVertical, ArrowUp, ArrowDown } from "lucide-react"
 import { useState } from "react"
 import { createUserMailNonTemplate } from "@/server/mails"
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes"
+import { useStore } from "@tanstack/react-form"
+import { ErrorSummaryCard } from "@/components/create/sections/ErrorSummaryCard"
+import {
+  getFormFieldErrors,
+  useFormFieldErrors,
+} from "@/hooks/use-form-errors"
 
 export const Route = createFileRoute("/_dashboard/mail/user-mails/compose")({
   component: RouteComponent,
@@ -42,12 +49,22 @@ function RouteComponent() {
       attachments: [] as File[],
     },
     validators: {
-      onSubmit: composeNonTemplateSchema,
+      onChange: composeNonTemplateSchema,
     },
     canSubmitWhenInvalid: true,
+    onSubmitInvalid: ({ formApi }) => {
+      const errors = getFormFieldErrors(formApi)
+      if (errors.length > 0) {
+        toast.error(
+          `Form tidak valid: ${errors
+            .map((e) => `${e.label}: ${e.message}`)
+            .join("; ")}`
+        )
+      }
+    },
     onSubmit: async ({ value }) => {
       const confirmed = await confirm({
-        title: "Kirim surat non-template?",
+        title: "Kirim memo internal?",
         description: "Pastikan penerima dan isi surat sudah benar.",
       })
 
@@ -86,12 +103,9 @@ function RouteComponent() {
 
           const result = await createUserMailNonTemplate({ data: formData })
           if (!result.success) {
-            console.error("❌ Create mail failed:", result)
-
             toast.error(result.error || "Gagal membuat mail")
 
             if (result.details) {
-              console.error("Validation errors:", result.details)
               const detailMessages = Object.entries(result.details)
                 .map(
                   ([field, errors]: [string, any]) =>
@@ -111,6 +125,14 @@ function RouteComponent() {
       }
     },
   })
+
+  const isDirty = useStore(form.store, (state) => state.isDirty)
+  const { confirmNavigation } = useUnsavedChanges({
+    isDirty,
+    message:
+      "Anda memiliki perubahan yang belum disimpan. Yakin ingin meninggalkan halaman ini?",
+  })
+  const fieldErrors = useFormFieldErrors(form)
 
   const moveRecipient = (
     fieldName: "recipients" | "recipients_cc",
@@ -159,16 +181,26 @@ function RouteComponent() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate({ to: "/mail/user-mails" })}
+          onClick={() =>
+            confirmNavigation(() => navigate({ to: "/mail/user-mails" }))
+          }
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold">Buat Surat Non-Template</h1>
           <p className="text-sm text-muted-foreground">
             Buat surat tanpa menggunakan template
           </p>
         </div>
+        {isDirty && (
+          <Badge
+            variant="outline"
+            className="shrink-0 border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+          >
+            Belum disimpan
+          </Badge>
+        )}
       </div>
 
       <form
@@ -259,7 +291,7 @@ function RouteComponent() {
                             <GripVertical className="h-4 w-4 text-muted-foreground" />
                           </button>
                           <div className="flex-1">
-                            <form.Field name={`recipients.${index}.user_id`}>
+                            <form.Field name={`recipients[${index}].user_id`}>
                               {(field: any) => {
                                 const errors = field.state.meta.errors
                                 const showError =
@@ -342,7 +374,7 @@ function RouteComponent() {
                             <GripVertical className="h-4 w-4 text-muted-foreground" />
                           </button>
                           <div className="flex-1">
-                            <form.Field name={`recipients_cc.${index}.user_id`}>
+                            <form.Field name={`recipients_cc[${index}].user_id`}>
                               {(field: any) => {
                                 const errors = field.state.meta.errors
                                 const showError =
@@ -400,16 +432,26 @@ function RouteComponent() {
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate({ to: "/mail/user-mails" })}
-          >
-            Batal
-          </Button>
-          <Button type="submit">Kirim Surat</Button>
-        </div>
+        <Card className="mt-6">
+          <CardContent className="pt-6">
+            <ErrorSummaryCard errors={fieldErrors} />
+
+            <div className="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  confirmNavigation(() => navigate({ to: "/mail/user-mails" }))
+                }
+              >
+                Batal
+              </Button>
+              <form.AppForm>
+                <form.SubmitButton label="Kirim Surat" />
+              </form.AppForm>
+            </div>
+          </CardContent>
+        </Card>
       </form>
     </div>
   )

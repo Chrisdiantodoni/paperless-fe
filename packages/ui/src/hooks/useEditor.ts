@@ -14,7 +14,10 @@ import Underline from "@tiptap/extension-underline"
 import { TextStyle, Color } from "@tiptap/extension-text-style"
 import TextAlign from "@tiptap/extension-text-align"
 
-export function useEditor(initialContent?: string): Editor | null {
+export function useEditor(
+  initialMarkdown?: string,
+  _placeholder?: string
+): Editor | null {
   const editor = useTiptapEditor({
     extensions: [
       StarterKit.configure({
@@ -73,7 +76,12 @@ export function useEditor(initialContent?: string): Editor | null {
         types: ["heading", "paragraph"],
       }),
     ],
-    content: initialContent || "<p></p>",
+    content: markdownToHtml(initialMarkdown || "") || "<p></p>",
+    editorProps: {
+      attributes: {
+        class: "focus:outline-none",
+      },
+    },
   })
   useEditorState({
     editor,
@@ -90,8 +98,24 @@ export function getMarkdownFromEditor(editor: Editor | null): string {
 
   const html = editor.getHTML()
 
+  // Preserve raw table HTML (with colgroup/col width) so column widths
+  // survive the markdown round-trip. markdown-it (html: true) renders it back.
+  const tables: string[] = []
+  let markdown = html.replace(/<table[^>]*>[\s\S]*?<\/table>/g, (m) => {
+    tables.push(m)
+    return `\u0000T${tables.length - 1}\u0000`
+  })
+
+  // Preserve empty paragraphs (Enter for spacing) and hard breaks (Shift+Enter)
+  // as raw <br> so visible line breaks survive the markdown round-trip.
+  // Runs before <br> handling so `<p><br></p>` matches as an empty paragraph.
+  markdown = markdown.replace(
+    /<p[^>]*>\s*(?:<br\s*\/?>\s*)?(?:&nbsp;\s*)?<\/p>/g,
+    () => "\u0000BR\u0000"
+  )
+
   // Convert HTML to basic markdown
-  let markdown = html
+  markdown = markdown
     .replace(/<p>/g, "")
     .replace(/<\/p>/g, "\n\n")
     .replace(/<strong>|<b>/g, "**")
@@ -130,34 +154,7 @@ export function getMarkdownFromEditor(editor: Editor | null): string {
     .replace(/<img[^>]*alt="([^"]*)"[^>]*src="([^"]*)"[^>]*>/g, "![$1]($2)")
     .replace(/<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>/g, "![$2]($1)")
     .replace(/<img[^>]*src="([^"]*)"[^>]*>/g, "![]($1)")
-    .replace(/<br\s*\/?>/g, "\n")
-    .replace(/<table[^>]*>([\s\S]*?)<\/table>/g, (match) => {
-      // Parse table
-      const rows: string[] = []
-      const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g
-      let rowMatch
-
-      while ((rowMatch = rowRegex.exec(match)) !== null) {
-        const cells: string[] = []
-        const cellRegex = /<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g
-        let cellMatch
-
-        while ((cellMatch = cellRegex.exec(rowMatch[1])) !== null) {
-          cells.push(cellMatch[1].replace(/<[^>]*>/g, "").trim())
-        }
-
-        if (cells.length > 0) {
-          rows.push(`| ${cells.join(" | ")} |`)
-        }
-      }
-
-      if (rows.length === 0) return ""
-
-      const separator = `| ${Array(rows[0].split("|").length - 2)
-        .fill("---")
-        .join(" | ")} |`
-      return rows[0] + "\n" + separator + "\n" + rows.slice(1).join("\n") + "\n"
-    })
+    .replace(/<br\s*\/?>/g, () => "\u0000BR\u0000")
     .replace(/<[^>]*>/g, "")
     .replace(/&nbsp;/g, " ")
     .replace(/&lt;/g, "<")
@@ -165,7 +162,16 @@ export function getMarkdownFromEditor(editor: Editor | null): string {
     .replace(/&amp;/g, "&")
 
   // Clean up multiple newlines
-  markdown = markdown.replace(/\n\n\n+/g, "\n\n")
+  markdown = markdown.replace(/\r\n/g, "\n")
+  markdown = markdown.replace(/\n{3,}/g, "\n\n")
+
+  // Re-insert preserved tables at the end
+  markdown = markdown.replace(/\u0000T(\d+)\u0000/g, (_, i) => {
+    return `\n\n${tables[Number(i)]}\n\n`
+  })
+
+  // Re-insert line breaks as raw HTML (rendered by markdown-it html: true)
+  markdown = markdown.replace(/\u0000BR\u0000/g, () => "<br>")
 
   return markdown.trim()
 }
@@ -179,7 +185,7 @@ export function setMarkdownContent(
 ): void {
   if (!editor) return
 
-  editor.commands.setContent(markdownToHtml(markdown))
+  editor.commands.setContent(markdownToHtml(markdown) || "<p></p>")
 }
 
 export type EditorOutputFormat = "markdown" | "html"
