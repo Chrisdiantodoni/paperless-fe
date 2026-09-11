@@ -83,13 +83,13 @@ function RouteComponent() {
 
   const rows = useMemo(
     () =>
-      data.data.map(
+      data?.data?.map(
         (d): DynamicMailTemplateRow => ({
           ...d,
           current_page: data.current_page,
           per_page: data.per_page,
         })
-      ),
+      ) ?? [],
     [data]
   )
 
@@ -209,9 +209,7 @@ function RouteComponent() {
         <DataTable columns={columns} data={rows} isFetching={isFetching} />
       </div>
       <DataTablePagination
-        currentPage={data.current_page}
-        lastPage={data.last_page}
-        total={data.total}
+        pagination={data}
         isFetching={isFetching}
         onPageChange={(page) =>
           navigate({ search: (prev) => ({ ...prev, page }) })
