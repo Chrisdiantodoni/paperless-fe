@@ -102,8 +102,8 @@ export function useApproveDynamicMailTemplateMutation() {
 export function useRejectDynamicMailTemplateMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (id: string) => {
-      const response = await rejectDynamicMailTemplate({ data: id })
+    mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
+      const response = await rejectDynamicMailTemplate({ data: { id, reason } })
       return response
     },
     onSuccess: () => {
@@ -122,8 +122,8 @@ export function useRejectDynamicMailTemplateMutation() {
 export function useRequestRevisionMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: RevisionRequestForm }) => {
-      const response = await requestDynamicMailTemplateRevision({ data: { id, ...data } })
+    mutationFn: async ({ id, reason, scope_changes }: { id: string; reason: string; scope_changes?: string[] }) => {
+      const response = await requestDynamicMailTemplateRevision({ data: { id, reason, scope_changes } })
       return response
     },
     onSuccess: () => {

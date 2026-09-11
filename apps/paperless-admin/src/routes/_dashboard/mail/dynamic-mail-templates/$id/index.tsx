@@ -150,7 +150,7 @@ function RouteComponent() {
     reason: string
     scope_changes?: string[]
   }) => {
-    await requestRevision({ id: data.id, data: formData })
+    await requestRevision({ id: data.id, reason: formData.reason, scope_changes: formData.scope_changes })
     setRevisionModalOpen(false)
     router.invalidate()
   }
