@@ -25,5 +25,9 @@ const statusConfig = {
 
 export function ApprovalStatusBadge({ status }: ApprovalStatusBadgeProps) {
   const config = statusConfig[status]
-  return <Badge variant={config?.variant ?? "default"}>{config.label}</Badge>
+  return (
+    <Badge variant={config?.variant ?? "default"}>
+      {config?.label ?? status}
+    </Badge>
+  )
 }
