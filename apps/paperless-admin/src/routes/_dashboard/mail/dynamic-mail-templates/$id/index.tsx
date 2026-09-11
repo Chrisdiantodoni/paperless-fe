@@ -15,13 +15,25 @@ import {
 } from "@tanstack/react-router"
 import { Button } from "@workspace/ui/components/ui/button"
 import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
-import { ArrowLeft, Pencil, Trash, Send, CheckCircle, XCircle, FileEdit } from "lucide-react"
+import {
+  ArrowLeft,
+  Pencil,
+  Trash,
+  Send,
+  CheckCircle,
+  XCircle,
+  FileEdit,
+} from "lucide-react"
 import { toast } from "sonner"
 import { useState } from "react"
 import { ApprovalStatusBadge } from "@/components/master/dynamic-mail-template/approval-status-badge"
 import { ApprovalHistory } from "@/components/master/dynamic-mail-template/approval-history"
-import { RevisionModal } from "@/components/master/dynamic-mail-template/revision-modal"
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/ui/card"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 import { Label } from "@workspace/ui/components/ui/label"
 import {
@@ -262,12 +274,6 @@ function RouteComponent() {
       <DynamicTemplateDetail data={data} />
 
       {/* Revision Modal */}
-      <RevisionModal
-        open={revisionModalOpen}
-        onOpenChange={setRevisionModalOpen}
-        onSubmit={handleRequestRevision}
-        isLoading={isRequestingRevision}
-      />
 
       {/* Reject Modal */}
       <Dialog open={rejectModalOpen} onOpenChange={setRejectModalOpen}>

@@ -1,4 +1,4 @@
-import { Badge } from "@workspace/ui/components/badge"
+import { Badge } from "@workspace/ui/components/ui/badge"
 
 interface ApprovalStatusBadgeProps {
   status: "draft" | "pending" | "approved" | "rejected"

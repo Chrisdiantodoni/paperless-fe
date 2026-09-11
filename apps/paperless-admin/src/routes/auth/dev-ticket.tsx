@@ -25,14 +25,16 @@ function DevTicketPage() {
     }
   }
 
-  const handleGenerateTicket = async (): Promise<string> => {
+  const handleLogin = async (username: string, password: string): Promise<string> => {
     const portalId = import.meta.env.VITE_PORTAL_ID
     if (!portalId) {
       throw new Error("VITE_PORTAL_ID tidak ditemukan dalam environment variables.")
     }
-    const { ticket } = await sso.generateTicket(portalId)
+
+    const { token } = await sso.login(username, password)
+    const { ticket } = await sso.generateTicket(portalId, token)
     return ticket
   }
 
-  return <DevTicketForm onSubmitTicket={handleSubmitTicket} onGenerateTicket={handleGenerateTicket} />
+  return <DevTicketForm onSubmitTicket={handleSubmitTicket} onLogin={handleLogin} />
 }

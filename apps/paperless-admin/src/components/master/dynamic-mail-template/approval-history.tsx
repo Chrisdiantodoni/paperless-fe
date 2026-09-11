@@ -1,7 +1,7 @@
 import type { ApprovalHistoryItem } from "@workspace/types"
 import { formatDate } from "@workspace/utils"
-import { Card, CardContent } from "@workspace/ui/components/card"
 import { ApprovalStatusBadge } from "./approval-status-badge"
+import { Card, CardContent } from "@workspace/ui/components/ui/card"
 
 interface ApprovalHistoryProps {
   history: ApprovalHistoryItem[]
@@ -31,7 +31,7 @@ export function ApprovalHistory({ history }: ApprovalHistoryProps) {
         <Card key={item.id}>
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
-              <div className="space-y-2 flex-1">
+              <div className="flex-1 space-y-2">
                 <div className="flex items-center gap-2">
                   <ApprovalStatusBadge status={item.status} />
                   <span className="text-sm text-muted-foreground">
@@ -42,24 +42,26 @@ export function ApprovalHistory({ history }: ApprovalHistoryProps) {
                 {item.reason && (
                   <div className="space-y-1">
                     <p className="text-sm font-medium">Alasan:</p>
-                    <p className="text-sm text-muted-foreground">{item.reason}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {item.reason}
+                    </p>
                   </div>
                 )}
 
                 {item.scope_changes && item.scope_changes.length > 0 && (
                   <div className="space-y-1">
-                    <p className="text-sm font-medium">Perubahan yang Diminta:</p>
-                    <ul className="list-disc list-inside text-sm text-muted-foreground">
+                    <p className="text-sm font-medium">
+                      Perubahan yang Diminta:
+                    </p>
+                    <ul className="list-inside list-disc text-sm text-muted-foreground">
                       {item.scope_changes.map((scope) => (
-                        <li key={scope}>
-                          {scopeLabels[scope] || scope}
-                        </li>
+                        <li key={scope}>{scopeLabels[scope] || scope}</li>
                       ))}
                     </ul>
                   </div>
                 )}
 
-                <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2 border-t">
+                <div className="flex items-center gap-4 border-t pt-2 text-xs text-muted-foreground">
                   <span>
                     <strong>Oleh:</strong> {item.created_by_name}
                   </span>
