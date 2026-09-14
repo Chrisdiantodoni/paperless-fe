@@ -86,6 +86,14 @@ export function useEditor(
       attributes: {
         class: "focus:outline-none",
       },
+      handleKeyDown: (_view, event) => {
+        if (event.key !== "Enter" || event.shiftKey) return false
+
+        const { $from } = _view.state.selection
+        if ($from.parent.type.name !== "paragraph") return false
+
+        return editor?.commands.setHardBreak() ?? false
+      },
     },
   })
   useEditorState({
