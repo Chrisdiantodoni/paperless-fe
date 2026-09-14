@@ -2,16 +2,14 @@ import {
   deleteAllNotifications,
   deleteNotification,
   getNotifications,
-  getUnreadNotificationCount,
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from "@/server/notifications"
 import { notificationKeys } from "@/keys/notifications"
+import { authKeys } from "@/keys/authKeys"
 import {
-  queryOptions,
   useInfiniteQuery,
   useMutation,
-  useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
 import type { NotificationPage } from "@/services/API/notifications"
@@ -19,7 +17,9 @@ import type { NotificationPage } from "@/services/API/notifications"
 export const notificationListQueryOptions = () => ({
   queryKey: notificationKeys.list(),
   queryFn: async ({ pageParam = 1 }: { pageParam?: number }) => {
-    const response = await getNotifications({ data: { page: pageParam, per_page: 10 } })
+    const response = await getNotifications({
+      data: { page: pageParam, per_page: 10 },
+    })
     return response.data as NotificationPage
   },
   initialPageParam: 1,
@@ -28,26 +28,23 @@ export const notificationListQueryOptions = () => ({
   refetchInterval: 60_000,
 })
 
-export const unreadNotificationCountQueryOptions = () =>
-  queryOptions({
-    queryKey: notificationKeys.count(),
-    queryFn: async () => {
-      const response = await getUnreadNotificationCount()
-      return response.data
-    },
-    refetchInterval: 60_000,
-  })
-
 export function useNotifications() {
   return useInfiniteQuery(notificationListQueryOptions())
 }
 
-export function useUnreadNotificationCount() {
-  return useQuery(unreadNotificationCountQueryOptions())
-}
-
-function invalidateNotifications(queryClient: ReturnType<typeof useQueryClient>) {
-  queryClient.invalidateQueries({ queryKey: notificationKeys.all })
+function invalidateNotifications(
+  queryClient: ReturnType<typeof useQueryClient>
+) {
+  return Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: notificationKeys.list(),
+      refetchType: "active",
+    }),
+    queryClient.invalidateQueries({
+      queryKey: authKeys.me(),
+      refetchType: "active",
+    }),
+  ])
 }
 
 export function useMarkNotificationAsRead() {

@@ -47,6 +47,8 @@ function ProfileContent() {
   const staff = userData.hris_user.staff
   const details = staff.details
 
+  console.log(userData)
+
   return (
     <PageWrapper className="space-y-6">
       <PageHeader

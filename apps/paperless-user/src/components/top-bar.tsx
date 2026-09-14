@@ -1,7 +1,5 @@
 "use client"
 
-import { SidebarTrigger } from "@workspace/ui/components/ui/sidebar"
-import { Separator } from "@workspace/ui/components/ui/separator"
 import { AnimatedThemeToggler } from "@workspace/ui/components/ui/animated-theme-toggler"
 import {
   DropdownMenu,
@@ -40,8 +38,9 @@ import {
   useMarkAllNotificationsAsRead,
   useMarkNotificationAsRead,
   useNotifications,
-  useUnreadNotificationCount,
 } from "@/hooks/queries/use-notifications"
+import { useUser } from "@/hooks/queries/use-user"
+import { Loader2, Loader2Icon } from "lucide-react"
 
 interface TopBarProps {
   user?: UserData
@@ -50,30 +49,36 @@ interface TopBarProps {
 
 export function TopBar({ user, sidebar }: TopBarProps) {
   const { pathname } = useLocation()
+  const { data } = useUser()
   const notificationsQuery = useNotifications()
-  const unreadCountQuery = useUnreadNotificationCount()
   const markRead = useMarkNotificationAsRead()
   const markAllRead = useMarkAllNotificationsAsRead()
   const deleteNotification = useDeleteNotification()
   const deleteAllNotifications = useDeleteAllNotifications()
-  const notifications = notificationsQuery.data?.pages.flatMap((page) => page.data) ?? []
-  const unreadCount = Number(unreadCountQuery.data ?? 0)
-  const groupedNotifications = notifications.reduce<Record<string, typeof notifications>>(
-    (groups, notification) => {
-      const date = new Date(notification.created_at)
-      const today = new Date()
-      const yesterday = new Date(today)
-      yesterday.setDate(today.getDate() - 1)
-      const key = date.toDateString() === today.toDateString()
+  const notifications =
+    notificationsQuery.data?.pages.flatMap((page) => page.data) ?? []
+  const unreadCount = Number(data.unread_count ?? 0)
+
+  const groupedNotifications = notifications.reduce<
+    Record<string, typeof notifications>
+  >((groups, notification) => {
+    const date = new Date(notification.created_at)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(today.getDate() - 1)
+    const key =
+      date.toDateString() === today.toDateString()
         ? "Hari Ini"
         : date.toDateString() === yesterday.toDateString()
           ? "Kemarin"
-          : date.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
-      ;(groups[key] ??= []).push(notification)
-      return groups
-    },
-    {}
-  )
+          : date.toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })
+    ;(groups[key] ??= []).push(notification)
+    return groups
+  }, {})
 
   const handleLogout = async () => {
     setLoggingOut(true)
@@ -85,22 +90,34 @@ export function TopBar({ user, sidebar }: TopBarProps) {
     <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
       <div className="flex w-full items-center justify-between px-4">
         <div className="flex min-w-0 items-center gap-2">
-          <SidebarTrigger className="-ml-1" />
+          {/*<SidebarTrigger className="-ml-1" />
           <Separator
             orientation="vertical"
             className="mt-1 mr-2 data-[orientation=vertical]:h-5"
-          />
+          />*/}
           <Link to="/" className="flex shrink-0 items-center gap-2">
             <span className="flex size-7 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
               P
             </span>
-            <span className="hidden text-sm font-semibold sm:inline">Paperless</span>
+            <span className="hidden text-sm font-semibold sm:inline">
+              Paperless
+            </span>
           </Link>
-          <nav className="hidden min-w-0 items-center gap-1 lg:flex" aria-label="Navigasi utama">
+          <nav
+            className="hidden min-w-0 items-center gap-1 lg:flex"
+            aria-label="Navigasi utama"
+          >
             {sidebar.map((item) => {
-              if (item.header || !item.title || (!item.url && !item.children?.length)) return null
+              if (
+                item.header ||
+                !item.title ||
+                (!item.url && !item.children?.length)
+              )
+                return null
               const Icon = item.icon
-                ? (PhosphorIcons[item.icon as keyof typeof PhosphorIcons] as React.ElementType)
+                ? (PhosphorIcons[
+                    item.icon as keyof typeof PhosphorIcons
+                  ] as React.ElementType)
                 : null
 
               if (item.children?.length) {
@@ -125,7 +142,10 @@ export function TopBar({ user, sidebar }: TopBarProps) {
                       <DropdownMenuSeparator />
                       {item.children.map((child) => (
                         <DropdownMenuItem key={child.title} asChild>
-                          <Link to={child.url} activeOptions={child.activeOptions}>
+                          <Link
+                            to={child.url}
+                            activeOptions={child.activeOptions}
+                          >
                             {child.title}
                           </Link>
                         </DropdownMenuItem>
@@ -147,7 +167,10 @@ export function TopBar({ user, sidebar }: TopBarProps) {
                   className={`relative h-9 px-3 ${isActive ? "bg-accent font-semibold text-accent-foreground after:absolute after:right-2 after:bottom-0 after:left-2 after:h-0.5 after:rounded-full after:bg-primary" : ""}`}
                   asChild
                 >
-                  <Link to={item.url ?? "/dashboard"} activeOptions={item.activeOptions}>
+                  <Link
+                    to={item.url ?? "/dashboard"}
+                    activeOptions={item.activeOptions}
+                  >
                     {Icon && <Icon size={16} />}
                     {item.title}
                   </Link>
@@ -163,10 +186,17 @@ export function TopBar({ user, sidebar }: TopBarProps) {
         <div className="flex shrink-0 items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative h-9 w-9">
-                <BellIcon size={18} weight={unreadCount > 0 ? "fill" : "regular"} />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative h-10 w-10 rounded-full"
+              >
+                <BellIcon
+                  size={18}
+                  weight={unreadCount > 0 ? "fill" : "regular"}
+                />
                 {unreadCount > 0 && (
-                  <span className="absolute top-0 right-0 flex h-4 min-w-4 -translate-y-1/4 translate-x-1/4 items-center justify-center rounded-full border-2 border-background bg-destructive px-1 text-[9px] leading-none font-bold text-destructive-foreground shadow-sm">
+                  <span className="absolute top-1 right-1 flex h-4 min-w-4 translate-x-1/4 -translate-y-1/4 items-center justify-center rounded-full border-2 border-background bg-destructive px-1 text-[9px] leading-none font-bold text-destructive-foreground shadow-sm">
                     {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
                 )}
@@ -209,57 +239,78 @@ export function TopBar({ user, sidebar }: TopBarProps) {
                     Loading notifications...
                   </div>
                 )}
-                {!notificationsQuery.isPending && notifications.length === 0 && (
-                  <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-                    No notifications yet
-                  </div>
-                )}
-                {Object.entries(groupedNotifications).map(([group, groupNotifications]) => (
-                  <div key={group}>
-                    <div className="sticky top-0 z-10 border-b bg-background/95 px-4 py-2 text-xs font-semibold text-muted-foreground backdrop-blur">
-                      {group}
+                {!notificationsQuery.isPending &&
+                  notifications.length === 0 && (
+                    <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                      No notifications yet
                     </div>
-                    {groupNotifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className={`group relative flex gap-3 border-b px-4 py-3 last:border-0 ${notification.isRead ? "" : "bg-muted/40"}`}
-                      >
-                        {!notification.isRead && (
-                          <span className="absolute inset-y-0 left-0 w-0.5 bg-primary" aria-label="Belum dibaca" />
-                        )}
-                        <button
-                          type="button"
-                          className="min-w-0 flex-1 text-left"
-                          onClick={() => {
-                            if (!notification.isRead) markRead.mutate(notification.id)
-                          }}
-                        >
-                          <div className="flex items-start gap-2">
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium">{notification.title}</p>
-                              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                                {notification.message}
-                              </p>
-                              <p className="mt-2 text-[11px] text-muted-foreground">
-                                {new Date(notification.created_at).toLocaleString("id-ID")}
-                              </p>
-                            </div>
-                          </div>
-                        </button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-                          aria-label="Hapus notifikasi"
-                          disabled={deleteNotification.isPending}
-                          onClick={() => deleteNotification.mutate(notification.id)}
-                        >
-                          <TrashIcon size={15} />
-                        </Button>
+                  )}
+                {Object.entries(groupedNotifications).map(
+                  ([group, groupNotifications]) => (
+                    <div key={group}>
+                      <div className="sticky top-0 z-10 border-b bg-background/95 px-4 py-2 text-xs font-semibold text-muted-foreground backdrop-blur">
+                        {group}
                       </div>
-                    ))}
-                  </div>
-                ))}
+                      {groupNotifications.map((notification) => (
+                        <div
+                          key={notification.id}
+                          className={`group relative flex gap-3 border-b px-4 py-3 last:border-0 ${notification.isRead ? "" : "bg-muted/40"}`}
+                        >
+                          {!notification.isRead && (
+                            <span
+                              className="absolute inset-y-0 left-0 w-0.5 bg-primary"
+                              aria-label="Belum dibaca"
+                            />
+                          )}
+                          <button
+                            type="button"
+                            className="min-w-0 flex-1 text-left"
+                            onClick={() => {
+                              if (!notification.isRead)
+                                markRead.mutate(notification.id)
+                            }}
+                          >
+                            <div className="flex items-start gap-2">
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium">
+                                  {notification.title}
+                                </p>
+                                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                  {notification.message}
+                                </p>
+                                <p className="mt-2 text-[11px] text-muted-foreground">
+                                  {new Date(
+                                    notification.created_at
+                                  ).toLocaleString("id-ID")}
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                          <Button
+                             type="button"
+                             variant="ghost"
+                             size="icon"
+
+                            className="h-8 w-8 shrink-0 rounded-full text-destructive opacity-0 transition-colors group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive focus-visible:bg-destructive/10 focus-visible:text-destructive focus-visible:opacity-100"
+                            aria-label="Hapus notifikasi"
+                            disabled={deleteNotification.isPending}
+                             onClick={(e) => {
+                               e.stopPropagation()
+                              deleteNotification.mutate(notification.id)
+                            }}
+                          >
+
+                            {deleteNotification.isPending ? (
+                              <Loader2 size={15} className="animate-spin" />
+                            ) : (
+                              <TrashIcon size={15} />
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                )}
                 {notificationsQuery.hasNextPage && (
                   <div className="border-t p-2">
                     <Button
@@ -278,7 +329,12 @@ export function TopBar({ user, sidebar }: TopBarProps) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <AnimatedThemeToggler className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-input bg-background shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none" />
+          <AnimatedThemeToggler
+            aria-label="Ganti tema"
+            className="h-10 w-10 rounded-full border-none text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            variant="circle"
+            duration={500}
+          />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

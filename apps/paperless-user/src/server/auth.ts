@@ -38,7 +38,7 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(
   async (): Promise<UserData> => {
     try {
       const response = await auth.me()
-      return response.data.user
+      return { ...response.data.user, unread_count: response.data.unread_count }
     } catch (error: any) {
       handleApiError(error)
     }

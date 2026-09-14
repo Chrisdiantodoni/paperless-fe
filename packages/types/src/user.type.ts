@@ -134,6 +134,7 @@ export interface HRISUser {
 
 export interface UserData {
   id: string
+  unread_count: number
   hris_user_id: string
   created_at: string
   updated_at: string

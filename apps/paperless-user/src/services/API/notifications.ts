@@ -36,12 +36,12 @@ class NotificationsApi {
   }
 
   async remove(id: string) {
-    const response = await api.delete<APIResponse<null>>(`/notifications/${id}`)
+    const response = await api.post<APIResponse<null>>(`/notifications/${id}`)
     return response.data
   }
 
   async removeAll() {
-    const response = await api.delete<APIResponse<null>>("/notifications/delete-all")
+    const response = await api.post<APIResponse<null>>("/notifications/delete-all")
     return response.data
   }
 }
