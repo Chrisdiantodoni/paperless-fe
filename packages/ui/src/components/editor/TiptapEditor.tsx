@@ -5,7 +5,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import { useEditor, getEditorContent, setEditorContent, type EditorOutputFormat } from "@workspace/ui/hooks/useEditor"
 import { EditorToolbar } from "./EditorToolbar"
 import { EditorArea } from "./EditorArea"
-import { MarkdownPreview } from "./MarkdownPreview"
+import { DocumentPreview } from "./DocumentPreview"
 
 interface TiptapEditorProps {
   initialContent?: string
@@ -93,7 +93,7 @@ export function TiptapEditor({
         onPreviewChange={setIsPreview}
       />
       {isPreview ? (
-        <MarkdownPreview markdown={getEditorContent(editor, "markdown")} />
+        <DocumentPreview html={getEditorContent(editor, "html")} />
       ) : (
         <EditorArea
           editor={editor}

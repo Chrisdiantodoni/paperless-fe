@@ -22,7 +22,6 @@ import { Separator } from "@workspace/ui/components/ui/separator"
 import { Input } from "@workspace/ui/components/ui/input"
 import { formatDate } from "@workspace/utils"
 import { useMemo, useState } from "react"
-import { MarkdownPreview } from "@workspace/ui/components/editor/MarkdownPreview"
 
 export default function DynamicTemplateDetail({
   data,
@@ -107,14 +106,10 @@ export default function DynamicTemplateDetail({
             <Separator />
             <div>
               <h3 className="mb-4 text-lg font-semibold">Konten</h3>
-              {looksLikeHtml(data.content) ? (
-                <div
-                  className="tiptap max-w-none rounded-lg border border-input bg-background p-4"
-                  dangerouslySetInnerHTML={{ __html: data.content }}
-                />
-              ) : (
-                <MarkdownPreview markdown={data.content} />
-              )}
+              <div
+                className="tiptap max-w-none rounded-lg border border-input bg-background p-4"
+                dangerouslySetInnerHTML={{ __html: data.content }}
+              />
             </div>
           </>
         )}
@@ -324,8 +319,4 @@ function ScopeSection({
       )}
     </div>
   )
-}
-
-function looksLikeHtml(value: string): boolean {
-  return /<[a-z][\s\S]*?>/i.test(value.trim())
 }

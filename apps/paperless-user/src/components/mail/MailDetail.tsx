@@ -481,7 +481,7 @@ export function MailDetail({
                   <CardTitle className="text-base">Isi Surat</CardTitle>
                 </CardHeader>
                 <CardContent className="overflow-x-hidden p-0">
-                  <DocumentPreview markdown={req.content} />
+                  <DocumentPreview html={req.content} />
                 </CardContent>
               </Card>
             )}

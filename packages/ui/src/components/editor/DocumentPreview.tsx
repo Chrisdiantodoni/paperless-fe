@@ -1,16 +1,13 @@
 "use client"
 
-import { useMemo } from "react"
-import { markdownToHtml } from "@workspace/ui/lib/markdown-utils"
 import { cn } from "@workspace/ui/lib/utils"
 
 interface DocumentPreviewProps {
-  markdown: string
+  html: string
   className?: string
 }
 
-export function DocumentPreview({ markdown, className }: DocumentPreviewProps) {
-  const html = useMemo(() => markdownToHtml(markdown || ""), [markdown])
+export function DocumentPreview({ html, className }: DocumentPreviewProps) {
 
   return (
     <div className={cn("bg-muted/30 p-4 md:p-8", className)}>

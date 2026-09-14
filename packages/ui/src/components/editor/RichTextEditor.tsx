@@ -78,7 +78,7 @@ export function RichTextEditor({
 
         {isPreview ? (
           <div className="max-h-[600px] overflow-y-auto">
-            <DocumentPreview markdown={content} />
+            <DocumentPreview html={content} />
           </div>
         ) : (
           <Textarea
