@@ -21,6 +21,8 @@ import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
 import { useRef } from "react"
 import { getDynamicMailTemplateById } from "@/server/master"
 import { getFormFieldErrors, useFormFieldErrors } from "@/hooks/use-form-errors"
+import { PageHeader } from "@/components/page-header"
+import { PageWrapper } from "@/components/page-wrapper"
 
 export const Route = createFileRoute("/_dashboard/mail/user-mails/create")({
   component: RouteComponent,
@@ -349,40 +351,34 @@ function RouteComponent() {
     search.request_type === "permit_request"
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() =>
-            confirmNavigation(() => navigate({ to: "/mail/user-mails" }))
-          }
-          className="mb-4 gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Kembali
-        </Button>
-
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Buat Mail: {search.template_label}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {search.department_label} •{" "}
-              {getRequestTypeLabel(search.request_type)}
-            </p>
-          </div>
-          {isDirty && (
-            <Badge
-              variant="outline"
-              className="shrink-0 border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+    <PageWrapper className="space-y-6">
+      <PageHeader
+        title={`Buat Mail: ${search.template_label}`}
+        description={`${search.department_label} • ${getRequestTypeLabel(search.request_type)} • Lengkapi informasi surat dan penerima`}
+        actions={
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                confirmNavigation(() => navigate({ to: "/mail/user-mails" }))
+              }
+              className="gap-2"
             >
-              Belum disimpan
-            </Badge>
-          )}
-        </div>
-      </div>
+              <ArrowLeft className="h-4 w-4" />
+              Kembali
+            </Button>
+            {isDirty && (
+              <Badge
+                variant="outline"
+                className="border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+              >
+                Belum disimpan
+              </Badge>
+            )}
+          </div>
+        }
+      />
 
       <form
         onSubmit={(e) => {
@@ -443,6 +439,6 @@ function RouteComponent() {
           </CardContent>
         </Card>
       </form>
-    </div>
+    </PageWrapper>
   )
 }

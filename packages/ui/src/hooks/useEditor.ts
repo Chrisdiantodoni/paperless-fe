@@ -15,8 +15,9 @@ import { TextStyle, Color } from "@tiptap/extension-text-style"
 import TextAlign from "@tiptap/extension-text-align"
 
 export function useEditor(
-  initialMarkdown?: string,
-  _placeholder?: string
+  initialContent?: string,
+  _placeholder?: string,
+  format: EditorOutputFormat = "html"
 ): Editor | null {
   const editor = useTiptapEditor({
     extensions: [
@@ -76,7 +77,11 @@ export function useEditor(
         types: ["heading", "paragraph"],
       }),
     ],
-    content: markdownToHtml(initialMarkdown || "") || "<p></p>",
+    content: format === "html" 
+      ? (initialContent && /<[a-z][\s\S]*?>/i.test(initialContent.trim()) 
+          ? initialContent 
+          : markdownToHtml(initialContent || "")) || "<p></p>"
+      : markdownToHtml(initialContent || "") || "<p></p>",
     editorProps: {
       attributes: {
         class: "focus:outline-none",

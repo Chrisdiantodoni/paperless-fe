@@ -41,7 +41,7 @@ export function ErrorSummaryCard({
           type="button"
           variant="ghost"
           size="sm"
-          className="h-6 w-6 p-0"
+          className="size-11 p-0"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           {isExpanded ? (

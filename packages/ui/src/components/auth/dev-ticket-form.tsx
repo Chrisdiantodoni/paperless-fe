@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import type { FormEvent } from "react"
 import { KeyRound, Loader2 } from "lucide-react"
 import { Button } from "@workspace/ui/components/ui/button"
@@ -17,45 +17,43 @@ import { Label } from "@workspace/ui/components/ui/label"
 interface DevTicketFormProps {
   title?: string
   description?: string
-  /** Returns an error message, or null on success */
   onSubmitTicket: (ticket: string) => Promise<string | null>
-  /** Optional: auto-generate ticket on mount */
-  onGenerateTicket?: () => Promise<string>
+  onLogin?: (username: string, password: string) => Promise<string>
 }
 
 export function DevTicketForm({
   title = "Development Session",
-  description = "Masukkan ticket untuk membuat session pada mode development.",
+  description = "Login dengan username dan password.",
   onSubmitTicket,
-  onGenerateTicket,
+  onLogin,
 }: DevTicketFormProps) {
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
   const [ticket, setTicket] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [generating, setGenerating] = useState(false)
+  const [loggingIn, setLoggingIn] = useState(false)
+  const [step, setStep] = useState<"login" | "ticket">("login")
 
-  useEffect(() => {
-    if (!onGenerateTicket) return
-
-    const autoGenerate = async () => {
-      setGenerating(true)
-      setError(null)
-      try {
-        const generatedTicket = await onGenerateTicket()
-        setTicket(generatedTicket)
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Gagal membuat tiket otomatis."
-        )
-      } finally {
-        setGenerating(false)
-      }
+  const handleLogin = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!username.trim() || !password.trim() || loggingIn || !onLogin) return
+    setLoggingIn(true)
+    setError(null)
+    try {
+      const generatedTicket = await onLogin(username.trim(), password.trim())
+      setTicket(generatedTicket)
+      setStep("ticket")
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Gagal login."
+      )
+    } finally {
+      setLoggingIn(false)
     }
+  }
 
-    autoGenerate()
-  }, [onGenerateTicket])
-
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmitTicket = async (e: FormEvent) => {
     e.preventDefault()
     if (!ticket.trim() || loading) return
     setLoading(true)
@@ -72,10 +70,10 @@ export function DevTicketForm({
 
   return (
     <>
-      {generating && (
+      {loggingIn && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background/80 backdrop-blur-sm">
           <Loader2 className="h-16 w-16 animate-spin text-primary" />
-          <p className="text-lg text-muted-foreground">Membuat tiket...</p>
+          <p className="text-lg text-muted-foreground">Logging in...</p>
         </div>
       )}
       <div className="flex min-h-screen w-full items-center justify-center bg-muted/40 p-4">
@@ -88,31 +86,87 @@ export function DevTicketForm({
             <CardDescription>{description}</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="dev-ticket">Ticket</Label>
-                <Input
-                  id="dev-ticket"
-                  type="text"
-                  autoComplete="off"
-                  placeholder="Paste ticket SSO..."
-                  value={ticket}
-                  onChange={(e) => setTicket(e.target.value)}
-                  disabled={loading || generating}
-                />
-              </div>
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loading || generating}
-              >
-                {(loading || generating) && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {generating ? "Membuat tiket..." : "Masuk"}
-              </Button>
-            </form>
+            {step === "login" ? (
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    autoComplete="username"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    disabled={loggingIn}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loggingIn}
+                  />
+                </div>
+                {error && <p className="text-sm text-destructive">{error}</p>}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loggingIn || !username.trim() || !password.trim()}
+                >
+                  {loggingIn && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Login
+                </Button>
+              </form>
+            ) : (
+              <form onSubmit={handleSubmitTicket} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dev-ticket">Ticket</Label>
+                  <Input
+                    id="dev-ticket"
+                    type="text"
+                    autoComplete="off"
+                    placeholder="Ticket SSO..."
+                    value={ticket}
+                    onChange={(e) => setTicket(e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+                {error && <p className="text-sm text-destructive">{error}</p>}
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setStep("login")
+                      setTicket("")
+                      setPassword("")
+                      setError(null)
+                    }}
+                    disabled={loading}
+                  >
+                    Kembali
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1"
+                    disabled={loading || !ticket.trim()}
+                  >
+                    {loading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Masuk
+                  </Button>
+                </div>
+              </form>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -43,29 +43,10 @@ class mails {
   async createMail(
     payload: CreateMailPayload | FormData
   ): Promise<APIResponse<AllMailProps>> {
-    console.log("\n🌐 API CLIENT: Sending request to backend")
-    console.log("Endpoint: POST /mail/user-mail/user-mails")
-
-    if (payload instanceof FormData) {
-      console.log("Payload type: FormData")
-      const entries: any = {}
-      for (const [key, value] of payload.entries()) {
-        entries[key] = value instanceof File ? `<File: ${value.name}>` : value
-      }
-      console.log("FormData entries:", JSON.stringify(entries, null, 2))
-    } else {
-      console.log("Payload type: Object")
-      console.log("Payload:", JSON.stringify(payload, null, 2))
-    }
-
     try {
       const res = await api.post("/mail/user-mail/user-mails", payload, {
         headers: { "Content-Type": "multipart/form-data" },
       })
-
-      console.log("\n✅ API CLIENT: Response received")
-      console.log("Status:", res.status)
-      console.log("Data preview:", JSON.stringify(res.data, null, 2).substring(0, 500))
 
       return res.data
     } catch (error: any) {

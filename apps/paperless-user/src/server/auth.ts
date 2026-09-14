@@ -16,7 +16,6 @@ export const verifySSOTicket = createServerFn({ method: "POST" })
       const response = await sso.verifyTicket(data.ticket)
 
       if (response?.data?.token) {
-        console.log(response.data.token, "token")
         setSessionCookie(response.data.token)
         return response
       }

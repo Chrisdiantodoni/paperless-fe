@@ -69,7 +69,7 @@ export function BranchCombobox({ value, onChange }: BranchComboboxProps) {
                   e.stopPropagation()
                   onChange({ value: "", label: "" })
                 }}
-                className="flex size-4 items-center justify-center rounded-full text-muted-foreground/60 hover:bg-muted-foreground/20 hover:text-foreground"
+                className="flex size-7 items-center justify-center rounded-full text-muted-foreground/60 hover:bg-muted-foreground/20 hover:text-foreground"
               >
                 <X className="size-3" />
               </span>

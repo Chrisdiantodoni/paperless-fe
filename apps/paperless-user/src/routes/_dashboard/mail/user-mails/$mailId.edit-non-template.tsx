@@ -21,6 +21,8 @@ import { ErrorSummaryCard } from "@/components/create/sections/ErrorSummaryCard"
 import { deleteAttachment, updateUserMail } from "@/server/mails"
 import { useMailDetail } from "@/hooks/queries/use-mails"
 import { useUser } from "@/hooks/queries/use-user"
+import { PageHeader } from "@/components/page-header"
+import { PageWrapper } from "@/components/page-wrapper"
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes"
 import {
   getFormFieldErrors,
@@ -441,11 +443,11 @@ function RouteComponent() {
 
   if (isLoading || !mail) {
     return (
-      <div className="container mx-auto max-w-7xl p-4">
+      <PageWrapper>
         <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground">
           Memuat data mail...
         </div>
-      </div>
+      </PageWrapper>
     )
   }
 
@@ -453,7 +455,7 @@ function RouteComponent() {
 
   if (!isEditable) {
     return (
-      <div className="container mx-auto max-w-7xl p-4">
+      <PageWrapper>
         <Button
           variant="ghost"
           size="sm"
@@ -469,7 +471,7 @@ function RouteComponent() {
             <strong>Revisi</strong> yang dapat diedit.
           </CardContent>
         </Card>
-      </div>
+      </PageWrapper>
     )
   }
 
@@ -478,40 +480,24 @@ function RouteComponent() {
     .sort((a, b) => a.sequence - b.sequence)
 
   return (
-    <div className="container mx-auto max-w-7xl p-4">
-      <div className="mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() =>
-            confirmNavigation(() => navigate({ to: "/mail/user-mails" }))
-          }
-          className="mb-4 gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Kembali
-        </Button>
-
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Edit surat non-template</p>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {mail.document_number}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {mail.sent_by.department} • Draft / Revisi
-            </p>
-          </div>
-          {isDirty && (
-            <Badge
-              variant="outline"
-              className="shrink-0 border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400"
-            >
-              Belum disimpan
-            </Badge>
-          )}
-        </div>
-      </div>
+    <PageWrapper className="space-y-6">
+      <PageHeader
+        title={mail.document_number}
+        description="Perbarui surat non-template"
+        actions={
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              confirmNavigation(() => navigate({ to: "/mail/user-mails" }))
+            }
+            className="shrink-0 gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Kembali
+          </Button>
+        }
+      />
 
       <form
         onSubmit={(e) => {
@@ -555,7 +541,7 @@ function RouteComponent() {
 
                 <form.AppField name="content">
                   {(field: any) => (
-                    <field.RichTextEditorField label="Isi Surat" required />
+                    <field.RichTextEditorField label="Isi Surat" required format="html" />
                   )}
                 </form.AppField>
 
@@ -679,6 +665,6 @@ function RouteComponent() {
           </CardContent>
         </Card>
       </form>
-    </div>
+    </PageWrapper>
   )
 }

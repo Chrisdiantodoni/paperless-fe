@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { cn } from "@workspace/ui/lib/utils"
-import { useEditor, getMarkdownFromEditor, setEditorContent } from "@workspace/ui/hooks/useEditor"
+import { useEditor, getEditorContent, setEditorContent, type EditorOutputFormat } from "@workspace/ui/hooks/useEditor"
 import { EditorToolbar } from "./EditorToolbar"
 import { EditorArea } from "./EditorArea"
 import { MarkdownPreview } from "./MarkdownPreview"
@@ -17,10 +17,11 @@ interface TiptapEditorProps {
   value?: string
   hasError?: boolean
   className?: string
+  format?: EditorOutputFormat
 }
 
-function normalizeMarkdown(md: string): string {
-  return md.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim()
+function normalizeContent(content: string): string {
+  return content.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim()
 }
 
 export function TiptapEditor({
@@ -33,8 +34,9 @@ export function TiptapEditor({
   hasError = false,
   className,
   placeholder,
+  format = "html",
 }: TiptapEditorProps) {
-  const editor = useEditor(value || initialContent, placeholder)
+  const editor = useEditor(value || initialContent, placeholder, format)
   const [isPreview, setIsPreview] = useState(false)
   const skipSyncRef = useRef(false)
 
@@ -45,27 +47,27 @@ export function TiptapEditor({
       return
     }
 
-    const current = getMarkdownFromEditor(editor)
-    if (normalizeMarkdown(value) !== normalizeMarkdown(current)) {
-      setEditorContent(editor, value, "markdown")
+    const current = getEditorContent(editor, format)
+    if (normalizeContent(value) !== normalizeContent(current)) {
+      setEditorContent(editor, value, format)
     }
-  }, [editor, value])
+  }, [editor, value, format])
 
   useEffect(() => {
     if (!editor) return
 
     const handleUpdate = () => {
-      const markdown = getMarkdownFromEditor(editor)
+      const content = getEditorContent(editor, format)
       skipSyncRef.current = true
-      onContentChange?.(markdown)
-      onChange?.(markdown)
+      onContentChange?.(content)
+      onChange?.(content)
     }
 
     editor.on("update", handleUpdate)
     return () => {
       editor.off("update", handleUpdate)
     }
-  }, [editor, onContentChange, onChange])
+  }, [editor, onContentChange, onChange, format])
 
   useEffect(() => {
     if (!editor) return
@@ -80,18 +82,18 @@ export function TiptapEditor({
     }
   }, [editor, onBlur])
 
-  const { words, characters } = summarize(getMarkdownFromEditor(editor))
+  const { words, characters } = summarize(getEditorContent(editor, format))
 
   return (
     <div className={cn("w-full space-y-2", className)}>
       <EditorToolbar 
         editor={editor} 
-        format="markdown"
+        format={format}
         isPreview={isPreview}
         onPreviewChange={setIsPreview}
       />
       {isPreview ? (
-        <MarkdownPreview markdown={getMarkdownFromEditor(editor)} />
+        <MarkdownPreview markdown={getEditorContent(editor, "markdown")} />
       ) : (
         <EditorArea
           editor={editor}

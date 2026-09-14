@@ -27,6 +27,7 @@ import {
 } from "@workspace/ui/components/ui/select"
 import CreateMail from "../create/create-mail"
 import { getRequestTypeOptions } from "@workspace/utils"
+import { PageHeader } from "@/components/page-header"
 
 export type MailNav = "all" | "sent" | "draft"
 
@@ -110,13 +111,10 @@ export function MailHeader({
 
   return (
     <div className="border-border bg-card py-2">
-      <div className="mb-4">
-        <h1 className="text-2xl font-semibold tracking-tight">{activeLabel}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Kelola permohonan dan surat-menyurat internal
-        </p>
-      </div>
-
+      <PageHeader
+        title="Mail"
+        description="Kelola surat masuk, terkirim, dan draft"
+      />
       <header className="flex flex-col gap-4 border-b bg-background p-4 lg:flex-row lg:items-center lg:justify-between">
         {/* Left: Compose button & nav tabs */}
         <div className="flex flex-wrap items-center gap-2">

@@ -67,9 +67,7 @@ export function useStaticMailtemplateSearch(
     queryKey: staticMailTemplateKeys.search(searchQuery, deps),
     queryFn: async () => {
       try {
-        console.log('[useStaticMailtemplateSearch] Calling with deps:', deps)
         const result = await getObligatedStaticTemplate({ data: deps! })
-        console.log('[useStaticMailtemplateSearch] Success:', result)
         return result
       } catch (error) {
         console.error('[useStaticMailtemplateSearch] Error:', error)

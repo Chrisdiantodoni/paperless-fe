@@ -7,7 +7,13 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/ui/tabs"
-import { ProfilePersonalTab, ProfileContactTab, ProfileSocialTab } from "@/components/profile"
+import {
+  ProfilePersonalTab,
+  ProfileContactTab,
+  ProfileSocialTab,
+} from "@/components/profile"
+import { PageHeader } from "@/components/page-header"
+import { PageWrapper } from "@/components/page-wrapper"
 
 export const Route = createFileRoute("/_dashboard/profile/")({
   component: RouteComponent,
@@ -42,11 +48,11 @@ function ProfileContent() {
   const details = staff.details
 
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold">{details.fullname}</h1>
-        <p className="text-muted-foreground">{staff.nip}</p>
-      </div>
+    <PageWrapper className="space-y-6">
+      <PageHeader
+        title={details.fullname}
+        description="Kelola informasi pribadi, kontak, dan media sosial"
+      />
 
       <Tabs defaultValue="personal" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
@@ -67,6 +73,6 @@ function ProfileContent() {
           <ProfileSocialTab details={details} />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageWrapper>
   )
 }

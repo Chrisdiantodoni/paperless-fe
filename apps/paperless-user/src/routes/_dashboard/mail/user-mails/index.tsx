@@ -33,6 +33,7 @@ import { useDebounce } from "@workspace/utils"
 import { useUser } from "@/hooks/queries/use-user"
 import { isMailReadByUser } from "@/utils/mail-helpers"
 import { useQueryClient } from "@tanstack/react-query"
+import { PageWrapper } from "@/components/page-wrapper"
 
 export const Route = createFileRoute("/_dashboard/mail/user-mails/")({
   validateSearch: zodValidator(listRequestQuerySchema),
@@ -62,7 +63,6 @@ function RouteComponent() {
   } = useMailList(search, initialData)
 
   const navigate = Route.useNavigate()
-  console.log(initialData)
 
   const {
     activeNav,
@@ -321,85 +321,87 @@ function RouteComponent() {
 
   return (
     <main className="flex h-screen flex-col bg-background text-foreground">
-      <MailHeader
-        activeNav={activeNav}
-        query={query}
-        refreshing={refreshing}
-        filters={filters}
-        onNavChange={handleNavChange}
-        onQueryChange={handleQueryChange}
-        onRefresh={handleRefresh}
-        onFiltersChange={handleFiltersChange}
-      />
+      <PageWrapper className="shrink-0 space-y-6">
+        <MailHeader
+          activeNav={activeNav}
+          query={query}
+          refreshing={refreshing}
+          filters={filters}
+          onNavChange={handleNavChange}
+          onQueryChange={handleQueryChange}
+          onRefresh={handleRefresh}
+          onFiltersChange={handleFiltersChange}
+        />
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-stretch">
-        <div
-          className={`min-h-0 w-full border-b border-border lg:flex lg:w-[360px] lg:flex-col lg:border-r lg:border-b-0 xl:w-[400px] ${
-            showDetail ? "hidden" : "flex flex-col"
-          }`}
-        >
-          <MailList
-            isLoading={isFetching}
-            pageCount={mailPagination?.last_page || 1}
-            pageSize={mailPagination?.per_page || 10}
-            mails={mailPagination!}
-            page={page}
-            selectedId={selectedId}
-            currentUserId={currentUserId}
-            localReadIds={localReadIds}
-            onPageChange={handlePageChange}
-            onItemClick={handleMailClick}
-          />
+        <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-stretch">
+          <div
+            className={`min-h-0 w-full border-b border-border lg:flex lg:w-[360px] lg:flex-col lg:border-r lg:border-b-0 xl:w-[400px] ${
+              showDetail ? "hidden" : "flex flex-col"
+            }`}
+          >
+            <MailList
+              isLoading={isFetching}
+              pageCount={mailPagination?.last_page || 1}
+              pageSize={mailPagination?.per_page || 10}
+              mails={mailPagination!}
+              page={page}
+              selectedId={selectedId}
+              currentUserId={currentUserId}
+              localReadIds={localReadIds}
+              onPageChange={handlePageChange}
+              onItemClick={handleMailClick}
+            />
+          </div>
+
+          <article
+            className={`min-w-0 flex-1 lg:block ${showDetail ? "block" : "hidden"}`}
+          >
+            {selectedId ? (
+              <MailDetail
+                detail={mailDetail?.success ? mailDetail.data : null}
+                isLoading={isLoadingDetail}
+                isSendingMail={sendMailMutation.isPending}
+                isRevisingMail={reviseMailMutation.isPending}
+                isApprovingMail={approveMailMutation.isPending}
+                isRejectingMail={rejectMailMutation.isPending}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onEdit={handleEdit}
+                onSend={handleSend}
+                onRevise={handleRevise}
+                onClose={handleClose}
+                showCloseButton
+              />
+            ) : (
+              <MailEmptyState />
+            )}
+          </article>
         </div>
 
-        <article
-          className={`min-w-0 flex-1 lg:block ${showDetail ? "block" : "hidden"}`}
-        >
-          {selectedId ? (
-            <MailDetail
-              detail={mailDetail?.success ? mailDetail.data : null}
-              isLoading={isLoadingDetail}
-              isSendingMail={sendMailMutation.isPending}
-              isRevisingMail={reviseMailMutation.isPending}
-              isApprovingMail={approveMailMutation.isPending}
-              isRejectingMail={rejectMailMutation.isPending}
-              onApprove={handleApprove}
-              onReject={handleReject}
-              onEdit={handleEdit}
-              onSend={handleSend}
-              onRevise={handleRevise}
-              onClose={handleClose}
-              showCloseButton
-            />
-          ) : (
-            <MailEmptyState />
-          )}
-        </article>
-      </div>
+        <ApprovalDialog
+          open={approvalOpen}
+          approvalNote={approvalNote}
+          onNoteChange={setApprovalNote}
+          onClose={closeApprovalDialog}
+          onApprove={submitApproval}
+        />
 
-      <ApprovalDialog
-        open={approvalOpen}
-        approvalNote={approvalNote}
-        onNoteChange={setApprovalNote}
-        onClose={closeApprovalDialog}
-        onApprove={submitApproval}
-      />
+        <RejectDialog
+          open={rejectOpen}
+          rejectReason={rejectReason}
+          onReasonChange={setRejectReason}
+          onClose={closeRejectDialog}
+          onSubmit={submitRejection}
+        />
 
-      <RejectDialog
-        open={rejectOpen}
-        rejectReason={rejectReason}
-        onReasonChange={setRejectReason}
-        onClose={closeRejectDialog}
-        onSubmit={submitRejection}
-      />
-
-      <RevisionDialog
-        open={revisionOpen}
-        revisionReason={revisionReason}
-        onReasonChange={setRevisionReason}
-        onClose={closeRevisionDialog}
-        onSubmit={submitRevision}
-      />
+        <RevisionDialog
+          open={revisionOpen}
+          revisionReason={revisionReason}
+          onReasonChange={setRevisionReason}
+          onClose={closeRevisionDialog}
+          onSubmit={submitRevision}
+        />
+      </PageWrapper>
     </main>
   )
 }

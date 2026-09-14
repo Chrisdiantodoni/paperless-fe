@@ -180,7 +180,7 @@ export function DynamicFormRenderer({
           defaultValue={template.content ?? ""}
         >
           {(field: any) => (
-            <field.RichTextEditorField label="Isi Surat" required />
+            <field.RichTextEditorField label="Isi Surat" required format="html" />
           )}
         </form.AppField>
       </div>

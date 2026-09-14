@@ -4,3 +4,11 @@
 
 @source "../../../../packages/forms/src/**/*.{ts,tsx}";
 @source "../../../../packages/ui/src/**/*.{ts,tsx}";
+
+html {
+  font-size: 17px;
+}
+
+body {
+  line-height: 1.6;
+}

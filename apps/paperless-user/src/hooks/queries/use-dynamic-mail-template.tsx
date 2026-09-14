@@ -64,9 +64,7 @@ export function useDynamicMailTemplateSearch(
     queryKey: dynamicMailTemplateKeys.search(searchQuery, deps),
     queryFn: async () => {
       try {
-        console.log('[useDynamicMailTemplateSearch] Calling with deps:', deps)
         const result = await getObligatedDynamicTemplate({ data: deps! })
-        console.log('[useDynamicMailTemplateSearch] Success:', result)
         return result
       } catch (error) {
         console.error('[useDynamicMailTemplateSearch] Error:', error)

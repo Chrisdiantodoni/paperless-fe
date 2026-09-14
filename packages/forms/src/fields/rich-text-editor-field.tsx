@@ -5,17 +5,20 @@ import { useStore } from "@tanstack/react-form"
 import { cn } from "@workspace/ui/lib/utils"
 import { TiptapEditor } from "@workspace/ui/components/editor/TiptapEditor"
 import { getErrorMessage } from "../utils/get-error-message"
+import type { EditorOutputFormat } from "@workspace/ui/hooks/useEditor"
 
 interface RichTextEditorFieldProps {
   label: string
   placeholder?: string
   required?: boolean
+  format?: EditorOutputFormat
 }
 
 export function RichTextEditorField({
   label,
   placeholder,
   required,
+  format = "html",
 }: RichTextEditorFieldProps) {
   const field = useFieldContext<string>()
   const id = useId()
@@ -37,6 +40,7 @@ export function RichTextEditorField({
         onChange={(value) => field.handleChange(value)}
         aria-describedby={errors.length ? errorId : undefined}
         className={cn(errors.length && "border-destructive")}
+        format={format}
       />
       {errors.length > 0 && (
         <p id={errorId} role="alert" className="text-sm text-destructive">

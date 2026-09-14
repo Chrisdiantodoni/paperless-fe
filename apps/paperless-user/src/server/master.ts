@@ -158,7 +158,6 @@ export const updateStaticMailTemplate = createServerFn({ method: "POST" })
       // Simpan ID untuk digunakan di luar try..catch
       return response.data.id
     } catch (error: any) {
-      console.log({ error })
       // Hanya error dari API yang akan masuk ke sini
       throw new Error(error.message)
     }

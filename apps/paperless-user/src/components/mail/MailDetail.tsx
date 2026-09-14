@@ -470,496 +470,492 @@ export function MailDetail({
         <StatusBadge status={detail.status} />
       </div>
 
-      {/* 2-Column Layout */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[320px_1fr]">
-          {/* Left Column - Summary Card (Sticky) */}
-          <div className="sticky top-0 space-y-6">
-            <Card>
-              <CardContent className="space-y-5 pt-6">
-                <div className="flex items-start gap-3">
-                  <Avatar className="size-11">
-                    <AvatarFallback>{getInitials(senderName)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="font-semibold">{senderName}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {detail.sent_by.position || "Staff"}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3 border-t border-border pt-4">
-                  <div className="flex items-start gap-3">
-                    <FileText className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                    <div className="flex-1">
-                      <div className="text-xs text-muted-foreground">
-                        Jenis Permintaan
-                      </div>
-                      <div className="text-sm font-medium">{title}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <Calendar className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                    <div className="flex-1">
-                      <div className="text-xs text-muted-foreground">
-                        Tanggal Dibuat
-                      </div>
-                      <div className="text-sm font-medium">
-                        {formatDate(detail.created_at.toString())}
-                      </div>
-                    </div>
-                  </div>
-
-                  {totalApprovers > 0 && (
-                    <div className="flex items-start gap-3">
-                      <User className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                      <div className="flex-1">
-                        <div className="flex items-baseline justify-between">
-                          <div className="text-xs text-muted-foreground">
-                            Persetujuan
-                          </div>
-                          <div className="text-xs font-medium">
-                            {approvedCount}/{totalApprovers}
-                          </div>
-                        </div>
-                        <div className="mt-1.5 flex gap-1">
-                          {approvers.map((a, i) => (
-                            <div
-                              key={a.id ?? i}
-                              className={`h-1.5 flex-1 rounded-full ${
-                                a.status?.toLowerCase() === "approved"
-                                  ? "bg-emerald-500"
-                                  : a.status?.toLowerCase() === "rejected"
-                                    ? "bg-rose-500"
-                                    : "bg-muted"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2 border-t border-border pt-4">
-                  {/* Primary Action - Approve/Reject/Revise */}
-                  {canShowApprovalButtons && (onApprove || onReject) && (
-                    <>
-                      {onApprove && (
-                        <Button
-                          onClick={onApprove}
-                          disabled={isApprovingMail}
-                          variant="default"
-                          className="w-full"
-                          size="sm"
-                        >
-                          {isApprovingMail ? (
-                            <>
-                              <Loader2 className="size-4 animate-spin" />
-                              Menyetujui...
-                            </>
-                          ) : (
-                            "Setujui"
-                          )}
-                        </Button>
-                      )}
-                      {onReject && (
-                        <Button
-                          onClick={onReject}
-                          disabled={isRejectingMail}
-                          variant="destructive"
-                          className="w-full"
-                          size="sm"
-                        >
-                          {isRejectingMail ? (
-                            <>
-                              <Loader2 className="size-4 animate-spin" />
-                              Menolak...
-                            </>
-                          ) : (
-                            "Tolak"
-                          )}
-                        </Button>
-                      )}
-                      {onRevise && (
-                        <Button
-                          onClick={onRevise}
-                          disabled={isRevisingMail}
-                          variant="secondary"
-                          className="w-full gap-2"
-                          size="sm"
-                        >
-                          {isRevisingMail ? (
-                            <>
-                              <Loader2 className="size-4 animate-spin" />
-                              Mengirim Revisi...
-                            </>
-                          ) : (
-                            <>
-                              <RotateCcw className="size-4" />
-                              Revise Mail
-                            </>
-                          )}
-                        </Button>
-                      )}
-                    </>
-                  )}
-
-                  {/* Informational message ketika tombol approval tidak ditampilkan */}
-                  {isSendMail && !canShowApprovalButtons && (
-                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
-                      <p className="text-xs text-amber-700 dark:text-amber-400">
-                        {approverStatus.reason === "not_in_approval_list" &&
-                          "Anda bukan bagian dari alur persetujuan surat ini."}
-                        {approverStatus.reason === "already_responded" &&
-                          `Anda sudah ${
-                            approverStatus.currentStatus?.toLowerCase() ===
-                            "approved"
-                              ? "menyetujui"
-                              : approverStatus.currentStatus?.toLowerCase() ===
-                                  "rejected"
-                                ? "menolak"
-                                : approverStatus.currentStatus?.toLowerCase() ===
-                                    "revision"
-                                  ? "meminta revisi untuk"
-                                  : "merespons"
-                          } surat ini.`}
-                        {approverStatus.reason ===
-                          "waiting_for_previous_approver" &&
-                          "Menunggu persetujuan dari approver sebelumnya."}
-                        {approverStatus.reason === "not_primary_recipient" &&
-                          "Anda hanya sebagai penerima tembusan (CC), tidak dapat melakukan approval."}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Mail Actions */}
-                  {isCurrentUser && isSendable && onSend && (
-                    <Button
-                      onClick={onSend}
-                      disabled={isSendingMail}
-                      variant="default"
-                      className="w-full gap-2"
-                      size="sm"
-                    >
-                      {isSendingMail ? (
-                        <>
-                          <Loader2 className="size-4 animate-spin" />
-                          Mengirim...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="size-4" />
-                          Send Mail
-                        </>
-                      )}
-                    </Button>
-                  )}
-
-                  {/* Edit Action */}
-                  {isCurrentUser && isEditable && onEdit && (
-                    <Button
-                      onClick={onEdit}
-                      variant="outline"
-                      className="w-full gap-2"
-                      size="sm"
-                    >
-                      <Edit className="size-4" />
-                      Edit Mail
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Riwayat Aktivitas Card - Also Sticky */}
-            {Array.isArray(detail.logs) && detail.logs.length > 0 && (
+      {/* New Layout: Full Width Content First, Then 2-Column Bottom */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
+        <div className="mx-auto max-w-7xl space-y-6">
+          {/* Full Width Section - Isi Surat */}
+          {(req.type === "non_template" || req.type === "dynamic_template") &&
+            req.content && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Riwayat Aktivitas</CardTitle>
+                  <CardTitle className="text-base">Isi Surat</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {[...detail.logs]
-                      .sort(
-                        (a, b) =>
-                          new Date(a.created_at).getTime() -
-                          new Date(b.created_at).getTime()
-                      )
-                      .map((log, index, array) => {
-                        const IconComponent = getLogIcon(log.action)
-                        const colorClass = getLogColor(log.action)
-                        const isLast = index === array.length - 1
-
-                        return (
-                          <div key={log.id} className="relative flex gap-3">
-                            <div className="flex flex-col items-center">
-                              <div
-                                className={`flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-background bg-background ${colorClass}`}
-                              >
-                                <IconComponent className="size-3" />
-                              </div>
-                              {!isLast && (
-                                <div className="w-0.5 flex-1 bg-border" />
-                              )}
-                            </div>
-
-                            <div className="flex-1 pb-3">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-medium">
-                                  {getLogActionLabel(log.action)}
-                                </span>
-                                <span className="text-[10px] text-muted-foreground">
-                                  {formatDate(log.created_at)}
-                                </span>
-                              </div>
-                              <div className="mt-0.5 text-xs text-muted-foreground">
-                                {log.performed_by.name}
-                                {log.performed_by.position &&
-                                  ` • ${log.performed_by.position}`}
-                              </div>
-                              {log.notes && (
-                                <div
-                                  className={`mt-1.5 rounded-md border p-2 text-xs italic ${
-                                    log.action.toUpperCase() === "REVISION"
-                                      ? "border-orange-500/20 bg-orange-500/5 text-orange-700 dark:text-orange-400"
-                                      : "border-border bg-muted/50 text-muted-foreground"
-                                  }`}
-                                >
-                                  &ldquo;{log.notes}&rdquo;
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
-                  </div>
+                <CardContent className="overflow-x-hidden p-0">
+                  <DocumentPreview markdown={req.content} />
                 </CardContent>
               </Card>
             )}
-          </div>
 
-          {/* Right Column - Details */}
-          <div className="space-y-6">
-            {/* Request Details Card - only for structured request types */}
-            {req.type !== "non_template" && req.type !== "dynamic_template" && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Detail Permintaan</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 sm:grid-cols-2">
+          {/* Full Width Section - Detail Permintaan (non-template types) */}
+          {req.type !== "non_template" && req.type !== "dynamic_template" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Detail Permintaan</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Periode / Tanggal
+                    </div>
+                    <div className="mt-1 text-sm">{dateRange}</div>
+                  </div>
+
+                  {timeDetails && (
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">
-                        Periode / Tanggal
+                        Keterangan Jam
                       </div>
-                      <div className="mt-1 text-sm">{dateRange}</div>
+                      <div className="mt-1 text-sm">{timeDetails}</div>
                     </div>
+                  )}
 
-                    {timeDetails && (
-                      <div>
-                        <div className="text-sm font-medium text-muted-foreground">
-                          Keterangan Jam
-                        </div>
-                        <div className="mt-1 text-sm">{timeDetails}</div>
-                      </div>
-                    )}
-
-                    {typeof req.quota_deducted === "number" && (
-                      <div>
-                        <div className="text-sm font-medium text-muted-foreground">
-                          Potong Kuota Cuti
-                        </div>
-                        <div className="mt-1 text-sm">
-                          {req.quota_deducted} Hari
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="sm:col-span-2">
+                  {typeof req.quota_deducted === "number" && (
+                    <div>
                       <div className="text-sm font-medium text-muted-foreground">
-                        Alasan / Catatan
+                        Potong Kuota Cuti
                       </div>
-                      <div className="mt-1 text-sm">{reason}</div>
+                      <div className="mt-1 text-sm">
+                        {req.quota_deducted} Hari
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="sm:col-span-2">
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Alasan / Catatan
+                    </div>
+                    <div className="mt-1 text-sm">{reason}</div>
+                  </div>
+                </div>
+
+                {req.type === "overtime_request" &&
+                  Array.isArray(req.table_details) && (
+                    <div className="mt-6">
+                      <div className="mb-2 text-sm font-medium text-muted-foreground">
+                        Daftar Staf Lembur ({req.table_details.length})
+                      </div>
+                      <div className="overflow-x-auto rounded-lg border border-border">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-muted/50 text-muted-foreground">
+                            <tr>
+                              <th className="p-2.5 font-medium">Nama Staf</th>
+                              <th className="p-2.5 font-medium">Jabatan</th>
+                              <th className="p-2.5 font-medium">Tanggal</th>
+                              <th className="p-2.5 font-medium">Jam</th>
+                              <th className="p-2.5 font-medium">Alasan</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border">
+                            {req.table_details.map((staff) => (
+                              <tr
+                                key={staff.id}
+                                className="hover:bg-muted/20"
+                              >
+                                <td className="p-2.5 font-medium text-foreground">
+                                  {staff.fullname}
+                                </td>
+                                <td className="p-2.5 text-muted-foreground">
+                                  {staff.position}
+                                </td>
+                                <td className="p-2.5 whitespace-nowrap">
+                                  {formatDate(staff.date)}
+                                </td>
+                                <td className="p-2.5 whitespace-nowrap">
+                                  {staff.start_time} - {staff.end_time}
+                                </td>
+                                <td className="p-2.5 text-muted-foreground">
+                                  {staff.reason}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Full Width Section - Data Formulir */}
+          {req.type === "dynamic_template" &&
+            req.form_schema &&
+            (() => {
+              let fields: {
+                value: string
+                label: string
+                is_required?: boolean
+              }[] = []
+              try {
+                fields = JSON.parse(req.form_schema!)
+              } catch {
+                /* ignore */
+              }
+              return (
+                fields.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">
+                        Data Formulir
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {fields.map((f, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center justify-between border-b border-border py-2 last:border-0"
+                          >
+                            <span className="text-sm text-muted-foreground">
+                              {f.label}
+                              {f.is_required && (
+                                <span className="ml-1 text-destructive">
+                                  *
+                                </span>
+                              )}
+                            </span>
+                            <span className="text-sm font-medium break-all">
+                              {f.value}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              )
+            })()}
+
+          {/* 2-Column Bottom Section - Summary/Logs + Riwayat/Attachments */}
+          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+            {/* Left Column - Summary & Logs */}
+            <div className="space-y-6">
+              <Card>
+                <CardContent className="space-y-5 pt-6">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="size-11">
+                      <AvatarFallback>{getInitials(senderName)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="truncate font-semibold">{senderName}</div>
+                      <div className="truncate text-sm text-muted-foreground">
+                        {detail.sent_by.position || "Staff"}
+                      </div>
                     </div>
                   </div>
 
-                  {req.type === "overtime_request" &&
-                    Array.isArray(req.table_details) && (
-                      <div className="mt-6">
-                        <div className="mb-2 text-sm font-medium text-muted-foreground">
-                          Daftar Staf Lembur ({req.table_details.length})
+                  <div className="space-y-3 border-t border-border pt-4">
+                    <div className="flex items-start gap-3">
+                      <FileText className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs text-muted-foreground">
+                          Jenis Permintaan
                         </div>
-                        <div className="overflow-x-auto rounded-lg border border-border">
-                          <table className="w-full text-left text-xs">
-                            <thead className="bg-muted/50 text-muted-foreground">
-                              <tr>
-                                <th className="p-2.5 font-medium">Nama Staf</th>
-                                <th className="p-2.5 font-medium">Jabatan</th>
-                                <th className="p-2.5 font-medium">Tanggal</th>
-                                <th className="p-2.5 font-medium">Jam</th>
-                                <th className="p-2.5 font-medium">Alasan</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                              {req.table_details.map((staff) => (
-                                <tr
-                                  key={staff.id}
-                                  className="hover:bg-muted/20"
-                                >
-                                  <td className="p-2.5 font-medium text-foreground">
-                                    {staff.fullname}
-                                  </td>
-                                  <td className="p-2.5 text-muted-foreground">
-                                    {staff.position}
-                                  </td>
-                                  <td className="p-2.5 whitespace-nowrap">
-                                    {formatDate(staff.date)}
-                                  </td>
-                                  <td className="p-2.5 whitespace-nowrap">
-                                    {staff.start_time} - {staff.end_time}
-                                  </td>
-                                  <td className="p-2.5 text-muted-foreground">
-                                    {staff.reason}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                        <div className="break-words text-sm font-medium">{title}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Calendar className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs text-muted-foreground">
+                          Tanggal Dibuat
+                        </div>
+                        <div className="break-words text-sm font-medium">
+                          {formatDate(detail.created_at.toString())}
+                        </div>
+                      </div>
+                    </div>
+
+                    {totalApprovers > 0 && (
+                      <div className="flex items-start gap-3">
+                        <User className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline justify-between">
+                            <div className="text-xs text-muted-foreground">
+                              Persetujuan
+                            </div>
+                            <div className="text-xs font-medium">
+                              {approvedCount}/{totalApprovers}
+                            </div>
+                          </div>
+                          <div className="mt-1.5 flex gap-1">
+                            {approvers.map((a, i) => (
+                              <div
+                                key={a.id ?? i}
+                                className={`h-1.5 flex-1 rounded-full ${
+                                  a.status?.toLowerCase() === "approved"
+                                    ? "bg-emerald-500"
+                                    : a.status?.toLowerCase() === "rejected"
+                                      ? "bg-rose-500"
+                                      : "bg-muted"
+                                }`}
+                              />
+                            ))}
+                          </div>
                         </div>
                       </div>
                     )}
+                  </div>
+
+                  <div className="space-y-2 border-t border-border pt-4">
+                    {canShowApprovalButtons && (onApprove || onReject) && (
+                      <>
+                        {onApprove && (
+                          <Button
+                            onClick={onApprove}
+                            disabled={isApprovingMail}
+                            variant="default"
+                            className="w-full"
+                            size="sm"
+                          >
+                            {isApprovingMail ? (
+                              <>
+                                <Loader2 className="size-4 animate-spin" />
+                                Menyetujui...
+                              </>
+                            ) : (
+                              "Setujui"
+                            )}
+                          </Button>
+                        )}
+                        {onReject && (
+                          <Button
+                            onClick={onReject}
+                            disabled={isRejectingMail}
+                            variant="destructive"
+                            className="w-full"
+                            size="sm"
+                          >
+                            {isRejectingMail ? (
+                              <>
+                                <Loader2 className="size-4 animate-spin" />
+                                Menolak...
+                              </>
+                            ) : (
+                              "Tolak"
+                            )}
+                          </Button>
+                        )}
+                        {onRevise && (
+                          <Button
+                            onClick={onRevise}
+                            disabled={isRevisingMail}
+                            variant="secondary"
+                            className="w-full gap-2"
+                            size="sm"
+                          >
+                            {isRevisingMail ? (
+                              <>
+                                <Loader2 className="size-4 animate-spin" />
+                                Mengirim Revisi...
+                              </>
+                            ) : (
+                              <>
+                                <RotateCcw className="size-4" />
+                                Revise Mail
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </>
+                    )}
+
+                    {isSendMail && !canShowApprovalButtons && (
+                      <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
+                        <p className="text-xs text-amber-700 dark:text-amber-400">
+                          {approverStatus.reason === "not_in_approval_list" &&
+                            "Anda bukan bagian dari alur persetujuan surat ini."}
+                          {approverStatus.reason === "already_responded" &&
+                            `Anda sudah ${
+                              approverStatus.currentStatus?.toLowerCase() ===
+                              "approved"
+                                ? "menyetujui"
+                                : approverStatus.currentStatus?.toLowerCase() ===
+                                    "rejected"
+                                  ? "menolak"
+                                  : approverStatus.currentStatus?.toLowerCase() ===
+                                      "revision"
+                                    ? "meminta revisi untuk"
+                                    : "merespons"
+                            } surat ini.`}
+                          {approverStatus.reason ===
+                            "waiting_for_previous_approver" &&
+                            "Menunggu persetujuan dari approver sebelumnya."}
+                          {approverStatus.reason === "not_primary_recipient" &&
+                            "Anda hanya sebagai penerima tembusan (CC), tidak dapat melakukan approval."}
+                        </p>
+                      </div>
+                    )}
+
+                    {isCurrentUser && isSendable && onSend && (
+                      <Button
+                        onClick={onSend}
+                        disabled={isSendingMail}
+                        variant="default"
+                        className="w-full gap-2"
+                        size="sm"
+                      >
+                        {isSendingMail ? (
+                          <>
+                            <Loader2 className="size-4 animate-spin" />
+                            Mengirim...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="size-4" />
+                            Send Mail
+                          </>
+                        )}
+                      </Button>
+                    )}
+
+                    {isCurrentUser && isEditable && onEdit && (
+                      <Button
+                        onClick={onEdit}
+                        variant="outline"
+                        className="w-full gap-2"
+                        size="sm"
+                      >
+                        <Edit className="size-4" />
+                        Edit Mail
+                      </Button>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
-            )}
 
-            {/* Isi Surat Card - for non_template & dynamic_template */}
-            {(req.type === "non_template" || req.type === "dynamic_template") &&
-              req.content && (
+              {Array.isArray(detail.logs) && detail.logs.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Isi Surat</CardTitle>
+                    <CardTitle className="text-base">Riwayat Aktivitas</CardTitle>
                   </CardHeader>
-                  <CardContent className="p-0">
-                    <DocumentPreview markdown={req.content} />
-                  </CardContent>
-                </Card>
-              )}
+                  <CardContent>
+                    <div className="space-y-3">
+                      {[...detail.logs]
+                        .sort(
+                          (a, b) =>
+                            new Date(a.created_at).getTime() -
+                            new Date(b.created_at).getTime()
+                        )
+                        .map((log, index, array) => {
+                          const IconComponent = getLogIcon(log.action)
+                          const colorClass = getLogColor(log.action)
+                          const isLast = index === array.length - 1
 
-            {/* Data Formulir Card - dynamic_template only */}
-            {req.type === "dynamic_template" &&
-              req.form_schema &&
-              (() => {
-                let fields: {
-                  value: string
-                  label: string
-                  is_required?: boolean
-                }[] = []
-                try {
-                  fields = JSON.parse(req.form_schema!)
-                } catch {
-                  /* ignore */
-                }
-                return (
-                  fields.length > 0 && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-base">
-                          Data Formulir
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          {fields.map((f, i) => (
-                            <div
-                              key={i}
-                              className="flex items-center justify-between border-b border-border py-2 last:border-0"
-                            >
-                              <span className="text-sm text-muted-foreground">
-                                {f.label}
-                                {f.is_required && (
-                                  <span className="ml-1 text-destructive">
-                                    *
-                                  </span>
+                          return (
+                            <div key={log.id} className="relative flex gap-3">
+                              <div className="flex flex-col items-center">
+                                <div
+                                  className={`flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-background bg-background ${colorClass}`}
+                                >
+                                  <IconComponent className="size-3" />
+                                </div>
+                                {!isLast && (
+                                  <div className="w-0.5 flex-1 bg-border" />
                                 )}
-                              </span>
-                              <span className="text-sm font-medium">
-                                {f.value}
-                              </span>
+                              </div>
+
+                              <div className="min-w-0 flex-1 pb-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium">
+                                    {getLogActionLabel(log.action)}
+                                  </span>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {formatDate(log.created_at)}
+                                  </span>
+                                </div>
+                                <div className="mt-0.5 truncate text-xs text-muted-foreground">
+                                  {log.performed_by.name}
+                                  {log.performed_by.position &&
+                                    ` • ${log.performed_by.position}`}
+                                </div>
+                                {log.notes && (
+                                  <div
+                                    className={`mt-1.5 break-words rounded-md border p-2 text-xs italic ${
+                                      log.action.toUpperCase() === "REVISION"
+                                        ? "border-orange-500/20 bg-orange-500/5 text-orange-700 dark:text-orange-400"
+                                        : "border-border bg-muted/50 text-muted-foreground"
+                                    }`}
+                                  >
+                                    &ldquo;{log.notes}&rdquo;
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
-                )
-              })()}
-
-            {/* Approval Flow Card */}
-            {Array.isArray(detail.recipients) &&
-              detail.recipients.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">
-                      Riwayat Persetujuan
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      <RecipientGroup
-                        label="Kepada"
-                        icon={UserCheck}
-                        recipients={toRecipients}
-                        currentUserId={currentUserId}
-                        logs={detail.logs}
-                      />
-                      <RecipientGroup
-                        label="Diketahui"
-                        icon={Users}
-                        recipients={superiorRecipients}
-                        currentUserId={currentUserId}
-                        logs={detail.logs}
-                      />
-                      <RecipientGroup
-                        label="Tembusan"
-                        icon={Copy}
-                        recipients={ccRecipients}
-                        currentUserId={currentUserId}
-                        logs={detail.logs}
-                      />
+                          )
+                        })}
                     </div>
                   </CardContent>
                 </Card>
               )}
+            </div>
 
-            {/* Attachments Card */}
-            {Array.isArray(detail.attachments) &&
-              detail.attachments.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">
-                      Lampiran ({detail.attachments.length})
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {detail.attachments.map((file) => (
-                        <AttachmentItem
-                          key={file.id}
-                          file={{
-                            id: file.id,
-                            name: file.file_name,
-                            url: file.file_url,
-                          }}
-                          mode="view"
+            {/* Right Column - Riwayat Persetujuan & Attachments */}
+            <div className="space-y-6">
+              {Array.isArray(detail.recipients) &&
+                detail.recipients.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">
+                        Riwayat Persetujuan
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        <RecipientGroup
+                          label="Kepada"
+                          icon={UserCheck}
+                          recipients={toRecipients}
+                          currentUserId={currentUserId}
+                          logs={detail.logs}
                         />
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                        <RecipientGroup
+                          label="Diketahui"
+                          icon={Users}
+                          recipients={superiorRecipients}
+                          currentUserId={currentUserId}
+                          logs={detail.logs}
+                        />
+                        <RecipientGroup
+                          label="Tembusan"
+                          icon={Copy}
+                          recipients={ccRecipients}
+                          currentUserId={currentUserId}
+                          logs={detail.logs}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+              {Array.isArray(detail.attachments) &&
+                detail.attachments.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">
+                        Lampiran ({detail.attachments.length})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {detail.attachments.map((file) => (
+                          <AttachmentItem
+                            key={file.id}
+                            file={{
+                              id: file.id,
+                              name: file.file_name,
+                              url: file.file_url,
+                            }}
+                            mode="view"
+                          />
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+            </div>
           </div>
         </div>
       </div>

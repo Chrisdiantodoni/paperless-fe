@@ -16,7 +16,6 @@ type ApiErrorShape = {
  */
 export function handleApiError(err: unknown): void {
   const apiErr = err as ApiErrorShape
-  console.log("🔍 handleApiError:", apiErr)
 
   if (apiErr?.redirectTo) {
     clearSessionCookie()

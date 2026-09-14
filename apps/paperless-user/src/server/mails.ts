@@ -129,29 +129,8 @@ export const createUserMail = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      console.log("\n🟢 SERVER FUNCTION: createUserMail")
-      console.log("FormData entries:")
-      const entries: any = {}
-      for (const [key, value] of data.entries()) {
-        entries[key] =
-          value instanceof File
-            ? `<File: ${value.name}, size: ${value.size}>`
-            : value
-      }
-      console.log(JSON.stringify(entries, null, 2))
-
-      console.log("\n🟢 SERVER FUNCTION: dynamic_data fields:")
-      const dynamicFields: any = {}
-      for (const [key, value] of data.entries()) {
-        if (key.startsWith("dynamic_data")) {
-          dynamicFields[key] = value
-        }
-      }
-      console.log(JSON.stringify(dynamicFields, null, 2))
-
       const response = await mails.createMail(data)
 
-      console.log("\n✅ SERVER FUNCTION: Success response")
       return { success: true, data: response.data }
     } catch (error: any) {
       console.error("\n🔴 SERVER FUNCTION: createUserMail Error caught")
@@ -181,29 +160,8 @@ export const createUserMailNonTemplate = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      console.log("\n🟢 SERVER FUNCTION: createUserMail")
-      console.log("FormData entries:")
-      const entries: any = {}
-      for (const [key, value] of data.entries()) {
-        entries[key] =
-          value instanceof File
-            ? `<File: ${value.name}, size: ${value.size}>`
-            : value
-      }
-      console.log(JSON.stringify(entries, null, 2))
-
-      console.log("\n🟢 SERVER FUNCTION: dynamic_data fields:")
-      const dynamicFields: any = {}
-      for (const [key, value] of data.entries()) {
-        if (key.startsWith("dynamic_data")) {
-          dynamicFields[key] = value
-        }
-      }
-      console.log(JSON.stringify(dynamicFields, null, 2))
-
       const response = await mails.createNonTemplateMail(data)
 
-      console.log("\n✅ SERVER FUNCTION: Success response")
       return { success: true, data: response.data }
     } catch (error: any) {
       console.error("\n🔴 SERVER FUNCTION: createUserMail Error caught")

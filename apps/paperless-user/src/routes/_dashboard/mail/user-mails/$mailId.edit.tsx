@@ -1,7 +1,6 @@
 // route: /_dashboard/mail/user-mails/$mailId/edit
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/ui/card"
-import { Badge } from "@workspace/ui/components/ui/badge"
 import { useAppForm } from "@workspace/forms/src/forms"
 import { useUser } from "@/hooks/queries/use-user"
 import { handleApiError } from "@/lib/handle-api-error"
@@ -22,6 +21,8 @@ import { useMailDetail } from "@/hooks/queries/use-mails"
 import { useState, useEffect, useRef } from "react"
 import type { AllMailProps } from "@workspace/types/mail"
 import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
+import { PageHeader } from "@/components/page-header"
+import { PageWrapper } from "@/components/page-wrapper"
 import {
   getFormFieldErrors,
   useFormFieldErrors,
@@ -371,50 +372,33 @@ function RouteComponent() {
 
   if (isLoading || !mail) {
     return (
-      <div className="container mx-auto max-w-7xl p-4">
+      <PageWrapper>
         <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground">
           Memuat data mail...
         </div>
-      </div>
+      </PageWrapper>
     )
   }
 
   return (
-    <div className="container mx-auto max-w-7xl p-4">
-      <div className="mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() =>
-            confirmNavigation(() => navigate({ to: "/mail/user-mails" }))
-          }
-          className="mb-4 gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Kembali
-        </Button>
-
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Edit mail</p>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {mail.document_number}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {mail.sent_by.department} •{" "}
-              {getRequestTypeLabel(mail.request_data.type)}
-            </p>
-          </div>
-          {isDirty && (
-            <Badge
-              variant="outline"
-              className="shrink-0 border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400"
-            >
-              Belum disimpan
-            </Badge>
-          )}
-        </div>
-      </div>
+    <PageWrapper className="space-y-6">
+      <PageHeader
+        title={mail.document_number}
+        description={`${mail.sent_by.department} • ${getRequestTypeLabel(mail.request_data.type)} • Perbarui informasi dan detail surat`}
+        actions={
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              confirmNavigation(() => navigate({ to: "/mail/user-mails" }))
+            }
+            className="shrink-0 gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Kembali
+          </Button>
+        }
+      />
 
       <form
         onSubmit={(e) => {
@@ -498,6 +482,6 @@ function RouteComponent() {
           </CardContent>
         </Card>
       </form>
-    </div>
+    </PageWrapper>
   )
 }

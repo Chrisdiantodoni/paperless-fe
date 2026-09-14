@@ -6,7 +6,6 @@ import {
 import type { QueryClient } from "@tanstack/react-query"
 import { QueryClientProvider } from "@tanstack/react-query"
 import type { UserData } from "@workspace/types/user.type"
-import { SidebarProvider } from "@workspace/ui/components/ui/sidebar"
 import { TooltipProvider } from "@workspace/ui/components/ui/tooltip"
 import { Toaster } from "@workspace/ui/components/ui/sonner"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
@@ -16,6 +15,7 @@ import { FormDevtoolsPanel } from "@tanstack/react-form-devtools"
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ConfirmProvider } from "@workspace/ui/components/ui/confirm-dialog"
+import { SidebarProvider } from "@workspace/ui/components/ui/sidebar"
 
 interface RouteContext {
   user?: UserData

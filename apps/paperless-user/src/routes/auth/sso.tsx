@@ -56,7 +56,6 @@ function SSOCallbackComponent() {
       try {
         const result = await verifySSOTicket({ data: { ticket } })
         if (result.data.token) {
-          console.log(result.data.token)
           navigate({ to: "/" })
         } else {
           startRedirect()

@@ -154,7 +154,7 @@ export function DelegationMultiSelect({
                 <button
                   type="button"
                   onClick={() => handleRemove(staff.value)}
-                  className="ml-1 rounded-full hover:bg-muted-foreground/20"
+                  className="ml-1 flex size-8 items-center justify-center rounded-full hover:bg-muted-foreground/20"
                 >
                   <X className="h-3 w-3" />
                 </button>
