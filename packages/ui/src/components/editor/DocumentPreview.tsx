@@ -20,7 +20,7 @@ export function DocumentPreview({ html, className }: DocumentPreviewProps) {
           "[&_h2]:text-xl [&_h2]:font-bold [&_h2]:mb-3 [&_h2]:mt-5 [&_h2]:text-foreground",
           "[&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-4 [&_h3]:text-foreground",
           "[&_h4]:text-base [&_h4]:font-semibold [&_h4]:mb-2 [&_h4]:mt-3 [&_h4]:text-foreground",
-          "[&_p]:mb-3 [&_p]:leading-relaxed [&_p]:text-foreground",
+          "[&_p]:mb-3 [&_p]:leading-relaxed [&_p]:text-foreground [&_p:empty]:min-h-[1.5em]",
           "[&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6",
           "[&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6",
           "[&_li]:mb-1.5 [&_li]:leading-relaxed",

@@ -346,9 +346,9 @@ function RouteComponent() {
   )
   const fieldErrors = useFormFieldErrors(form)
 
-  const showDelegations =
+  const showDelegationAndShowNotes =
     search.request_type === "leave_request" ||
-    search.request_type === "permit_request"
+    search.request_type === "absence_request"
 
   return (
     <PageWrapper className="space-y-6">
@@ -391,7 +391,7 @@ function RouteComponent() {
             <BasicInfoSection
               form={form}
               departmentId={search.department_id}
-              showDelegations={showDelegations}
+              showDelegationAndShowNotes={showDelegationAndShowNotes}
               onFilesChange={(files) => {
                 filesRef.current = files
               }}
@@ -419,10 +419,8 @@ function RouteComponent() {
         </div>
 
         <Card className="mt-6">
-          <CardContent className="pt-6">
-            <ErrorSummaryCard errors={fieldErrors} />
-
-            <div className="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <CardContent className="">
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button
                 type="button"
                 variant="outline"

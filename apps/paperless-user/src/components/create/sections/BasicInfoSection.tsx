@@ -14,14 +14,14 @@ import { useRef } from "react"
 export interface BasicInfoSectionProps {
   form: any
   departmentId: string
-  showDelegations?: boolean
+  showDelegationAndShowNotes?: boolean
   onFilesChange?: (files: File[]) => void
 }
 
 export function BasicInfoSection({
   form,
   departmentId,
-  showDelegations = true,
+  showDelegationAndShowNotes = true,
   onFilesChange,
 }: BasicInfoSectionProps) {
   const filesRef = useRef<File[]>([])
@@ -36,24 +36,6 @@ export function BasicInfoSection({
       </CardHeader>
       <CardContent>
         <FieldGroup className="gap-4">
-          <form.Field name="notes">
-            {(field: any) => (
-              <div className="flex w-full flex-col space-y-1.5">
-                <Label>Catatan (Opsional)</Label>
-                <Textarea
-                  value={field.state.value || ""}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Tambahkan catatan tambahan..."
-                  rows={3}
-                  className="resize-none"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Catatan ini akan terlihat oleh approver
-                </p>
-              </div>
-            )}
-          </form.Field>
-
           <form.AppField name="attachments">
             {(field: any) => {
               const fileCount = field.state.value?.length || 0
@@ -84,7 +66,7 @@ export function BasicInfoSection({
             }}
           </form.AppField>
 
-          {showDelegations && (
+          {showDelegationAndShowNotes && (
             <form.Field name="delegations">
               {(field: any) => {
                 const errors = field.state.meta.errors
@@ -103,9 +85,8 @@ export function BasicInfoSection({
                       onBlur={field.handleBlur}
                       departmentId={departmentId}
                       invalid={showError}
-                      error={
-                        showError ? (errors[0]?.message ?? "") : undefined
-                      }
+                      maxDelegations={2}
+                      error={showError ? (errors[0]?.message ?? "") : undefined}
                     />
                     <p className="text-xs text-muted-foreground">
                       Pilih staff yang akan menerima delegasi pekerjaan selama
@@ -114,6 +95,25 @@ export function BasicInfoSection({
                   </div>
                 )
               }}
+            </form.Field>
+          )}
+          {showDelegationAndShowNotes && (
+            <form.Field name="notes">
+              {(field: any) => (
+                <div className="flex w-full flex-col space-y-1.5">
+                  <Label>Catatan (Opsional)</Label>
+                  <Textarea
+                    value={field.state.value || ""}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="Tambahkan catatan tambahan..."
+                    rows={3}
+                    className="resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Catatan ini akan terlihat oleh approver
+                  </p>
+                </div>
+              )}
             </form.Field>
           )}
         </FieldGroup>

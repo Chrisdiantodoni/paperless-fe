@@ -69,6 +69,8 @@ function RouteComponent() {
   const { mutateAsync: requestRevision, isPending: isRequestingRevision } =
     useRequestRevisionMutation()
 
+  console.log(data.content)
+
   const navigate = useNavigate()
   const confirm = useConfirm()
 
@@ -150,7 +152,11 @@ function RouteComponent() {
     reason: string
     scope_changes?: string[]
   }) => {
-    await requestRevision({ id: data.id, reason: formData.reason, scope_changes: formData.scope_changes })
+    await requestRevision({
+      id: data.id,
+      reason: formData.reason,
+      scope_changes: formData.scope_changes,
+    })
     setRevisionModalOpen(false)
     router.invalidate()
   }

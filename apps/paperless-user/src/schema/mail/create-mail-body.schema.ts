@@ -35,6 +35,7 @@ export const createMailLeaveDataSchema = z.object({
   end_date: dateSchema,
   days_taken: z.coerce.number().min(0.5, "Minimal 0.5 hari"),
   leave_type: z.string().min(1, "Jenis cuti wajib dipilih"),
+  notes: optionalString,
   reason: z
     .string()
     .min(1, "Alasan wajib diisi")
@@ -127,6 +128,7 @@ export const createMailAbsenceDataSchema = z.object({
   static_mail_template_id: z.string().nullish(),
   start_date: dateSchema,
   end_date: dateSchema,
+  notes: optionalString,
   reason: z
     .string()
     .min(1, "Alasan wajib diisi")
@@ -197,6 +199,18 @@ export const createMailPayloadSchema = z
     dynamic_data: createMailDynamicDataSchema.optional(),
   })
   .superRefine((data, ctx) => {
+    if (
+      ["leave_request", "permit_request"].includes(
+        data.request_type
+      ) &&
+      (!data.delegations || data.delegations.length === 0)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Minimal pilih 1 delegasi",
+        path: ["delegations"],
+      })
+    }
     if (data.request_type === "leave_request" && !data.leave_data) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

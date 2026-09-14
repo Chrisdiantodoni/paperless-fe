@@ -1,14 +1,23 @@
+import { useState } from "react"
 import { DateTimePicker } from "@workspace/ui/components/ui/date-time-picker"
 import { Input } from "@workspace/ui/components/ui/input"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 import { Label } from "@workspace/ui/components/ui/label"
 import { FieldGroup } from "@workspace/ui/components/ui/field"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/ui/select"
 
 interface LeaveRequestFormProps {
   form: any
 }
 
 export function LeaveRequestForm({ form }: LeaveRequestFormProps) {
+  const [isOtherType, setIsOtherType] = useState(false)
 
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -91,17 +100,47 @@ export function LeaveRequestForm({ form }: LeaveRequestFormProps) {
         {(field: any) => {
           const errors = field.state.meta.errors
           const showError = field.state.meta.isTouched && errors.length > 0
+          const standardTypes = ["Cuti Melahirkan", "Cuti Tahunan"]
+          const isCustomType =
+            isOtherType ||
+            (field.state.value && !standardTypes.includes(field.state.value))
+          const selectedType = isCustomType ? "Lainnya" : field.state.value
+
           return (
             <div className="flex w-full flex-col space-y-1.5">
               <Label required>Jenis Cuti</Label>
-              <Input
-                value={field.state.value || ""}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
-                invalid={showError}
-                error={showError ? errors[0]?.message ?? "" : undefined}
-                placeholder="Cuti Tahunan, Cuti Sakit, dll"
-              />
+              <Select
+                value={selectedType || ""}
+                onValueChange={(value) => {
+                  const isOther = value === "Lainnya"
+                  setIsOtherType(isOther)
+                  if (!isOther) field.handleChange(value)
+                }}
+              >
+                <SelectTrigger invalid={showError} className="w-full">
+                  <SelectValue placeholder="Pilih jenis cuti" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Cuti Melahirkan">Cuti Melahirkan</SelectItem>
+                  <SelectItem value="Cuti Tahunan">Cuti Tahunan</SelectItem>
+                  <SelectItem value="Lainnya">Lainnya</SelectItem>
+                </SelectContent>
+              </Select>
+              {selectedType === "Lainnya" && (
+                <Input
+                  value={field.state.value || ""}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  invalid={showError && isOtherType}
+                  error={showError && isOtherType ? errors[0]?.message ?? "" : undefined}
+                  placeholder="Masukkan jenis cuti lainnya"
+                />
+              )}
+              {selectedType !== "Lainnya" && showError && (
+                <p className="text-sm text-destructive">
+                  {errors[0]?.message ?? ""}
+                </p>
+              )}
             </div>
           )
         }}
