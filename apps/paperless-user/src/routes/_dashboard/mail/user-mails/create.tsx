@@ -166,6 +166,11 @@ function RouteComponent() {
 
       if (!confirmed) return
 
+      if (value.leave_data?.days_taken > user.leave_quota) {
+        toast.error("Jumlah Cuti yang diambil melebihi kuota yang tersisa")
+        return
+      }
+
       try {
         const formData = new FormData()
 

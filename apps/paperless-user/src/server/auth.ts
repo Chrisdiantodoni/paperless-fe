@@ -38,9 +38,15 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(
   async (): Promise<UserData> => {
     try {
       const response = await auth.me()
-      return { ...response.data.user, unread_count: response.data.unread_count }
+      return {
+        ...response.data.user,
+        unread_count: response.data.unread_count ?? 0,
+        leave_quota: response.data.leave_quota ?? 0,
+        leave_quota_taken: response.data.leave_quota_taken ?? 0,
+      }
     } catch (error: any) {
-      handleApiError(error)
+      // Pastikan handleApiError melempar ulang error (rethrow)
+      throw handleApiError(error)
     }
   }
 )

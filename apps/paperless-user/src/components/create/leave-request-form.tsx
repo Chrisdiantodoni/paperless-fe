@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DateTimePicker } from "@workspace/ui/components/ui/date-time-picker"
 import { Input } from "@workspace/ui/components/ui/input"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/ui/select"
+import { useUser } from "@/hooks/queries/use-user"
 
 interface LeaveRequestFormProps {
   form: any
@@ -18,9 +19,30 @@ interface LeaveRequestFormProps {
 
 export function LeaveRequestForm({ form }: LeaveRequestFormProps) {
   const [isOtherType, setIsOtherType] = useState(false)
+  const { data } = useUser()
+
+  // Ambil data dengan fallback default
+  const leaveQuota = data?.leave_quota ?? 0
+  const leaveQuotaTaken = data?.leave_quota_taken ?? 0
+  const remainingQuota = leaveQuota - leaveQuotaTaken
 
   return (
     <div className="grid grid-cols-2 gap-4">
+      {/* Informational Widget: Kuota Cuti */}
+      <div className="col-span-2 flex items-center justify-between rounded-lg border bg-muted/40 p-3 text-sm">
+        <div>
+          <span className="font-medium">Sisa Kuota Cuti: </span>
+          <span
+            className={`font-bold ${remainingQuota <= 0 ? "text-destructive" : "text-primary"}`}
+          >
+            {remainingQuota} Hari
+          </span>
+        </div>
+        <div className="text-xs text-muted-foreground">
+          Terpakai {leaveQuotaTaken} dari {leaveQuota} hari
+        </div>
+      </div>
+
       <FieldGroup className="col-span-2 grid grid-cols-2 gap-4">
         <form.Field name="leave_data.start_date">
           {(field: any) => {
@@ -32,15 +54,12 @@ export function LeaveRequestForm({ form }: LeaveRequestFormProps) {
                 label="Tanggal Mulai"
                 value={field.state.value || ""}
                 onChange={(value) => {
-                  if (value) {
-                    field.handleChange(`${value}T00:00:00.000Z`)
-                  } else {
-                    field.handleChange("")
-                  }
+                  const formattedValue = value ? `${value}T00:00:00.000Z` : ""
+                  field.handleChange(formattedValue)
                 }}
                 onBlur={field.handleBlur}
                 invalid={showError}
-                error={showError ? errors[0]?.message ?? "" : undefined}
+                error={showError ? (errors[0]?.message ?? "") : undefined}
                 required
               />
             )
@@ -57,15 +76,12 @@ export function LeaveRequestForm({ form }: LeaveRequestFormProps) {
                 label="Tanggal Selesai"
                 value={field.state.value || ""}
                 onChange={(value) => {
-                  if (value) {
-                    field.handleChange(`${value}T00:00:00.000Z`)
-                  } else {
-                    field.handleChange("")
-                  }
+                  const formattedValue = value ? `${value}T00:00:00.000Z` : ""
+                  field.handleChange(formattedValue)
                 }}
                 onBlur={field.handleBlur}
                 invalid={showError}
-                error={showError ? errors[0]?.message ?? "" : undefined}
+                error={showError ? (errors[0]?.message ?? "") : undefined}
                 required
               />
             )
@@ -88,7 +104,7 @@ export function LeaveRequestForm({ form }: LeaveRequestFormProps) {
                 onChange={(e) => field.handleChange(e.target.value)}
                 onBlur={field.handleBlur}
                 invalid={showError}
-                error={showError ? errors[0]?.message ?? "" : undefined}
+                error={showError ? (errors[0]?.message ?? "") : undefined}
                 placeholder="Contoh: 1 atau 0.5"
               />
             </div>
@@ -115,24 +131,33 @@ export function LeaveRequestForm({ form }: LeaveRequestFormProps) {
                   const isOther = value === "Lainnya"
                   setIsOtherType(isOther)
                   if (!isOther) field.handleChange(value)
+                  else field.handleChange("")
                 }}
               >
                 <SelectTrigger invalid={showError} className="w-full">
                   <SelectValue placeholder="Pilih jenis cuti" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Cuti Melahirkan">Cuti Melahirkan</SelectItem>
+                  <SelectItem value="Cuti Melahirkan">
+                    Cuti Melahirkan
+                  </SelectItem>
                   <SelectItem value="Cuti Tahunan">Cuti Tahunan</SelectItem>
                   <SelectItem value="Lainnya">Lainnya</SelectItem>
                 </SelectContent>
               </Select>
+
               {selectedType === "Lainnya" && (
                 <Input
+                  className="mt-2"
                   value={field.state.value || ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   invalid={showError && isOtherType}
-                  error={showError && isOtherType ? errors[0]?.message ?? "" : undefined}
+                  error={
+                    showError && isOtherType
+                      ? (errors[0]?.message ?? "")
+                      : undefined
+                  }
                   placeholder="Masukkan jenis cuti lainnya"
                 />
               )}
@@ -165,7 +190,7 @@ export function LeaveRequestForm({ form }: LeaveRequestFormProps) {
                 onChange={(e) => field.handleChange(e.target.value)}
                 onBlur={field.handleBlur}
                 invalid={showError}
-                error={showError ? errors[0]?.message ?? "" : undefined}
+                error={showError ? (errors[0]?.message ?? "") : undefined}
                 maxLength={maxChars}
                 placeholder="Jelaskan alasan cuti..."
                 rows={4}

@@ -96,8 +96,9 @@ export function StaticTemplateCombobox({
             </span>
             <span className="flex shrink-0 items-center gap-0.5">
               {resolvedValue && (
-                <button
-                  type="button"
+                <span
+                  role="button"
+                  tabIndex={-1}
                   aria-label="Hapus template"
                   onPointerDown={(e) => {
                     e.preventDefault()
@@ -107,10 +108,10 @@ export function StaticTemplateCombobox({
                     e.stopPropagation()
                     onChange({ value: "", label: "" })
                   }}
-                  className="flex size-7 items-center justify-center rounded-full text-muted-foreground/60 hover:bg-muted-foreground/20 hover:text-foreground"
+                  className="flex size-7 cursor-pointer items-center justify-center rounded-full text-muted-foreground/60 hover:bg-muted-foreground/20 hover:text-foreground"
                 >
                   <X className="size-3" />
-                </button>
+                </span>
               )}
               <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
             </span>

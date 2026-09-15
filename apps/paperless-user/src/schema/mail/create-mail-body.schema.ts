@@ -151,10 +151,6 @@ export const createMailOvertimeDataSchema = z.object({
   details: z
     .array(createMailOvertimeDetailSchema)
     .min(1, "Minimal 1 detail lembur"),
-  reason: z
-    .string()
-    .min(1, "Alasan wajib diisi")
-    .max(1000, "Alasan maksimal 1000 karakter"),
 })
 
 export const createMailDynamicDataSchema = z.object({
@@ -200,9 +196,7 @@ export const createMailPayloadSchema = z
   })
   .superRefine((data, ctx) => {
     if (
-      ["leave_request", "permit_request"].includes(
-        data.request_type
-      ) &&
+      ["leave_request", "permit_request"].includes(data.request_type) &&
       (!data.delegations || data.delegations.length === 0)
     ) {
       ctx.addIssue({

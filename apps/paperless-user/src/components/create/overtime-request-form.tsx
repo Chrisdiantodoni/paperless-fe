@@ -198,28 +198,6 @@ export function OvertimeRequestForm({ form }: OvertimeRequestFormProps) {
           </div>
         ))}
       </div>
-
-      <form.Field name="overtime_data.reason">
-        {(field: any) => {
-          const errors = field.state.meta.errors
-          const showError = field.state.meta.isTouched && errors.length > 0
-          return (
-            <div className="flex w-full flex-col space-y-1.5">
-              <Label required>Alasan Umum</Label>
-              <Textarea
-                value={field.state.value || ""}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
-                invalid={showError}
-                error={showError ? errors[0]?.message ?? "" : undefined}
-                maxLength={1000}
-                placeholder="Jelaskan alasan lembur secara umum..."
-                rows={3}
-              />
-            </div>
-          )
-        }}
-      </form.Field>
     </FieldGroup>
   )
 }
