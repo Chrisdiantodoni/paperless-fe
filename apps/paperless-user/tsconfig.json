@@ -5,6 +5,8 @@
     "eslint.config.js",
     "prettier.config.js",
     "vite.config.ts",
+    "../../packages/ui/src/components/page-header.tsx",
+    "../../packages/ui/src/components/page-wrapper.tsx",
   ],
   "compilerOptions": {
     "target": "ES2022",

@@ -1,6 +1,7 @@
 import { createRouter as createTanStackRouter } from "@tanstack/react-router"
 import { routeTree } from "./routeTree.gen"
 import { QueryClient } from "@tanstack/react-query"
+import { PageLoading } from "@workspace/ui/components/page-loading"
 
 export function getRouter() {
   const queryClient = new QueryClient({
@@ -18,6 +19,8 @@ export function getRouter() {
     scrollRestoration: true,
     defaultPreload: "intent",
     defaultPreloadStaleTime: 30_000,
+    defaultPendingMs: 200,
+    defaultPendingComponent: PageLoading,
   })
 
   return router

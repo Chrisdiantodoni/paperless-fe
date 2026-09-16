@@ -1,9 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { PageHeader } from "@workspace/ui/components/page-header"
+import { PageWrapper } from "@workspace/ui/components/page-wrapper"
+import { createFileRoute } from "@tanstack/react-router"
 
 export const Route = createFileRoute('/_dashboard/system/roles')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  return <div>Hello "/_dashboard/system/roles"!</div>
+  return (
+    <PageWrapper>
+      <PageHeader title="Roles" />
+    </PageWrapper>
+  )
 }

@@ -13,8 +13,8 @@ import { Search } from "lucide-react"
 import { Input } from "@workspace/ui/components/ui/input"
 import { useDebounce } from "@/hooks/use-debounce"
 import { useEffect, useMemo, useState } from "react"
-import { PageHeader } from "@/components/page-header"
-import { PageWrapper } from "@/components/page-wrapper"
+import { PageHeader } from "@workspace/ui/components/page-header"
+import { PageWrapper } from "@workspace/ui/components/page-wrapper"
 
 export const Route = createFileRoute("/_dashboard/subordinates/")({
   component: RouteComponent,

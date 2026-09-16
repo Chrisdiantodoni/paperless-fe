@@ -5,6 +5,8 @@ import {
 import { dynamicMailTemplateSearchSchema } from "@/schema/list.schema"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { zodValidator } from "@tanstack/zod-adapter"
+import { PageHeader } from "@workspace/ui/components/page-header"
+import { PageWrapper } from "@workspace/ui/components/page-wrapper"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Plus } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
@@ -94,18 +96,18 @@ function RouteComponent() {
   )
 
   return (
-    <div className="container mx-auto space-y-4 p-2">
-      <div className="flex items-center justify-between">
-        <h1 className="text-sm font-normal tracking-tight">
-          List Template Dinamis
-        </h1>
-        <Button asChild size={"sm"}>
-          <Link to="/mail/dynamic-mail-templates/create">
-            <Plus className="h-4 w-4" />
-            Tambah Template
-          </Link>
-        </Button>
-      </div>
+    <PageWrapper className="space-y-4 p-2">
+      <PageHeader
+        title="List Template Dinamis"
+        actions={
+          <Button asChild size={"sm"}>
+            <Link to="/mail/dynamic-mail-templates/create">
+              <Plus className="h-4 w-4" />
+              Tambah Template
+            </Link>
+          </Button>
+        }
+      />
       <div className="flex flex-col justify-between gap-2 lg:flex-row">
         <SearchInput
           placeholder="Search template..."
@@ -215,6 +217,6 @@ function RouteComponent() {
           navigate({ search: (prev) => ({ ...prev, page }) })
         }
       />
-    </div>
+    </PageWrapper>
   )
 }

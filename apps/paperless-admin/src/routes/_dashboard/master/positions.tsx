@@ -1,3 +1,5 @@
+import { PageHeader } from "@workspace/ui/components/page-header"
+import { PageWrapper } from "@workspace/ui/components/page-wrapper"
 import { createFileRoute } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/_dashboard/master/positions")({
@@ -5,5 +7,9 @@ export const Route = createFileRoute("/_dashboard/master/positions")({
 })
 
 function RouteComponent() {
-  return <div>Hello "/_dashboard/master/positions"!</div>
+  return (
+    <PageWrapper>
+      <PageHeader title="Positions" />
+    </PageWrapper>
+  )
 }

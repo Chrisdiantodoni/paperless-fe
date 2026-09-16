@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { StatsCard } from "@/components/dashboard/stats-card"
 import { useDashboardStats } from "@/hooks/queries/use-dashboard-stats"
-import { PageHeader } from "@/components/page-header"
-import { PageWrapper } from "@/components/page-wrapper"
+import { PageHeader } from "@workspace/ui/components/page-header"
+import { PageWrapper } from "@workspace/ui/components/page-wrapper"
 
 export const Route = createFileRoute("/_dashboard/")({
   component: DashboardPage,

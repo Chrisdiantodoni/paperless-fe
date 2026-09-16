@@ -7,7 +7,6 @@ import { Eye, Pencil, Trash } from "lucide-react"
 import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
 import { toast } from "sonner"
 import { useDeleteDynamicMailTemplateMutation } from "@/hooks/queries/use-dynamic-mail-template"
-import { ApprovalStatusBadge } from "@/components/master/dynamic-mail-template/approval-status-badge"
 
 export type DynamicMailTemplateRow = IDynamicMailTemplate & {
   current_page: number
@@ -86,21 +85,19 @@ export const columns: ColumnDef<DynamicMailTemplateRow>[] = [
     accessorKey: "department",
     header: "Kategori / Dept",
   },
-  {
-    accessorKey: "approval_status",
-    header: "Status Approval",
-    cell: ({ row }) => {
-      return <ApprovalStatusBadge status={row.original.approval_status} />
-    },
-  },
+
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const statusLabel = row.original.is_active === "1" ? "Aktif" : "Tidak Aktif"
+      console.log(row)
+      const statusLabel =
+        row.original.is_active === true ? "Aktif" : "Tidak Aktif"
       return (
         <Badge
-          variant={row.original.is_active === "1" ? "secondary" : "destructive"}
+          variant={
+            row.original.is_active === true ? "secondary" : "destructive"
+          }
           className="rounded-md"
         >
           {statusLabel}

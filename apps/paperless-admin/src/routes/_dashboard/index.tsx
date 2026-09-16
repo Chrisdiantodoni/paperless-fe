@@ -1,3 +1,5 @@
+import { PageHeader } from "@workspace/ui/components/page-header"
+import { PageWrapper } from "@workspace/ui/components/page-wrapper"
 import { createFileRoute } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/_dashboard/")({
@@ -14,5 +16,10 @@ export const Route = createFileRoute("/_dashboard/")({
 function RouteComponent() {
   const { user } = Route.useLoaderData()
 
-  return <div>{JSON.stringify(user)}</div>
+  return (
+    <PageWrapper>
+      <PageHeader title="Dashboard" />
+      <pre>{JSON.stringify(user, null, 2)}</pre>
+    </PageWrapper>
+  )
 }

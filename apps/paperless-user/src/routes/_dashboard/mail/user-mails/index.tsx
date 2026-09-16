@@ -33,7 +33,7 @@ import { useDebounce } from "@workspace/utils"
 import { useUser } from "@/hooks/queries/use-user"
 import { isMailReadByUser } from "@/utils/mail-helpers"
 import { useQueryClient } from "@tanstack/react-query"
-import { PageWrapper } from "@/components/page-wrapper"
+import { PageWrapper } from "@workspace/ui/components/page-wrapper"
 
 export const Route = createFileRoute("/_dashboard/mail/user-mails/")({
   validateSearch: zodValidator(listRequestQuerySchema),

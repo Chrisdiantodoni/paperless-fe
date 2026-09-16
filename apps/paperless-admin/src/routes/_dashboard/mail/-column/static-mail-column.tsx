@@ -102,10 +102,13 @@ export const columns: ColumnDef<StaticMailTemplateRow>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const statusLabel = row.original.is_active === "1" ? "Aktif" : "Tidak Aktif"
+      const statusLabel =
+        row.original.is_active === true ? "Aktif" : "Tidak Aktif"
       return (
         <Badge
-          variant={row.original.is_active === "1" ? "secondary" : "destructive"}
+          variant={
+            row.original.is_active === true ? "secondary" : "destructive"
+          }
           className="rounded-md"
         >
           {statusLabel}

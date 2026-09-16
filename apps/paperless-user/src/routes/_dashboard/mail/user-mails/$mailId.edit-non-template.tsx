@@ -21,8 +21,8 @@ import { ErrorSummaryCard } from "@/components/create/sections/ErrorSummaryCard"
 import { deleteAttachment, updateUserMail } from "@/server/mails"
 import { useMailDetail } from "@/hooks/queries/use-mails"
 import { useUser } from "@/hooks/queries/use-user"
-import { PageHeader } from "@/components/page-header"
-import { PageWrapper } from "@/components/page-wrapper"
+import { PageHeader } from "@workspace/ui/components/page-header"
+import { PageWrapper } from "@workspace/ui/components/page-wrapper"
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes"
 import {
   getFormFieldErrors,

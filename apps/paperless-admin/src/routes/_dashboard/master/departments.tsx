@@ -1,4 +1,6 @@
 import { SearchInput } from "@/components/search-input"
+import { PageHeader } from "@workspace/ui/components/page-header"
+import { PageWrapper } from "@workspace/ui/components/page-wrapper"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import {
   Select,
@@ -65,12 +67,8 @@ function RouteComponent() {
     })
   }
   return (
-    <div className="container mx-auto space-y-4 p-2">
-      <div className="flex items-center justify-between">
-        <h1 className="text-sm font-semibold tracking-tight">
-          List Departemen
-        </h1>
-      </div>
+    <PageWrapper className="space-y-4 p-2">
+      <PageHeader title="List Departemen" />
       <div className="flex items-center gap-2">
         <div className="relative w-full max-w-sm">
           <SearchInput
@@ -116,6 +114,6 @@ function RouteComponent() {
           navigate({ search: (prev) => ({ ...prev, page }) })
         }
       />
-    </div>
+    </PageWrapper>
   )
 }

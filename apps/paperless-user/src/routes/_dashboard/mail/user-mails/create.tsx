@@ -21,8 +21,8 @@ import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
 import { useRef } from "react"
 import { getDynamicMailTemplateById } from "@/server/master"
 import { getFormFieldErrors, useFormFieldErrors } from "@/hooks/use-form-errors"
-import { PageHeader } from "@/components/page-header"
-import { PageWrapper } from "@/components/page-wrapper"
+import { PageHeader } from "@workspace/ui/components/page-header"
+import { PageWrapper } from "@workspace/ui/components/page-wrapper"
 
 export const Route = createFileRoute("/_dashboard/mail/user-mails/create")({
   component: RouteComponent,
@@ -166,7 +166,7 @@ function RouteComponent() {
 
       if (!confirmed) return
 
-      if (value.leave_data?.days_taken > user.leave_quota) {
+      if (value.leave_data?.days_taken ?? 0 > user.leave_quota) {
         toast.error("Jumlah Cuti yang diambil melebihi kuota yang tersisa")
         return
       }

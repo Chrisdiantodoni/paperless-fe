@@ -27,7 +27,7 @@ import {
 } from "@workspace/ui/components/ui/select"
 import CreateMail from "../create/create-mail"
 import { getRequestTypeOptions } from "@workspace/utils"
-import { PageHeader } from "@/components/page-header"
+import { PageHeader } from "@workspace/ui/components/page-header"
 
 export type MailNav = "all" | "sent" | "draft"
 

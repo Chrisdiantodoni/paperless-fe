@@ -21,8 +21,8 @@ import { useMailDetail } from "@/hooks/queries/use-mails"
 import { useState, useEffect, useRef } from "react"
 import type { AllMailProps } from "@workspace/types/mail"
 import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
-import { PageHeader } from "@/components/page-header"
-import { PageWrapper } from "@/components/page-wrapper"
+import { PageHeader } from "@workspace/ui/components/page-header"
+import { PageWrapper } from "@workspace/ui/components/page-wrapper"
 import {
   getFormFieldErrors,
   useFormFieldErrors,
