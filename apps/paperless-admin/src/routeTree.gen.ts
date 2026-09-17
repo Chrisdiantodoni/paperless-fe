@@ -16,11 +16,6 @@ import { Route as AuthDevTicketRouteImport } from './routes/auth/dev-ticket'
 import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
 import { Route as DashboardSystemUsersRouteImport } from './routes/_dashboard/system/users'
 import { Route as DashboardSystemRolesRouteImport } from './routes/_dashboard/system/roles'
-import { Route as DashboardMasterStaffsRouteImport } from './routes/_dashboard/master/staffs'
-import { Route as DashboardMasterPositionsRouteImport } from './routes/_dashboard/master/positions'
-import { Route as DashboardMasterDepartmentsRouteImport } from './routes/_dashboard/master/departments'
-import { Route as DashboardMasterBranchesRouteImport } from './routes/_dashboard/master/branches'
-import { Route as DashboardMasterAreasRouteImport } from './routes/_dashboard/master/areas'
 import { Route as DashboardMailAllMailsRouteImport } from './routes/_dashboard/mail/all-mails'
 import { Route as DashboardMailStaticMailTemplatesIndexRouteImport } from './routes/_dashboard/mail/static-mail-templates/index'
 import { Route as DashboardMailDynamicMailTemplatesIndexRouteImport } from './routes/_dashboard/mail/dynamic-mail-templates/index'
@@ -63,33 +58,6 @@ const DashboardSystemUsersRoute = DashboardSystemUsersRouteImport.update({
 const DashboardSystemRolesRoute = DashboardSystemRolesRouteImport.update({
   id: '/system/roles',
   path: '/system/roles',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardMasterStaffsRoute = DashboardMasterStaffsRouteImport.update({
-  id: '/master/staffs',
-  path: '/master/staffs',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardMasterPositionsRoute =
-  DashboardMasterPositionsRouteImport.update({
-    id: '/master/positions',
-    path: '/master/positions',
-    getParentRoute: () => DashboardRoute,
-  } as any)
-const DashboardMasterDepartmentsRoute =
-  DashboardMasterDepartmentsRouteImport.update({
-    id: '/master/departments',
-    path: '/master/departments',
-    getParentRoute: () => DashboardRoute,
-  } as any)
-const DashboardMasterBranchesRoute = DashboardMasterBranchesRouteImport.update({
-  id: '/master/branches',
-  path: '/master/branches',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardMasterAreasRoute = DashboardMasterAreasRouteImport.update({
-  id: '/master/areas',
-  path: '/master/areas',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardMailAllMailsRoute = DashboardMailAllMailsRouteImport.update({
@@ -152,11 +120,6 @@ export interface FileRoutesByFullPath {
   '/auth/dev-ticket': typeof AuthDevTicketRoute
   '/auth/sso': typeof AuthSsoRoute
   '/mail/all-mails': typeof DashboardMailAllMailsRoute
-  '/master/areas': typeof DashboardMasterAreasRoute
-  '/master/branches': typeof DashboardMasterBranchesRoute
-  '/master/departments': typeof DashboardMasterDepartmentsRoute
-  '/master/positions': typeof DashboardMasterPositionsRoute
-  '/master/staffs': typeof DashboardMasterStaffsRoute
   '/system/roles': typeof DashboardSystemRolesRoute
   '/system/users': typeof DashboardSystemUsersRoute
   '/mail/dynamic-mail-templates/create': typeof DashboardMailDynamicMailTemplatesCreateRoute
@@ -174,11 +137,6 @@ export interface FileRoutesByTo {
   '/auth/sso': typeof AuthSsoRoute
   '/': typeof DashboardIndexRoute
   '/mail/all-mails': typeof DashboardMailAllMailsRoute
-  '/master/areas': typeof DashboardMasterAreasRoute
-  '/master/branches': typeof DashboardMasterBranchesRoute
-  '/master/departments': typeof DashboardMasterDepartmentsRoute
-  '/master/positions': typeof DashboardMasterPositionsRoute
-  '/master/staffs': typeof DashboardMasterStaffsRoute
   '/system/roles': typeof DashboardSystemRolesRoute
   '/system/users': typeof DashboardSystemUsersRoute
   '/mail/dynamic-mail-templates/create': typeof DashboardMailDynamicMailTemplatesCreateRoute
@@ -198,11 +156,6 @@ export interface FileRoutesById {
   '/auth/sso': typeof AuthSsoRoute
   '/_dashboard/': typeof DashboardIndexRoute
   '/_dashboard/mail/all-mails': typeof DashboardMailAllMailsRoute
-  '/_dashboard/master/areas': typeof DashboardMasterAreasRoute
-  '/_dashboard/master/branches': typeof DashboardMasterBranchesRoute
-  '/_dashboard/master/departments': typeof DashboardMasterDepartmentsRoute
-  '/_dashboard/master/positions': typeof DashboardMasterPositionsRoute
-  '/_dashboard/master/staffs': typeof DashboardMasterStaffsRoute
   '/_dashboard/system/roles': typeof DashboardSystemRolesRoute
   '/_dashboard/system/users': typeof DashboardSystemUsersRoute
   '/_dashboard/mail/dynamic-mail-templates/create': typeof DashboardMailDynamicMailTemplatesCreateRoute
@@ -222,11 +175,6 @@ export interface FileRouteTypes {
     | '/auth/dev-ticket'
     | '/auth/sso'
     | '/mail/all-mails'
-    | '/master/areas'
-    | '/master/branches'
-    | '/master/departments'
-    | '/master/positions'
-    | '/master/staffs'
     | '/system/roles'
     | '/system/users'
     | '/mail/dynamic-mail-templates/create'
@@ -244,11 +192,6 @@ export interface FileRouteTypes {
     | '/auth/sso'
     | '/'
     | '/mail/all-mails'
-    | '/master/areas'
-    | '/master/branches'
-    | '/master/departments'
-    | '/master/positions'
-    | '/master/staffs'
     | '/system/roles'
     | '/system/users'
     | '/mail/dynamic-mail-templates/create'
@@ -267,11 +210,6 @@ export interface FileRouteTypes {
     | '/auth/sso'
     | '/_dashboard/'
     | '/_dashboard/mail/all-mails'
-    | '/_dashboard/master/areas'
-    | '/_dashboard/master/branches'
-    | '/_dashboard/master/departments'
-    | '/_dashboard/master/positions'
-    | '/_dashboard/master/staffs'
     | '/_dashboard/system/roles'
     | '/_dashboard/system/users'
     | '/_dashboard/mail/dynamic-mail-templates/create'
@@ -339,41 +277,6 @@ declare module '@tanstack/react-router' {
       path: '/system/roles'
       fullPath: '/system/roles'
       preLoaderRoute: typeof DashboardSystemRolesRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/master/staffs': {
-      id: '/_dashboard/master/staffs'
-      path: '/master/staffs'
-      fullPath: '/master/staffs'
-      preLoaderRoute: typeof DashboardMasterStaffsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/master/positions': {
-      id: '/_dashboard/master/positions'
-      path: '/master/positions'
-      fullPath: '/master/positions'
-      preLoaderRoute: typeof DashboardMasterPositionsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/master/departments': {
-      id: '/_dashboard/master/departments'
-      path: '/master/departments'
-      fullPath: '/master/departments'
-      preLoaderRoute: typeof DashboardMasterDepartmentsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/master/branches': {
-      id: '/_dashboard/master/branches'
-      path: '/master/branches'
-      fullPath: '/master/branches'
-      preLoaderRoute: typeof DashboardMasterBranchesRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/master/areas': {
-      id: '/_dashboard/master/areas'
-      path: '/master/areas'
-      fullPath: '/master/areas'
-      preLoaderRoute: typeof DashboardMasterAreasRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/mail/all-mails': {
@@ -446,11 +349,6 @@ interface DashboardRouteChildren {
   DashboardDashboardRoute: typeof DashboardDashboardRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardMailAllMailsRoute: typeof DashboardMailAllMailsRoute
-  DashboardMasterAreasRoute: typeof DashboardMasterAreasRoute
-  DashboardMasterBranchesRoute: typeof DashboardMasterBranchesRoute
-  DashboardMasterDepartmentsRoute: typeof DashboardMasterDepartmentsRoute
-  DashboardMasterPositionsRoute: typeof DashboardMasterPositionsRoute
-  DashboardMasterStaffsRoute: typeof DashboardMasterStaffsRoute
   DashboardSystemRolesRoute: typeof DashboardSystemRolesRoute
   DashboardSystemUsersRoute: typeof DashboardSystemUsersRoute
   DashboardMailDynamicMailTemplatesCreateRoute: typeof DashboardMailDynamicMailTemplatesCreateRoute
@@ -467,11 +365,6 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardDashboardRoute: DashboardDashboardRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardMailAllMailsRoute: DashboardMailAllMailsRoute,
-  DashboardMasterAreasRoute: DashboardMasterAreasRoute,
-  DashboardMasterBranchesRoute: DashboardMasterBranchesRoute,
-  DashboardMasterDepartmentsRoute: DashboardMasterDepartmentsRoute,
-  DashboardMasterPositionsRoute: DashboardMasterPositionsRoute,
-  DashboardMasterStaffsRoute: DashboardMasterStaffsRoute,
   DashboardSystemRolesRoute: DashboardSystemRolesRoute,
   DashboardSystemUsersRoute: DashboardSystemUsersRoute,
   DashboardMailDynamicMailTemplatesCreateRoute:

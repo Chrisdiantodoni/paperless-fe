@@ -1,4 +1,3 @@
-// src/utils/handle-api-error.ts
 import { clearSessionCookie } from "@workspace/utils"
 import { redirect } from "@tanstack/react-router"
 
@@ -11,18 +10,24 @@ type ApiErrorShape = {
 }
 
 /**
- * Lempar redirect TanStack yang valid kalau error dari axios interceptor
- * membawa `redirectTo`. Kalau tidak, lempar ulang error aslinya.
- * Panggil ini di dalam `catch` block loader / server function.
+ * Handle API errors with redirect logic untuk auth errors.
+ * Hanya throw redirect untuk auth errors (401/403).
+ * Untuk error lain, caller harus handle sendiri.
  */
-export function handleApiError(err: unknown): never {
+export function handleApiError(err: unknown): void {
   const apiErr = err as ApiErrorShape
 
   if (apiErr?.redirectTo) {
     clearSessionCookie()
     throw redirect({ href: apiErr.redirectTo })
   }
+}
 
-  // bukan error yang butuh redirect, lempar apa adanya
-  throw err
+/**
+ * Check apakah error butuh redirect (auth error)
+ * Return true jika perlu redirect
+ */
+export function shouldRedirect(err: unknown): boolean {
+  const apiErr = err as ApiErrorShape
+  return !!apiErr?.redirectTo
 }
