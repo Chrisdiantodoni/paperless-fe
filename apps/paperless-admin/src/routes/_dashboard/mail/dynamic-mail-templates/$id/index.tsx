@@ -4,7 +4,6 @@ import {
   useSubmitForApprovalMutation,
   useApproveDynamicMailTemplateMutation,
   useRejectDynamicMailTemplateMutation,
-  useRequestRevisionMutation,
 } from "@/hooks/queries/use-dynamic-mail-template"
 import { getDynamicMailTemplateById } from "@/server/master"
 import {
@@ -26,8 +25,6 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { useState } from "react"
-import { ApprovalStatusBadge } from "@/components/master/dynamic-mail-template/approval-status-badge"
-import { ApprovalHistory } from "@/components/master/dynamic-mail-template/approval-history"
 import {
   Card,
   CardContent,
@@ -66,15 +63,12 @@ function RouteComponent() {
     useApproveDynamicMailTemplateMutation()
   const { mutateAsync: reject, isPending: isRejecting } =
     useRejectDynamicMailTemplateMutation()
-  const { mutateAsync: requestRevision, isPending: isRequestingRevision } =
-    useRequestRevisionMutation()
 
   console.log(data.content)
 
   const navigate = useNavigate()
   const confirm = useConfirm()
 
-  const [revisionModalOpen, setRevisionModalOpen] = useState(false)
   const [rejectModalOpen, setRejectModalOpen] = useState(false)
   const [rejectReason, setRejectReason] = useState("")
 
@@ -113,30 +107,6 @@ function RouteComponent() {
     })
   }
 
-  const handleSubmitForApproval = async () => {
-    await confirm({
-      title: "Submit untuk Approval?",
-      description: "Template akan dikirim untuk proses approval.",
-      confirmLabel: "Submit",
-      onConfirm: async () => {
-        await submitForApproval(data.id)
-        router.invalidate()
-      },
-    })
-  }
-
-  const handleApprove = async () => {
-    await confirm({
-      title: "Approve Template?",
-      description: "Template akan di-approve dan dapat digunakan.",
-      confirmLabel: "Approve",
-      onConfirm: async () => {
-        await approve(data.id)
-        router.invalidate()
-      },
-    })
-  }
-
   const handleRejectSubmit = async () => {
     if (!rejectReason.trim()) {
       toast.error("Alasan penolakan wajib diisi")
@@ -147,24 +117,6 @@ function RouteComponent() {
     setRejectReason("")
     router.invalidate()
   }
-
-  const handleRequestRevision = async (formData: {
-    reason: string
-    scope_changes?: string[]
-  }) => {
-    await requestRevision({
-      id: data.id,
-      reason: formData.reason,
-      scope_changes: formData.scope_changes,
-    })
-    setRevisionModalOpen(false)
-    router.invalidate()
-  }
-
-  const isDraft = data.approval_status === "draft"
-  const isPending = data.approval_status === "pending"
-  const isApproved = data.approval_status === "approved"
-  const isRejected = data.approval_status === "rejected"
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-4 md:p-6">
@@ -198,84 +150,6 @@ function RouteComponent() {
           </Button>
         </div>
       </div>
-
-      {/* Approval Status & Actions */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Status Approval</CardTitle>
-            <ApprovalStatusBadge status={data.approval_status} />
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {data.rejected_reason && isRejected && (
-            <div className="rounded-md bg-destructive/10 p-3">
-              <p className="text-sm font-medium text-destructive">
-                Alasan Ditolak:
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {data.rejected_reason}
-              </p>
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-2">
-            {(isDraft || isRejected) && (
-              <Button
-                size="sm"
-                onClick={handleSubmitForApproval}
-                disabled={isSubmitting}
-              >
-                <Send className="h-4 w-4" />
-                {isSubmitting ? "Mengirim..." : "Submit for Approval"}
-              </Button>
-            )}
-
-            {isPending && (
-              <>
-                <Button
-                  size="sm"
-                  onClick={handleApprove}
-                  disabled={isApproving}
-                >
-                  <CheckCircle className="h-4 w-4" />
-                  {isApproving ? "Memproses..." : "Approve"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => setRejectModalOpen(true)}
-                  disabled={isRejecting}
-                >
-                  <XCircle className="h-4 w-4" />
-                  Reject
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setRevisionModalOpen(true)}
-                  disabled={isRequestingRevision}
-                >
-                  <FileEdit className="h-4 w-4" />
-                  Request Revision
-                </Button>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Approval History */}
-      {data.approval_history && data.approval_history.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Riwayat Approval</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ApprovalHistory history={data.approval_history} />
-          </CardContent>
-        </Card>
-      )}
 
       <DynamicTemplateDetail data={data} />
 

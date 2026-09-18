@@ -13,6 +13,11 @@ import type {
   DynamicMailTemplatePayload,
   StaticMailTemplateFormSchema,
 } from "@/schema/master/schema"
+import type {
+  AdminPermissionPage,
+  AdminUser,
+  AdminUserPage,
+} from "@workspace/types/admin"
 
 class MasterService {
   async getArea(): Promise<APIResponse<LaravelPaginationData<Area[]>>> {
@@ -154,6 +159,33 @@ class MasterService {
       `/mail/dynamic/dynamic-mail-templates/${id}/request-revision`,
       data
     )
+    return res.data
+  }
+
+  async getUsers(
+    params?: Record<string, string | number | undefined>
+  ): Promise<APIResponse<AdminUserPage>> {
+    const res = await api.get("/admin/users", { params })
+    return res.data
+  }
+
+  async getUser(id: string): Promise<APIResponse<AdminUser>> {
+    const res = await api.get(`/admin/users/${id}`)
+    return res.data
+  }
+
+  async updateUser(
+    id: string,
+    permissions: string[] | null
+  ): Promise<APIResponse<AdminUser>> {
+    const res = await api.put(`/admin/users/${id}`, { permissions })
+    return res.data
+  }
+
+  async getPermissions(
+    params?: Record<string, string | number | undefined>
+  ): Promise<APIResponse<AdminPermissionPage>> {
+    const res = await api.get("/admin/permissions", { params })
     return res.data
   }
 }

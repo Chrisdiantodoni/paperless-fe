@@ -14,7 +14,10 @@ import {
 } from "@workspace/ui/components/ui/popover"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Check, ChevronsUpDown, X } from "lucide-react"
-import { useStaffSearch } from "@/hooks/queries/use-staff"
+import {
+  useOvertimeStaffSearch,
+  useStaffSearch,
+} from "@/hooks/queries/use-staff"
 import type { SelectValue } from "@workspace/types"
 
 function extractValue(val?: string | SelectValue): string {
@@ -32,6 +35,7 @@ interface StaffComboboxProps {
   invalid?: boolean
   error?: string
   dependsOn?: Record<string, unknown>
+  overtimeOnly?: boolean
 }
 
 export function StaffCombobox({
@@ -41,6 +45,7 @@ export function StaffCombobox({
   invalid,
   error,
   dependsOn,
+  overtimeOnly = false,
 }: StaffComboboxProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
@@ -54,11 +59,22 @@ export function StaffCombobox({
   const resolvedValue = extractValue(value)
   const shouldFetch = open || !!resolvedValue
 
-  const { data, isFetching } = useStaffSearch(debouncedSearch, shouldFetch, {
-    departmentId,
-    branchId,
-    positionId,
-  })
+  const regularStaffQuery = useStaffSearch(
+    debouncedSearch,
+    shouldFetch && !overtimeOnly,
+    {
+      departmentId,
+      branchId,
+      positionId,
+    }
+  )
+  const overtimeStaffQuery = useOvertimeStaffSearch(
+    debouncedSearch,
+    shouldFetch
+  )
+  const { data, isFetching } = overtimeOnly
+    ? overtimeStaffQuery
+    : regularStaffQuery
   const options = (data?.data ?? []).filter((d) => d.user_account?.id != null)
 
   const selectedStaff = options.find(

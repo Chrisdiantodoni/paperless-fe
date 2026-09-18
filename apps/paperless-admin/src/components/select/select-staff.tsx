@@ -5,6 +5,7 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandInput,
+  CommandList,
   CommandItem,
 } from "@workspace/ui/components/ui/command"
 import {
@@ -85,11 +86,11 @@ export function StaffCombobox({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className={`w-full justify-between ${
+            className={`w-full max-w-full min-w-0 justify-between ${
               invalid ? "border-destructive focus-visible:ring-destructive" : ""
             }`}
           >
-            <span className="truncate">
+            <span className="min-w-0 flex-1 truncate text-left">
               {resolvedLabel || "Pilih staff..."}
             </span>
             <span className="flex shrink-0 items-center gap-0.5">
@@ -114,49 +115,59 @@ export function StaffCombobox({
             </span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+        <PopoverContent
+          side="bottom"
+          align="start"
+          sideOffset={6}
+          collisionPadding={12}
+          className="z-[100] max-h-80 w-[var(--radix-popover-trigger-width)] overflow-hidden p-0"
+        >
           <Command shouldFilter={false}>
             <CommandInput
               placeholder="Cari staff..."
               value={search}
               onValueChange={setSearch}
             />
-            <CommandGroup>
-              {isFetching ? (
-                <div className="p-2 text-sm text-muted-foreground">
-                  Loading...
-                </div>
-              ) : options.length === 0 ? (
-                <CommandEmpty>Staff tidak ditemukan</CommandEmpty>
-              ) : (
-                options.map((staff) => {
-                  const staffLabel = `${staff.biodata?.fullname} - ${staff.employment_data?.position?.name}`
+            <CommandList className="max-h-64 overflow-y-auto">
+              <CommandGroup>
+                {isFetching ? (
+                  <div className="p-2 text-sm text-muted-foreground">
+                    Loading...
+                  </div>
+                ) : options.length === 0 ? (
+                  <CommandEmpty>Staff tidak ditemukan</CommandEmpty>
+                ) : (
+                  options.map((staff) => {
+                    const staffLabel = `${staff.biodata?.fullname} - ${staff.employment_data?.position?.name}`
 
-                  return (
-                    <CommandItem
-                      key={staff.id}
-                      value={String(staff.user_account?.id ?? "")}
-                      onSelect={() => {
-                        onChange({
-                          value: staff.user_account?.id ?? "",
-                          label: staffLabel,
-                        })
-                        setOpen(false)
-                      }}
-                    >
-                      <Check
-                        className={`mr-2 h-4 w-4 ${
-                          resolvedValue === staff.user_account?.id
-                            ? "opacity-100"
-                            : "opacity-0"
-                        }`}
-                      />
-                      {staffLabel}
-                    </CommandItem>
-                  )
-                })
-              )}
-            </CommandGroup>
+                    return (
+                      <CommandItem
+                        key={staff.id}
+                        value={String(staff.user_account?.id ?? "")}
+                        onSelect={() => {
+                          onChange({
+                            value: staff.user_account?.id ?? "",
+                            label: staffLabel,
+                          })
+                          setOpen(false)
+                        }}
+                      >
+                        <Check
+                          className={`mr-2 h-4 w-4 ${
+                            resolvedValue === staff.user_account?.id
+                              ? "opacity-100"
+                              : "opacity-0"
+                          }`}
+                        />
+                        <span className="min-w-0 break-words">
+                          {staffLabel}
+                        </span>
+                      </CommandItem>
+                    )
+                  })
+                )}
+              </CommandGroup>
+            </CommandList>
           </Command>
         </PopoverContent>
       </Popover>

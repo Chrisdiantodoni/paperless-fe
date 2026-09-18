@@ -17,9 +17,9 @@ function RouteComponent() {
   const { user } = Route.useLoaderData()
 
   return (
-    <PageWrapper>
+    <div>
       <PageHeader title="Dashboard" />
       <pre>{JSON.stringify(user, null, 2)}</pre>
-    </PageWrapper>
+    </div>
   )
 }

@@ -6,7 +6,7 @@ import type { LaravelPaginationData } from "@workspace/types/api"
 import type { AllMailProps } from "@workspace/types/mail"
 
 export interface MailListProps {
-  mails: LaravelPaginationData<AllMailProps[]>
+  mails?: LaravelPaginationData<AllMailProps[]>
   isLoading: boolean
   page: number
   pageSize: number
@@ -30,8 +30,8 @@ export function MailList({
   onPageChange,
   onItemClick,
 }: MailListProps) {
-  const total = mails.total
-  const data = mails.data
+  const total = mails?.total ?? 0
+  const data = mails?.data ?? []
 
   const startIndex = total === 0 ? 0 : (page - 1) * pageSize + 1
   const endIndex = Math.min(page * pageSize, total)

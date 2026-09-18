@@ -20,6 +20,29 @@ import { createServerFn } from "@tanstack/react-start"
 import { handleApiError } from "@/lib/handle-api-error"
 import { z } from "zod"
 
+export const getUsers = createServerFn({ method: "GET" })
+  .validator(
+    z.object({ page: z.number().catch(1), search: z.string().catch("") })
+  )
+  .handler(async ({ data }) => (await master.getUsers(data)).data)
+
+export const getUser = createServerFn({ method: "GET" })
+  .validator(z.string())
+  .handler(async ({ data }) => (await master.getUser(data)).data)
+
+export const updateUser = createServerFn({ method: "POST" })
+  .validator(
+    z.object({ id: z.string(), permissions: z.array(z.string()).nullable() })
+  )
+  .handler(
+    async ({ data }) =>
+      (await master.updateUser(data.id, data.permissions)).data
+  )
+
+export const getPermissions = createServerFn({ method: "GET" })
+  .validator(z.object({ page: z.number().catch(1) }))
+  .handler(async ({ data }) => (await master.getPermissions(data)).data)
+
 export const getArea = createServerFn({ method: "GET" }).handler(async () => {
   try {
     const response = await master.getArea()

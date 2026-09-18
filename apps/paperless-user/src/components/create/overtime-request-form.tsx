@@ -80,6 +80,7 @@ export function OvertimeRequestForm({ form }: OvertimeRequestFormProps) {
                   <div className="flex w-full flex-col space-y-1.5">
                     <Label required>Staff</Label>
                     <StaffCombobox
+                      overtimeOnly
                       value={field.state.value || ""}
                       onChange={(val: SelectValue) =>
                         field.handleChange(val.value)

@@ -28,7 +28,7 @@ export function RichTextEditor({
   value,
   hasError = false,
   className,
-  placeholder = "Tulis konten dalam format Markdown...",
+  placeholder = "Tulis konten dalam format HTML...",
 }: RichTextEditorProps) {
   const [isPreview, setIsPreview] = useState(false)
   const [content, setContent] = useState(value ?? initialContent)
@@ -51,7 +51,7 @@ export function RichTextEditor({
     <div className={cn("w-full space-y-2", className)}>
       <div
         className={cn(
-          "rounded-lg border border-input bg-background overflow-hidden",
+          "overflow-hidden rounded-lg border border-input bg-background",
           hasError && "border-destructive ring-1 ring-destructive"
         )}
       >

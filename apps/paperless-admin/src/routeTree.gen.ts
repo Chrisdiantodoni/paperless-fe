@@ -14,15 +14,18 @@ import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
 import { Route as AuthSsoRouteImport } from './routes/auth/sso'
 import { Route as AuthDevTicketRouteImport } from './routes/auth/dev-ticket'
 import { Route as DashboardDashboardRouteImport } from './routes/_dashboard/dashboard'
-import { Route as DashboardSystemUsersRouteImport } from './routes/_dashboard/system/users'
 import { Route as DashboardSystemRolesRouteImport } from './routes/_dashboard/system/roles'
+import { Route as DashboardMailSkipMailsRouteImport } from './routes/_dashboard/mail/skip-mails'
 import { Route as DashboardMailAllMailsRouteImport } from './routes/_dashboard/mail/all-mails'
+import { Route as DashboardSystemUsersIndexRouteImport } from './routes/_dashboard/system/users/index'
 import { Route as DashboardMailStaticMailTemplatesIndexRouteImport } from './routes/_dashboard/mail/static-mail-templates/index'
 import { Route as DashboardMailDynamicMailTemplatesIndexRouteImport } from './routes/_dashboard/mail/dynamic-mail-templates/index'
 import { Route as DashboardMailStaticMailTemplatesCreateRouteImport } from './routes/_dashboard/mail/static-mail-templates/create'
 import { Route as DashboardMailDynamicMailTemplatesCreateRouteImport } from './routes/_dashboard/mail/dynamic-mail-templates/create'
+import { Route as DashboardSystemUsersIdIndexRouteImport } from './routes/_dashboard/system/users/$id/index'
 import { Route as DashboardMailStaticMailTemplatesIdIndexRouteImport } from './routes/_dashboard/mail/static-mail-templates/$id/index'
 import { Route as DashboardMailDynamicMailTemplatesIdIndexRouteImport } from './routes/_dashboard/mail/dynamic-mail-templates/$id/index'
+import { Route as DashboardSystemUsersIdEditRouteImport } from './routes/_dashboard/system/users/$id/edit'
 import { Route as DashboardMailStaticMailTemplatesIdEditRouteImport } from './routes/_dashboard/mail/static-mail-templates/$id/edit'
 import { Route as DashboardMailDynamicMailTemplatesIdEditRouteImport } from './routes/_dashboard/mail/dynamic-mail-templates/$id/edit'
 
@@ -50,14 +53,14 @@ const DashboardDashboardRoute = DashboardDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardSystemUsersRoute = DashboardSystemUsersRouteImport.update({
-  id: '/system/users',
-  path: '/system/users',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const DashboardSystemRolesRoute = DashboardSystemRolesRouteImport.update({
   id: '/system/roles',
   path: '/system/roles',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardMailSkipMailsRoute = DashboardMailSkipMailsRouteImport.update({
+  id: '/mail/skip-mails',
+  path: '/mail/skip-mails',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardMailAllMailsRoute = DashboardMailAllMailsRouteImport.update({
@@ -65,6 +68,12 @@ const DashboardMailAllMailsRoute = DashboardMailAllMailsRouteImport.update({
   path: '/mail/all-mails',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardSystemUsersIndexRoute =
+  DashboardSystemUsersIndexRouteImport.update({
+    id: '/system/users/',
+    path: '/system/users/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardMailStaticMailTemplatesIndexRoute =
   DashboardMailStaticMailTemplatesIndexRouteImport.update({
     id: '/mail/static-mail-templates/',
@@ -89,6 +98,12 @@ const DashboardMailDynamicMailTemplatesCreateRoute =
     path: '/mail/dynamic-mail-templates/create',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardSystemUsersIdIndexRoute =
+  DashboardSystemUsersIdIndexRouteImport.update({
+    id: '/system/users/$id/',
+    path: '/system/users/$id/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardMailStaticMailTemplatesIdIndexRoute =
   DashboardMailStaticMailTemplatesIdIndexRouteImport.update({
     id: '/mail/static-mail-templates/$id/',
@@ -99,6 +114,12 @@ const DashboardMailDynamicMailTemplatesIdIndexRoute =
   DashboardMailDynamicMailTemplatesIdIndexRouteImport.update({
     id: '/mail/dynamic-mail-templates/$id/',
     path: '/mail/dynamic-mail-templates/$id/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardSystemUsersIdEditRoute =
+  DashboardSystemUsersIdEditRouteImport.update({
+    id: '/system/users/$id/edit',
+    path: '/system/users/$id/edit',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardMailStaticMailTemplatesIdEditRoute =
@@ -120,16 +141,19 @@ export interface FileRoutesByFullPath {
   '/auth/dev-ticket': typeof AuthDevTicketRoute
   '/auth/sso': typeof AuthSsoRoute
   '/mail/all-mails': typeof DashboardMailAllMailsRoute
+  '/mail/skip-mails': typeof DashboardMailSkipMailsRoute
   '/system/roles': typeof DashboardSystemRolesRoute
-  '/system/users': typeof DashboardSystemUsersRoute
   '/mail/dynamic-mail-templates/create': typeof DashboardMailDynamicMailTemplatesCreateRoute
   '/mail/static-mail-templates/create': typeof DashboardMailStaticMailTemplatesCreateRoute
   '/mail/dynamic-mail-templates/': typeof DashboardMailDynamicMailTemplatesIndexRoute
   '/mail/static-mail-templates/': typeof DashboardMailStaticMailTemplatesIndexRoute
+  '/system/users/': typeof DashboardSystemUsersIndexRoute
   '/mail/dynamic-mail-templates/$id/edit': typeof DashboardMailDynamicMailTemplatesIdEditRoute
   '/mail/static-mail-templates/$id/edit': typeof DashboardMailStaticMailTemplatesIdEditRoute
+  '/system/users/$id/edit': typeof DashboardSystemUsersIdEditRoute
   '/mail/dynamic-mail-templates/$id/': typeof DashboardMailDynamicMailTemplatesIdIndexRoute
   '/mail/static-mail-templates/$id/': typeof DashboardMailStaticMailTemplatesIdIndexRoute
+  '/system/users/$id/': typeof DashboardSystemUsersIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/dashboard': typeof DashboardDashboardRoute
@@ -137,16 +161,19 @@ export interface FileRoutesByTo {
   '/auth/sso': typeof AuthSsoRoute
   '/': typeof DashboardIndexRoute
   '/mail/all-mails': typeof DashboardMailAllMailsRoute
+  '/mail/skip-mails': typeof DashboardMailSkipMailsRoute
   '/system/roles': typeof DashboardSystemRolesRoute
-  '/system/users': typeof DashboardSystemUsersRoute
   '/mail/dynamic-mail-templates/create': typeof DashboardMailDynamicMailTemplatesCreateRoute
   '/mail/static-mail-templates/create': typeof DashboardMailStaticMailTemplatesCreateRoute
   '/mail/dynamic-mail-templates': typeof DashboardMailDynamicMailTemplatesIndexRoute
   '/mail/static-mail-templates': typeof DashboardMailStaticMailTemplatesIndexRoute
+  '/system/users': typeof DashboardSystemUsersIndexRoute
   '/mail/dynamic-mail-templates/$id/edit': typeof DashboardMailDynamicMailTemplatesIdEditRoute
   '/mail/static-mail-templates/$id/edit': typeof DashboardMailStaticMailTemplatesIdEditRoute
+  '/system/users/$id/edit': typeof DashboardSystemUsersIdEditRoute
   '/mail/dynamic-mail-templates/$id': typeof DashboardMailDynamicMailTemplatesIdIndexRoute
   '/mail/static-mail-templates/$id': typeof DashboardMailStaticMailTemplatesIdIndexRoute
+  '/system/users/$id': typeof DashboardSystemUsersIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -156,16 +183,19 @@ export interface FileRoutesById {
   '/auth/sso': typeof AuthSsoRoute
   '/_dashboard/': typeof DashboardIndexRoute
   '/_dashboard/mail/all-mails': typeof DashboardMailAllMailsRoute
+  '/_dashboard/mail/skip-mails': typeof DashboardMailSkipMailsRoute
   '/_dashboard/system/roles': typeof DashboardSystemRolesRoute
-  '/_dashboard/system/users': typeof DashboardSystemUsersRoute
   '/_dashboard/mail/dynamic-mail-templates/create': typeof DashboardMailDynamicMailTemplatesCreateRoute
   '/_dashboard/mail/static-mail-templates/create': typeof DashboardMailStaticMailTemplatesCreateRoute
   '/_dashboard/mail/dynamic-mail-templates/': typeof DashboardMailDynamicMailTemplatesIndexRoute
   '/_dashboard/mail/static-mail-templates/': typeof DashboardMailStaticMailTemplatesIndexRoute
+  '/_dashboard/system/users/': typeof DashboardSystemUsersIndexRoute
   '/_dashboard/mail/dynamic-mail-templates/$id/edit': typeof DashboardMailDynamicMailTemplatesIdEditRoute
   '/_dashboard/mail/static-mail-templates/$id/edit': typeof DashboardMailStaticMailTemplatesIdEditRoute
+  '/_dashboard/system/users/$id/edit': typeof DashboardSystemUsersIdEditRoute
   '/_dashboard/mail/dynamic-mail-templates/$id/': typeof DashboardMailDynamicMailTemplatesIdIndexRoute
   '/_dashboard/mail/static-mail-templates/$id/': typeof DashboardMailStaticMailTemplatesIdIndexRoute
+  '/_dashboard/system/users/$id/': typeof DashboardSystemUsersIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -175,16 +205,19 @@ export interface FileRouteTypes {
     | '/auth/dev-ticket'
     | '/auth/sso'
     | '/mail/all-mails'
+    | '/mail/skip-mails'
     | '/system/roles'
-    | '/system/users'
     | '/mail/dynamic-mail-templates/create'
     | '/mail/static-mail-templates/create'
     | '/mail/dynamic-mail-templates/'
     | '/mail/static-mail-templates/'
+    | '/system/users/'
     | '/mail/dynamic-mail-templates/$id/edit'
     | '/mail/static-mail-templates/$id/edit'
+    | '/system/users/$id/edit'
     | '/mail/dynamic-mail-templates/$id/'
     | '/mail/static-mail-templates/$id/'
+    | '/system/users/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/dashboard'
@@ -192,16 +225,19 @@ export interface FileRouteTypes {
     | '/auth/sso'
     | '/'
     | '/mail/all-mails'
+    | '/mail/skip-mails'
     | '/system/roles'
-    | '/system/users'
     | '/mail/dynamic-mail-templates/create'
     | '/mail/static-mail-templates/create'
     | '/mail/dynamic-mail-templates'
     | '/mail/static-mail-templates'
+    | '/system/users'
     | '/mail/dynamic-mail-templates/$id/edit'
     | '/mail/static-mail-templates/$id/edit'
+    | '/system/users/$id/edit'
     | '/mail/dynamic-mail-templates/$id'
     | '/mail/static-mail-templates/$id'
+    | '/system/users/$id'
   id:
     | '__root__'
     | '/_dashboard'
@@ -210,16 +246,19 @@ export interface FileRouteTypes {
     | '/auth/sso'
     | '/_dashboard/'
     | '/_dashboard/mail/all-mails'
+    | '/_dashboard/mail/skip-mails'
     | '/_dashboard/system/roles'
-    | '/_dashboard/system/users'
     | '/_dashboard/mail/dynamic-mail-templates/create'
     | '/_dashboard/mail/static-mail-templates/create'
     | '/_dashboard/mail/dynamic-mail-templates/'
     | '/_dashboard/mail/static-mail-templates/'
+    | '/_dashboard/system/users/'
     | '/_dashboard/mail/dynamic-mail-templates/$id/edit'
     | '/_dashboard/mail/static-mail-templates/$id/edit'
+    | '/_dashboard/system/users/$id/edit'
     | '/_dashboard/mail/dynamic-mail-templates/$id/'
     | '/_dashboard/mail/static-mail-templates/$id/'
+    | '/_dashboard/system/users/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -265,13 +304,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardDashboardRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/system/users': {
-      id: '/_dashboard/system/users'
-      path: '/system/users'
-      fullPath: '/system/users'
-      preLoaderRoute: typeof DashboardSystemUsersRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/_dashboard/system/roles': {
       id: '/_dashboard/system/roles'
       path: '/system/roles'
@@ -279,11 +311,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSystemRolesRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/mail/skip-mails': {
+      id: '/_dashboard/mail/skip-mails'
+      path: '/mail/skip-mails'
+      fullPath: '/mail/skip-mails'
+      preLoaderRoute: typeof DashboardMailSkipMailsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/mail/all-mails': {
       id: '/_dashboard/mail/all-mails'
       path: '/mail/all-mails'
       fullPath: '/mail/all-mails'
       preLoaderRoute: typeof DashboardMailAllMailsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/system/users/': {
+      id: '/_dashboard/system/users/'
+      path: '/system/users'
+      fullPath: '/system/users/'
+      preLoaderRoute: typeof DashboardSystemUsersIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/mail/static-mail-templates/': {
@@ -314,6 +360,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardMailDynamicMailTemplatesCreateRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/system/users/$id/': {
+      id: '/_dashboard/system/users/$id/'
+      path: '/system/users/$id'
+      fullPath: '/system/users/$id/'
+      preLoaderRoute: typeof DashboardSystemUsersIdIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/mail/static-mail-templates/$id/': {
       id: '/_dashboard/mail/static-mail-templates/$id/'
       path: '/mail/static-mail-templates/$id'
@@ -326,6 +379,13 @@ declare module '@tanstack/react-router' {
       path: '/mail/dynamic-mail-templates/$id'
       fullPath: '/mail/dynamic-mail-templates/$id/'
       preLoaderRoute: typeof DashboardMailDynamicMailTemplatesIdIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/system/users/$id/edit': {
+      id: '/_dashboard/system/users/$id/edit'
+      path: '/system/users/$id/edit'
+      fullPath: '/system/users/$id/edit'
+      preLoaderRoute: typeof DashboardSystemUsersIdEditRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/mail/static-mail-templates/$id/edit': {
@@ -349,24 +409,27 @@ interface DashboardRouteChildren {
   DashboardDashboardRoute: typeof DashboardDashboardRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardMailAllMailsRoute: typeof DashboardMailAllMailsRoute
+  DashboardMailSkipMailsRoute: typeof DashboardMailSkipMailsRoute
   DashboardSystemRolesRoute: typeof DashboardSystemRolesRoute
-  DashboardSystemUsersRoute: typeof DashboardSystemUsersRoute
   DashboardMailDynamicMailTemplatesCreateRoute: typeof DashboardMailDynamicMailTemplatesCreateRoute
   DashboardMailStaticMailTemplatesCreateRoute: typeof DashboardMailStaticMailTemplatesCreateRoute
   DashboardMailDynamicMailTemplatesIndexRoute: typeof DashboardMailDynamicMailTemplatesIndexRoute
   DashboardMailStaticMailTemplatesIndexRoute: typeof DashboardMailStaticMailTemplatesIndexRoute
+  DashboardSystemUsersIndexRoute: typeof DashboardSystemUsersIndexRoute
   DashboardMailDynamicMailTemplatesIdEditRoute: typeof DashboardMailDynamicMailTemplatesIdEditRoute
   DashboardMailStaticMailTemplatesIdEditRoute: typeof DashboardMailStaticMailTemplatesIdEditRoute
+  DashboardSystemUsersIdEditRoute: typeof DashboardSystemUsersIdEditRoute
   DashboardMailDynamicMailTemplatesIdIndexRoute: typeof DashboardMailDynamicMailTemplatesIdIndexRoute
   DashboardMailStaticMailTemplatesIdIndexRoute: typeof DashboardMailStaticMailTemplatesIdIndexRoute
+  DashboardSystemUsersIdIndexRoute: typeof DashboardSystemUsersIdIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardDashboardRoute: DashboardDashboardRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardMailAllMailsRoute: DashboardMailAllMailsRoute,
+  DashboardMailSkipMailsRoute: DashboardMailSkipMailsRoute,
   DashboardSystemRolesRoute: DashboardSystemRolesRoute,
-  DashboardSystemUsersRoute: DashboardSystemUsersRoute,
   DashboardMailDynamicMailTemplatesCreateRoute:
     DashboardMailDynamicMailTemplatesCreateRoute,
   DashboardMailStaticMailTemplatesCreateRoute:
@@ -375,14 +438,17 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardMailDynamicMailTemplatesIndexRoute,
   DashboardMailStaticMailTemplatesIndexRoute:
     DashboardMailStaticMailTemplatesIndexRoute,
+  DashboardSystemUsersIndexRoute: DashboardSystemUsersIndexRoute,
   DashboardMailDynamicMailTemplatesIdEditRoute:
     DashboardMailDynamicMailTemplatesIdEditRoute,
   DashboardMailStaticMailTemplatesIdEditRoute:
     DashboardMailStaticMailTemplatesIdEditRoute,
+  DashboardSystemUsersIdEditRoute: DashboardSystemUsersIdEditRoute,
   DashboardMailDynamicMailTemplatesIdIndexRoute:
     DashboardMailDynamicMailTemplatesIdIndexRoute,
   DashboardMailStaticMailTemplatesIdIndexRoute:
     DashboardMailStaticMailTemplatesIdIndexRoute,
+  DashboardSystemUsersIdIndexRoute: DashboardSystemUsersIdIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

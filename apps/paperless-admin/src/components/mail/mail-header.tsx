@@ -30,8 +30,6 @@ export interface MailFilterState {
 }
 
 interface MailHeaderProps {
-  onSkipMail?: () => void
-  onCancelRecipient?: () => void
   onFiltersChange: (filters: MailFilterState) => void
   filterValue: MailFilterState
   refreshing: boolean
@@ -55,8 +53,6 @@ const SORT_OPTIONS = [
 ]
 
 export default function MailHeader({
-  onSkipMail,
-  onCancelRecipient,
   filterValue,
   onFiltersChange,
   refreshing,
@@ -103,14 +99,7 @@ export default function MailHeader({
       <PageHeader title="All Mail" description="Kelola semua surat yang ada" />
 
       <header className="flex flex-col gap-4 border-b bg-background p-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="relative h-9 shrink-0 gap-1.5 px-3 text-xs font-medium"
-            asChild
-          ></Button>
-        </div>
+        <div className="hidden lg:block" />
         <div className="flex flex-1 items-center justify-end gap-2 lg:max-w-lg">
           <div className="relative flex-1">
             <Search className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

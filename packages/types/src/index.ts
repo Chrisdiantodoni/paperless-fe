@@ -14,4 +14,5 @@ export type {
 
 export * from "./master"
 export * from "./dashboard"
+export * from "./admin"
 export type SelectValue = { value: string; label: string }

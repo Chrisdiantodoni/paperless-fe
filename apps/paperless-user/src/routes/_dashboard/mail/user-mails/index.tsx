@@ -56,12 +56,6 @@ function RouteComponent() {
   const { data: initialData } = Route.useLoaderData()
   const search = Route.useSearch()
 
-  const {
-    data: mailPagination,
-    isFetching,
-    refetch,
-  } = useMailList(search, initialData)
-
   const navigate = Route.useNavigate()
 
   const {
@@ -82,6 +76,12 @@ function RouteComponent() {
     showDetail,
     setRefreshing,
   } = useMailData(search)
+  const listSearch = { ...search, page }
+  const {
+    data: mailPagination,
+    isFetching,
+    refetch,
+  } = useMailList(listSearch, page === search.page ? initialData : undefined)
 
   const debouncedQuery = useDebounce(query, 500)
 
@@ -187,14 +187,8 @@ function RouteComponent() {
     sort_dir: search.sort_dir,
   }
 
-  const handlePageChange = (page: number) => {
-    setPage(page)
-    navigate({
-      search: (prev) => ({
-        ...prev,
-        page,
-      }),
-    })
+  const handlePageChange = (nextPage: number) => {
+    setPage(nextPage)
   }
 
   const handleRefresh = () => {
@@ -321,7 +315,7 @@ function RouteComponent() {
 
   return (
     <main className="flex h-screen flex-col bg-background text-foreground">
-      <PageWrapper className="shrink-0 space-y-6">
+      <PageWrapper className="flex min-h-0 flex-1 flex-col space-y-6">
         <MailHeader
           activeNav={activeNav}
           query={query}

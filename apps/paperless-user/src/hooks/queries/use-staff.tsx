@@ -1,6 +1,6 @@
 import { staffKeys } from "@/keys/staffKeys"
 import type { StaffSearch } from "@/schema/list.schema"
-import { getStaff } from "@/server/master"
+import { getOvertimeDropdownStaffs, getStaff } from "@/server/master"
 import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query"
 
 export const staffQueryOptions = (search: StaffSearch) =>
@@ -11,6 +11,26 @@ export const staffQueryOptions = (search: StaffSearch) =>
 
 export function useStaffs(search: StaffSearch) {
   return useSuspenseQuery(staffQueryOptions(search))
+}
+
+export function useOvertimeStaffSearch(
+  searchQuery: string,
+  isDropdownOpen: boolean
+) {
+  return useQuery({
+    queryKey: ["overtime-staff-search", searchQuery],
+    queryFn: () =>
+      getOvertimeDropdownStaffs({
+        data: {
+          search: searchQuery,
+          branch_id: "",
+          department_id: "",
+          position_id: "",
+        },
+      }),
+    enabled: isDropdownOpen || searchQuery.length > 0,
+    staleTime: 1000 * 60 * 5,
+  })
 }
 
 export function useStaffSearch(

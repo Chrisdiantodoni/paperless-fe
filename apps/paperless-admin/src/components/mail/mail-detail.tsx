@@ -5,7 +5,6 @@ import {
   User,
   Edit,
   Send,
-  RotateCcw,
   Loader2,
   Circle,
   CheckCircle2,
@@ -17,7 +16,7 @@ import {
   UserCheck,
   Copy,
 } from "lucide-react"
-import { AttachmentItem } from "./AttachmentItem"
+import { AttachmentItem } from "./attachment-item"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Badge } from "@workspace/ui/components/ui/badge"
 import {
@@ -32,6 +31,13 @@ import { formatDate } from "@workspace/utils"
 import type { AllMailProps, Recipient } from "@workspace/types/mail"
 import { useUser } from "@/hooks/queries/use-user"
 import { DocumentPreview } from "@workspace/ui/components/editor"
+
+import { ApproveDialog } from "./dialog/approve-dialog"
+import { CancelDialog } from "./dialog/cancel-dialog"
+import {
+  EditRecipientDialog,
+  type UpdateRecipientsBody,
+} from "./dialog/edit-recipient-dialog"
 
 /**
  * Helper function untuk menentukan apakah user dapat melakukan approval
@@ -199,10 +205,20 @@ function RecipientRow({
   rec,
   currentUserId,
   logs,
+  showCancelAction = false,
+  showApproveOnBehalfAction = false,
+  onCancelRecipient,
+  onApproveOnBehalf,
+  mailId,
 }: {
   rec: Recipient
   currentUserId: string
   logs: AllMailProps["logs"]
+  showCancelAction?: boolean
+  showApproveOnBehalfAction?: boolean
+  onCancelRecipient?: () => void
+  onApproveOnBehalf?: () => void
+  mailId: string
 }) {
   const isCurrentUser = rec.recipient_user_id === currentUserId
   const isActiveApprover =
@@ -264,7 +280,15 @@ function RecipientRow({
           </div>
         )}
       </div>
-      <StatusBadge status={rec.status} className="ml-3" />
+      <div className="ml-3 flex items-center gap-2">
+        <StatusBadge status={rec.status} />
+        {showCancelAction && onCancelRecipient && (
+          <CancelDialog mailId={mailId} />
+        )}
+        {showApproveOnBehalfAction && onApproveOnBehalf && (
+          <ApproveDialog mailId={mailId} />
+        )}
+      </div>
     </div>
   )
 }
@@ -276,12 +300,22 @@ function RecipientGroup({
   recipients,
   currentUserId,
   logs,
+  cancelRecipientId,
+  approveOnBehalfId,
+  onCancelRecipient,
+  onApproveOnBehalf,
+  mailId,
 }: {
   label: string
   icon: React.ComponentType<{ className?: string }>
   recipients: Recipient[]
   currentUserId: string
   logs: AllMailProps["logs"]
+  cancelRecipientId?: string
+  approveOnBehalfId?: string
+  onCancelRecipient?: (recipientId: string) => void
+  onApproveOnBehalf?: (recipientId: string) => void
+  mailId: string
 }) {
   if (recipients.length === 0) return null
   return (
@@ -300,6 +334,11 @@ function RecipientGroup({
             rec={rec}
             currentUserId={currentUserId}
             logs={logs}
+            showCancelAction={rec.id === cancelRecipientId}
+            showApproveOnBehalfAction={rec.id === approveOnBehalfId}
+            onCancelRecipient={() => onCancelRecipient?.(rec.id)}
+            onApproveOnBehalf={() => onApproveOnBehalf?.(rec.id)}
+            mailId={mailId}
           />
         ))}
       </div>
@@ -307,15 +346,28 @@ function RecipientGroup({
   )
 }
 
+export type EditableRecipient = {
+  user_id: string
+  user_label?: string
+  recipient_type: "approver" | "cc" | "to"
+  sequence: number
+}
+
 export interface MailDetailProps {
-  detail: AllMailProps | null
+  detail?: AllMailProps
   isLoading: boolean
   isSendingMail?: boolean
   isRevisingMail?: boolean
   isApprovingMail?: boolean
   isRejectingMail?: boolean
+  isCancelingRecipient?: boolean
+  isApprovingOnBehalf?: boolean
+  isEditingRecipients?: boolean
   onApprove?: () => void
   onReject?: () => void
+  onCancelRecipient?: (recipientId: string) => void
+  onApproveOnBehalf?: (recipientId: string) => void
+  onEditRecipients?: (payload: { recipients: EditableRecipient[] }) => void
   onEdit?: () => void
   onSend?: () => void
   onRevise?: () => void
@@ -330,8 +382,12 @@ export function MailDetail({
   isRevisingMail = false,
   isApprovingMail = false,
   isRejectingMail = false,
+  isEditingRecipients = false,
   onApprove,
   onReject,
+  onCancelRecipient,
+  onApproveOnBehalf,
+  onEditRecipients,
   onEdit,
   onSend,
   onRevise,
@@ -431,6 +487,30 @@ export function MailDetail({
     currentUserId
   )
   const canShowApprovalButtons = isSendMail && approverStatus.canApprove
+  const canShowRecipientActions = !["approved", "rejected"].includes(
+    detail.status.toLowerCase()
+  )
+  const orderedRecipients = [...(detail.recipients || [])].sort(
+    (a, b) => a.sequence - b.sequence
+  )
+  const lastActionRecipient = [...orderedRecipients]
+    .reverse()
+    .find((recipient) =>
+      ["approved", "revision"].includes(recipient.status.toLowerCase())
+    )
+  const firstPendingRecipient = orderedRecipients.find(
+    (recipient) =>
+      (recipient.recipient_type === "to" ||
+        recipient.recipient_type === "superior") &&
+      recipient.status.toLowerCase() === "pending"
+  )
+  const hasRevisionBeforePending = firstPendingRecipient
+    ? orderedRecipients.some(
+        (recipient) =>
+          recipient.sequence < firstPendingRecipient.sequence &&
+          recipient.status.toLowerCase() === "revision"
+      )
+    : false
 
   const toRecipients = (detail.recipients || [])
     .filter((r) => r.recipient_type === "to")
@@ -443,13 +523,23 @@ export function MailDetail({
   const ccRecipients = (detail.recipients || [])
     .filter((r) => r.recipient_type === "cc")
     .sort((a, b) => a.sequence - b.sequence)
-
-  console.log(req.content, "content")
+  const editableRecipients = (detail.recipients || []).map((recipient) => ({
+    id: recipient.id,
+    user_id: recipient.recipient_user_id,
+    user_label: recipient.name,
+    user_position: recipient.position,
+    recipient_type:
+      recipient.recipient_type === "superior"
+        ? ("approver" as const)
+        : recipient.recipient_type,
+    sequence: recipient.sequence,
+    locked: recipient.status.toLowerCase() !== "pending",
+  }))
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-w-0 flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-3.5">
+      <div className="flex items-center justify-between border-b border-border bg-card px-4 py-3.5 sm:px-6">
         <div className="flex items-center gap-3">
           {showCloseButton && (
             <Button
@@ -462,7 +552,7 @@ export function MailDetail({
               <X className="size-4" />
             </Button>
           )}
-          <div className="leading-tight">
+          <div className="min-w-0 leading-tight">
             <div className="text-sm font-medium">{title}</div>
             <span className="font-mono text-xs text-muted-foreground">
               {detail.document_number}
@@ -473,8 +563,8 @@ export function MailDetail({
       </div>
 
       {/* New Layout: Full Width Content First, Then 2-Column Bottom */}
-      <div className="flex-1 overflow-x-hidden overflow-y-auto p-6">
-        <div className="mx-auto max-w-7xl space-y-6">
+      <div className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-muted/20 p-4 sm:p-6">
+        <div className="mx-auto max-w-7xl min-w-0 space-y-5 sm:space-y-6">
           {/* Full Width Section - Isi Surat */}
           {(req.type === "non_template" || req.type === "dynamic_template") &&
             req.content && (
@@ -482,7 +572,7 @@ export function MailDetail({
                 <CardHeader>
                   <CardTitle className="text-base">Isi Surat</CardTitle>
                 </CardHeader>
-                <CardContent className="overflow-x-hidden p-0">
+                <CardContent className="min-w-0 overflow-x-hidden p-0">
                   <DocumentPreview html={req.content} />
                 </CardContent>
               </Card>
@@ -623,9 +713,9 @@ export function MailDetail({
             })()}
 
           {/* 2-Column Bottom Section - Summary/Logs + Riwayat/Attachments */}
-          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+          <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
             {/* Left Column - Summary & Logs */}
-            <div className="space-y-6">
+            <div className="min-w-0 space-y-6">
               <Card>
                 <CardContent className="space-y-5 pt-6">
                   <div className="flex items-start gap-3">
@@ -697,68 +787,6 @@ export function MailDetail({
                   </div>
 
                   <div className="space-y-2 border-t border-border pt-4">
-                    {canShowApprovalButtons && (onApprove || onReject) && (
-                      <>
-                        {onApprove && (
-                          <Button
-                            onClick={onApprove}
-                            disabled={isApprovingMail}
-                            variant="default"
-                            className="w-full"
-                            size="sm"
-                          >
-                            {isApprovingMail ? (
-                              <>
-                                <Loader2 className="size-4 animate-spin" />
-                                Menyetujui...
-                              </>
-                            ) : (
-                              "Setujui"
-                            )}
-                          </Button>
-                        )}
-                        {onReject && (
-                          <Button
-                            onClick={onReject}
-                            disabled={isRejectingMail}
-                            variant="destructive"
-                            className="w-full"
-                            size="sm"
-                          >
-                            {isRejectingMail ? (
-                              <>
-                                <Loader2 className="size-4 animate-spin" />
-                                Menolak...
-                              </>
-                            ) : (
-                              "Tolak"
-                            )}
-                          </Button>
-                        )}
-                        {onRevise && (
-                          <Button
-                            onClick={onRevise}
-                            disabled={isRevisingMail}
-                            variant="secondary"
-                            className="w-full gap-2"
-                            size="sm"
-                          >
-                            {isRevisingMail ? (
-                              <>
-                                <Loader2 className="size-4 animate-spin" />
-                                Mengirim Revisi...
-                              </>
-                            ) : (
-                              <>
-                                <RotateCcw className="size-4" />
-                                Revise Mail
-                              </>
-                            )}
-                          </Button>
-                        )}
-                      </>
-                    )}
-
                     {isSendMail && !canShowApprovalButtons && (
                       <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
                         <p className="text-xs text-amber-700 dark:text-amber-400">
@@ -802,12 +830,25 @@ export function MailDetail({
                         ) : (
                           <>
                             <Send className="size-4" />
-                            Send Mail
+                            Kirim Surat
                           </>
                         )}
                       </Button>
                     )}
 
+                    {canShowRecipientActions && onEditRecipients && (
+                      <EditRecipientDialog
+                        initialRecipients={editableRecipients}
+                        onSubmit={async (body: UpdateRecipientsBody) => {
+                          onEditRecipients({
+                            recipients: body.recipients.map((recipient) => ({
+                              ...recipient,
+                              id: recipient.user_id,
+                            })),
+                          })
+                        }}
+                      />
+                    )}
                     {isCurrentUser && isEditable && onEdit && (
                       <Button
                         onClick={onEdit}
@@ -816,7 +857,7 @@ export function MailDetail({
                         size="sm"
                       >
                         <Edit className="size-4" />
-                        Edit Mail
+                        Ubah Surat
                       </Button>
                     )}
                   </div>
@@ -892,7 +933,7 @@ export function MailDetail({
             </div>
 
             {/* Right Column - Riwayat Persetujuan & Attachments */}
-            <div className="space-y-6">
+            <div className="min-w-0 space-y-6">
               {Array.isArray(detail.recipients) &&
                 detail.recipients.length > 0 && (
                   <Card>
@@ -904,18 +945,44 @@ export function MailDetail({
                     <CardContent>
                       <div className="space-y-6">
                         <RecipientGroup
-                          label="Kepada"
-                          icon={UserCheck}
-                          recipients={toRecipients}
-                          currentUserId={currentUserId}
-                          logs={detail.logs}
-                        />
-                        <RecipientGroup
                           label="Diketahui"
                           icon={Users}
                           recipients={superiorRecipients}
                           currentUserId={currentUserId}
                           logs={detail.logs}
+                          cancelRecipientId={
+                            canShowRecipientActions
+                              ? lastActionRecipient?.id
+                              : undefined
+                          }
+                          approveOnBehalfId={
+                            canShowRecipientActions && !hasRevisionBeforePending
+                              ? firstPendingRecipient?.id
+                              : undefined
+                          }
+                          onCancelRecipient={onCancelRecipient}
+                          onApproveOnBehalf={onApproveOnBehalf}
+                          mailId={detail.id}
+                        />
+                        <RecipientGroup
+                          label="Kepada"
+                          icon={UserCheck}
+                          recipients={toRecipients}
+                          currentUserId={currentUserId}
+                          logs={detail.logs}
+                          cancelRecipientId={
+                            canShowRecipientActions
+                              ? lastActionRecipient?.id
+                              : undefined
+                          }
+                          approveOnBehalfId={
+                            canShowRecipientActions && !hasRevisionBeforePending
+                              ? firstPendingRecipient?.id
+                              : undefined
+                          }
+                          onCancelRecipient={onCancelRecipient}
+                          onApproveOnBehalf={onApproveOnBehalf}
+                          mailId={detail.id}
                         />
                         <RecipientGroup
                           label="Tembusan"
@@ -923,6 +990,19 @@ export function MailDetail({
                           recipients={ccRecipients}
                           currentUserId={currentUserId}
                           logs={detail.logs}
+                          cancelRecipientId={
+                            canShowRecipientActions
+                              ? lastActionRecipient?.id
+                              : undefined
+                          }
+                          approveOnBehalfId={
+                            canShowRecipientActions && !hasRevisionBeforePending
+                              ? firstPendingRecipient?.id
+                              : undefined
+                          }
+                          onCancelRecipient={onCancelRecipient}
+                          onApproveOnBehalf={onApproveOnBehalf}
+                          mailId={detail.id}
                         />
                       </div>
                     </CardContent>

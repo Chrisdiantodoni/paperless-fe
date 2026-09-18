@@ -46,6 +46,13 @@ class MasterService {
     return res.data
   }
 
+  async getOvertimeDropdownStaffs(
+    params?: Record<string, string | number | undefined>
+  ): Promise<APIResponse<LaravelPaginationData<IStaff[]>>> {
+    const res = await api.get("/master/overtime-dropdown-staffs", { params })
+    return res.data
+  }
+
   async getStaticMailTemplates(
     params?: Record<string, string | number | undefined | boolean>
   ): Promise<APIResponse<LaravelPaginationData<StaticMailTemplate[]>>> {

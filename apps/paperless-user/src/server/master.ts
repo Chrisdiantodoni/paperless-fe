@@ -41,6 +41,17 @@ export const getStaff = createServerFn({ method: "GET" })
     }
   })
 
+export const getOvertimeDropdownStaffs = createServerFn({ method: "GET" })
+  .validator(staffSearchSchema)
+  .handler(async ({ data }) => {
+    try {
+      const response = await master.getOvertimeDropdownStaffs(data)
+      return response.data
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  })
+
 export const getBranches = createServerFn({ method: "GET" })
   .validator(branchSearchSchema)
   .handler(async ({ data }) => {

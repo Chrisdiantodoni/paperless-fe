@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState } from "react"
 import { cn } from "@workspace/ui/lib/utils"
-import { useEditor, getEditorContent, setEditorContent, type EditorOutputFormat } from "@workspace/ui/hooks/useEditor"
+import {
+  useEditor,
+  getEditorContent,
+  setEditorContent,
+  type EditorOutputFormat,
+} from "@workspace/ui/hooks/useEditor"
 import { EditorToolbar } from "./EditorToolbar"
 import { EditorArea } from "./EditorArea"
 import { DocumentPreview } from "./DocumentPreview"
@@ -21,7 +26,10 @@ interface TiptapEditorProps {
 }
 
 function normalizeContent(content: string): string {
-  return content.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim()
+  return content
+    .replace(/\r\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
 }
 
 export function TiptapEditor({
@@ -36,7 +44,19 @@ export function TiptapEditor({
   placeholder,
   format = "html",
 }: TiptapEditorProps) {
-  const editor = useEditor(value || initialContent, placeholder, format)
+  const rawHtmlRef = useRef<string | null>(null)
+  const [rawHtml, setRawHtml] = useState<string | null>(null)
+  const editor = useEditor(
+    value || initialContent,
+    placeholder,
+    format,
+    (html) => {
+      rawHtmlRef.current = html
+      setRawHtml(html)
+      onContentChange?.(html)
+      onChange?.(html)
+    }
+  )
   const [isPreview, setIsPreview] = useState(false)
   const skipSyncRef = useRef(false)
 
@@ -49,6 +69,8 @@ export function TiptapEditor({
 
     const current = getEditorContent(editor, format)
     if (normalizeContent(value) !== normalizeContent(current)) {
+      rawHtmlRef.current = null
+      setRawHtml(null)
       setEditorContent(editor, value, format)
     }
   }, [editor, value, format])
@@ -57,7 +79,12 @@ export function TiptapEditor({
     if (!editor) return
 
     const handleUpdate = () => {
-      const content = getEditorContent(editor, format)
+      const content =
+        format === "html" && rawHtmlRef.current
+          ? rawHtmlRef.current
+          : getEditorContent(editor, format)
+      rawHtmlRef.current = null
+      setRawHtml(null)
       skipSyncRef.current = true
       onContentChange?.(content)
       onChange?.(content)
@@ -86,18 +113,20 @@ export function TiptapEditor({
 
   return (
     <div className={cn("w-full space-y-2", className)}>
-      <EditorToolbar 
-        editor={editor} 
+      <EditorToolbar
+        editor={editor}
         format={format}
         isPreview={isPreview}
         onPreviewChange={setIsPreview}
       />
       {isPreview ? (
-        <DocumentPreview html={getEditorContent(editor, "html")} />
+        <DocumentPreview html={rawHtml ?? getEditorContent(editor, "html")} />
       ) : (
         <EditorArea
           editor={editor}
-          className={cn(hasError && "border-destructive ring-1 ring-destructive")}
+          className={cn(
+            hasError && "border-destructive ring-1 ring-destructive"
+          )}
         />
       )}
       <div className="text-right text-xs text-muted-foreground">

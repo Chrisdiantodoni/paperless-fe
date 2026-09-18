@@ -13,6 +13,7 @@ export function DataTablePagination<T>({
   isFetching = false,
   onPageChange,
 }: DataTablePaginationProps<T>) {
+  console.log(pagination)
   const isFirstPage = pagination.current_page <= 1
   const isLastPage =
     pagination.current_page >= pagination.last_page ||
@@ -28,7 +29,7 @@ export function DataTablePagination<T>({
   )
 
   return (
-    <div className="flex items-center justify-between border-t border-border bg-background/50 px-4 py-2.5 text-xs text-muted-foreground rounded-lg">
+    <div className="flex items-center justify-between rounded-lg border-t border-border bg-background/50 px-4 py-2.5 text-xs text-muted-foreground">
       <span>
         {pagination.total > 0
           ? `${startIndex}–${endIndex} dari ${pagination.total}`

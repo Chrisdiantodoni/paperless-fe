@@ -1,12 +1,21 @@
+import type { ApprovalBody } from "@/components/mail/dialog/approve-dialog"
+import type { CancelBody } from "@/components/mail/dialog/cancel-dialog"
 import type {
   ListRequestQueryMail,
   listRequestQuerySchema,
 } from "@/schema/mail/schema"
-import { getMailDetail, getMailList } from "@/server/mail"
+import {
+  approvalMail,
+  cancelMail,
+  getMailDetail,
+  getMailList,
+} from "@/server/mail"
 import {
   keepPreviousData,
   queryOptions,
-  useSuspenseQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
 } from "@tanstack/react-query"
 import type { LaravelPaginationData } from "@workspace/types/api"
 import type { AllMailProps } from "@workspace/types/mail"
@@ -49,9 +58,49 @@ export const mailDetailQueryOptions = (id: string) => {
   })
 }
 
+export function useMailDetail(id: string) {
+  return useQuery(mailDetailQueryOptions(id))
+}
+
 export const useMailList = (
   search: ListMailQuerySearch,
   initialData?: LaravelPaginationData<AllMailProps[]>
 ) => {
-  return useSuspenseQuery(mailListQueryOptions(search, initialData))
+  return useQuery(mailListQueryOptions(search, initialData))
+}
+
+export function useApproval() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, body }: { id: string; body: ApprovalBody }) => {
+      const response = await approvalMail({ data: { id, body } })
+      if (!response.success) {
+        throw new Error(response.error)
+      }
+      return response
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: mailKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: mailKeys.detail(variables.id) })
+    },
+  })
+}
+
+export function useCancel() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, body }: { id: string; body: CancelBody }) => {
+      const response = await cancelMail({ data: { id, body } })
+      if (!response.success) {
+        throw new Error(response.error)
+      }
+      return response
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: mailKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: mailKeys.detail(variables.id) })
+    },
+  })
 }

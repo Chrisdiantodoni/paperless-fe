@@ -14,7 +14,6 @@ import {
   keepPreviousData,
   queryOptions,
   useQuery,
-  useSuspenseQuery,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query"
@@ -40,7 +39,7 @@ export const mailListQueryOptions = (
         : isDraft
           ? await getDraftMails({ data: search })
           : await getMails({ data: search })
-      
+
       return result.success ? result.data : undefined
     },
     placeholderData: keepPreviousData,
@@ -69,7 +68,7 @@ export function useMailList(
   search: ListMailQuerySearch,
   initialData?: LaravelPaginationData<AllMailProps[]>
 ) {
-  return useSuspenseQuery(mailListQueryOptions(search, initialData))
+  return useQuery(mailListQueryOptions(search, initialData))
 }
 
 export const mailDetailQueryOptions = (id: string | null) =>
@@ -90,7 +89,7 @@ export function useMailDetail(id: string | null) {
 
 export function useSendMail() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: (id: string) => sendMail({ data: id }),
     onSuccess: () => {
@@ -102,9 +101,9 @@ export function useSendMail() {
 
 export function useReviseMail() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason: string }) => 
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       reviseMail({ data: { id, reason } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mailKeys.lists() })
@@ -115,9 +114,9 @@ export function useReviseMail() {
 
 export function useApproveMail() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: ({ id, notes }: { id: string; notes?: string }) => 
+    mutationFn: ({ id, notes }: { id: string; notes?: string }) =>
       approveMail({ data: { id, notes } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mailKeys.lists() })
@@ -128,9 +127,9 @@ export function useApproveMail() {
 
 export function useRejectMail() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason: string }) => 
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       rejectMail({ data: { id, reason } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mailKeys.lists() })

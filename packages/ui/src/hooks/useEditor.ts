@@ -17,7 +17,8 @@ import TextAlign from "@tiptap/extension-text-align"
 export function useEditor(
   initialContent?: string,
   _placeholder?: string,
-  format: EditorOutputFormat = "html"
+  format: EditorOutputFormat = "html",
+  onHtmlPaste?: (html: string) => void
 ): Editor | null {
   const editor = useTiptapEditor({
     extensions: [
@@ -54,8 +55,7 @@ export function useEditor(
             ...this.parent?.(),
             backgroundColor: {
               default: null,
-              parseHTML: (element) =>
-                element.style.backgroundColor || null,
+              parseHTML: (element) => element.style.backgroundColor || null,
               renderHTML: (attributes) => {
                 if (!attributes.backgroundColor) {
                   return {}
@@ -77,11 +77,12 @@ export function useEditor(
         types: ["heading", "paragraph"],
       }),
     ],
-    content: format === "html" 
-      ? (initialContent && /<[a-z][\s\S]*?>/i.test(initialContent.trim()) 
-          ? initialContent 
-          : markdownToHtml(initialContent || "")) || "<p></p>"
-      : markdownToHtml(initialContent || "") || "<p></p>",
+    content:
+      format === "html"
+        ? (initialContent && /<[a-z][\s\S]*?>/i.test(initialContent.trim())
+            ? initialContent
+            : markdownToHtml(initialContent || "")) || "<p></p>"
+        : markdownToHtml(initialContent || "") || "<p></p>",
     editorProps: {
       attributes: {
         class: "focus:outline-none",
@@ -93,6 +94,20 @@ export function useEditor(
         if ($from.parent.type.name !== "paragraph") return false
 
         return editor?.commands.setHardBreak() ?? false
+      },
+      handlePaste: (view, event) => {
+        if (format !== "html") return false
+
+        const clipboard = event.clipboardData
+        const html = clipboard?.getData("text/html")?.trim()
+        const plainText = clipboard?.getData("text/plain")?.trim()
+        const pastedHtml = html || plainText
+        if (!pastedHtml || !/<[a-z][\s\S]*?>/i.test(pastedHtml)) return false
+
+        event.preventDefault()
+        onHtmlPaste?.(pastedHtml)
+        editor?.commands.setContent(pastedHtml, { emitUpdate: false })
+        return true
       },
     },
   })
@@ -228,7 +243,7 @@ export function setEditorContent(
     const html = /<[a-z][\s\S]*?>/i.test(content.trim())
       ? content
       : markdownToHtml(content)
-    editor.commands.setContent(html || "<p></p>")
+    editor.commands.setContent(html || "<p></p>", { emitUpdate: true })
     return
   }
   setMarkdownContent(editor, content)

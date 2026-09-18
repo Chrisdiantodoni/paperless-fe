@@ -40,10 +40,20 @@ import { ImageUploadDialog } from "./ImageUploadDialog"
 import type { EditorOutputFormat } from "@workspace/ui/hooks/useEditor"
 import {
   getEditorContent,
-  setMarkdownContent,
+  setEditorContent,
 } from "@workspace/ui/hooks/useEditor"
 import { Button } from "../ui/button"
 import { Separator } from "../ui/separator"
+import { Textarea } from "../ui/textarea"
+import { Label } from "../ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog"
 import { useEditorState } from "@tiptap/react"
 
 interface EditorToolbarProps {
@@ -62,6 +72,8 @@ export function EditorToolbar({
   const [linkOpen, setLinkOpen] = useState(false)
   const [tableOpen, setTableOpen] = useState(false)
   const [imageOpen, setImageOpen] = useState(false)
+  const [htmlOpen, setHtmlOpen] = useState(false)
+  const [htmlContent, setHtmlContent] = useState("")
   const [textColor, setTextColor] = useState("#000000")
 
   useEditorState({
@@ -105,11 +117,11 @@ export function EditorToolbar({
     navigator.clipboard.writeText(content)
   }
 
-  const handleImportMarkdown = () => {
-    const markdown = prompt("Paste your markdown:")
-    if (markdown) {
-      setMarkdownContent(editor, markdown)
-    }
+  const handleImportHtml = () => {
+    if (!htmlContent.trim()) return
+    setEditorContent(editor, htmlContent, "html")
+    setHtmlContent("")
+    setHtmlOpen(false)
   }
 
   const handleTextColorChange = (color: string) => {
@@ -542,10 +554,16 @@ export function EditorToolbar({
                 Delete column
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem disabled={!inTable} onSelect={handleAddRowBefore}>
+              <DropdownMenuItem
+                disabled={!inTable}
+                onSelect={handleAddRowBefore}
+              >
                 Add row before
               </DropdownMenuItem>
-              <DropdownMenuItem disabled={!inTable} onSelect={handleAddRowAfter}>
+              <DropdownMenuItem
+                disabled={!inTable}
+                onSelect={handleAddRowAfter}
+              >
                 Add row after
               </DropdownMenuItem>
               <DropdownMenuItem disabled={!inTable} onSelect={handleDeleteRow}>
@@ -595,27 +613,38 @@ export function EditorToolbar({
                   const transaction = state.tr
                   let modified = false
 
-                  state.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
-                    if (node.type === cells || node.type === headers) {
-                      const attrs = { ...node.attrs }
-                      delete attrs.colwidth
-                      transaction.setNodeMarkup(pos, undefined, attrs)
-                      modified = true
+                  state.doc.nodesBetween(
+                    selection.from,
+                    selection.to,
+                    (node, pos) => {
+                      if (node.type === cells || node.type === headers) {
+                        const attrs = { ...node.attrs }
+                        delete attrs.colwidth
+                        transaction.setNodeMarkup(pos, undefined, attrs)
+                        modified = true
+                      }
                     }
-                  })
+                  )
 
                   if (!modified) {
                     let tableNode: any = null
                     let tablePos = 0
-                    state.doc.nodesBetween(0, state.doc.content.size, (node, pos) => {
-                      if (node.type.name === "table") {
-                        if (pos <= selection.from && pos + node.nodeSize >= selection.to) {
-                          tableNode = node
-                          tablePos = pos
-                          return false
+                    state.doc.nodesBetween(
+                      0,
+                      state.doc.content.size,
+                      (node, pos) => {
+                        if (node.type.name === "table") {
+                          if (
+                            pos <= selection.from &&
+                            pos + node.nodeSize >= selection.to
+                          ) {
+                            tableNode = node
+                            tablePos = pos
+                            return false
+                          }
                         }
                       }
-                    })
+                    )
 
                     if (tableNode) {
                       tableNode.descendants((node: any, pos: number) => {
@@ -623,7 +652,11 @@ export function EditorToolbar({
                         if (node.type === cells || node.type === headers) {
                           const attrs = { ...node.attrs }
                           delete attrs.colwidth
-                          transaction.setNodeMarkup(absolutePos, undefined, attrs)
+                          transaction.setNodeMarkup(
+                            absolutePos,
+                            undefined,
+                            attrs
+                          )
                         }
                       })
                     }
@@ -638,9 +671,16 @@ export function EditorToolbar({
               <DropdownMenuItem
                 disabled={!inTable}
                 onSelect={() => {
-                  const color = prompt("Cell background color (hex):", "#f3f4f6")
+                  const color = prompt(
+                    "Cell background color (hex):",
+                    "#f3f4f6"
+                  )
                   if (color) {
-                    editor.chain().focus().setCellAttribute("backgroundColor", color).run()
+                    editor
+                      .chain()
+                      .focus()
+                      .setCellAttribute("backgroundColor", color)
+                      .run()
                   }
                 }}
               >
@@ -692,13 +732,17 @@ export function EditorToolbar({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleExport("markdown")}>
-              Download as Markdown
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleCopy("markdown")}>
-              Copy Markdown
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
+            {format === "markdown" && (
+              <>
+                <DropdownMenuItem onClick={() => handleExport("markdown")}>
+                  Download as Markdown
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleCopy("markdown")}>
+                  Copy Markdown
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem onClick={() => handleExport("html")}>
               Download as HTML
             </DropdownMenuItem>
@@ -712,11 +756,57 @@ export function EditorToolbar({
           type="button"
           size="sm"
           variant="outline"
-          onClick={handleImportMarkdown}
-          title="Import Markdown"
+          onClick={() => setHtmlOpen(true)}
+          title="Import HTML"
         >
-          Import Markdown
+          Import HTML
         </Button>
+
+        <Dialog open={htmlOpen} onOpenChange={setHtmlOpen}>
+          <DialogContent className="max-h-[90vh] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+            <DialogHeader className="border-b bg-muted/30 px-6 py-5">
+              <DialogTitle>Import HTML</DialogTitle>
+              <DialogDescription>
+                Tempel kode HTML untuk mengganti isi editor.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="min-h-0 space-y-2 overflow-y-auto px-6 py-5">
+              <Label htmlFor="html-import">Kode HTML</Label>
+              <Textarea
+                id="html-import"
+                value={htmlContent}
+                onChange={(event) => setHtmlContent(event.target.value)}
+                placeholder={"<h1>Judul surat</h1>\n<p>Isi surat...</p>"}
+                className="max-h-[60vh] min-h-72 resize-y overflow-y-auto font-mono text-xs leading-relaxed"
+                spellCheck={false}
+                autoFocus
+              />
+              <p className="text-xs text-muted-foreground">
+                HTML akan dirender sebagai konten rich text. Script tidak akan
+                dijalankan.
+              </p>
+            </div>
+            <DialogFooter className="m-0 rounded-none px-6 py-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setHtmlContent("")
+                  setHtmlOpen(false)
+                }}
+              >
+                Batal
+              </Button>
+              <Button
+                type="button"
+                onClick={handleImportHtml}
+                disabled={!htmlContent.trim()}
+              >
+                Import HTML
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Preview Toggle */}
         <Button

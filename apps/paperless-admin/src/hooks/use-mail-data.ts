@@ -4,7 +4,7 @@ import { useState } from "react"
 export const useMailData = (search: ListRequestQueryMail) => {
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  const [status, setStatus] = useState("")
+  const [status, setStatus] = useState(search.status)
   const [page, setPage] = useState(1)
   const [approvalStatus, setApprovalStatus] = useState<
     Record<number, "Approved" | "Rejected">
