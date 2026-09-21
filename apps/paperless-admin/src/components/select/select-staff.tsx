@@ -16,19 +16,23 @@ import {
 import { Button } from "@workspace/ui/components/ui/button"
 import { Check, ChevronsUpDown, X } from "lucide-react"
 import { useStaffSearch } from "@/hooks/queries/use-staff"
-import type { SelectValue } from "@workspace/types"
+import type { IStaff, SelectValue } from "@workspace/types"
 
-function extractValue(val?: string | SelectValue): string {
+export type StaffSelectValue = SelectValue & {
+  staff: IStaff
+}
+
+function extractValue(val?: string | SelectValue | StaffSelectValue): string {
   return typeof val === "string" ? val : (val?.value ?? "")
 }
 
-function extractLabel(val?: string | SelectValue): string {
+function extractLabel(val?: string | SelectValue | StaffSelectValue): string {
   return typeof val === "object" ? val.label : ""
 }
 
 interface StaffComboboxProps {
-  value?: string | SelectValue
-  onChange: (value: SelectValue) => void
+  value?: string | SelectValue | StaffSelectValue
+  onChange: (value: StaffSelectValue | SelectValue) => void
   onBlur?: () => void
   invalid?: boolean
   error?: string
@@ -104,7 +108,7 @@ export function StaffCombobox({
                   }}
                   onClick={(e) => {
                     e.stopPropagation()
-                    onChange({ value: "", label: "" })
+                    onChange({ value: "", label: "", staff: {} as IStaff })
                   }}
                   className="flex size-4 items-center justify-center rounded-full text-muted-foreground/60 hover:bg-muted-foreground/20 hover:text-foreground"
                 >
@@ -145,10 +149,11 @@ export function StaffCombobox({
                         key={staff.id}
                         value={String(staff.user_account?.id ?? "")}
                         onSelect={() => {
-                          onChange({
-                            value: staff.user_account?.id ?? "",
-                            label: staffLabel,
-                          })
+onChange({
+                             value: staff.user_account?.id ?? "",
+                             label: staffLabel,
+                             staff,
+                           })
                           setOpen(false)
                         }}
                       >

@@ -13,7 +13,7 @@ export function EditorArea({ editor, className = "" }: EditorAreaProps) {
     >
       <EditorContent
         editor={editor}
-        className="max-h-[600px] min-h-80 overflow-y-auto px-4 py-3 text-sm text-foreground focus:outline-none"
+        className="max-h-[600px] min-h-80 overflow-y-auto px-4 py-3 text-sm text-foreground focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
       />
     </div>
   )

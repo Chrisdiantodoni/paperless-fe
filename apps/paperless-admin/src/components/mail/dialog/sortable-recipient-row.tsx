@@ -11,7 +11,7 @@ export interface EditableRecipientItem {
   user_id: string
   user_label?: string
   user_position?: string
-  recipient_type: "approver" | "to" | "cc"
+  recipient_type: "superior" | "to" | "cc"
   sequence: number
   locked?: boolean
 }

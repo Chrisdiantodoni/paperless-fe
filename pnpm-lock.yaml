@@ -96,6 +96,9 @@ importers:
       '@workspace/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      date-fns:
+        specifier: ^4.4.0
+        version: 4.4.0
       express:
         specifier: ^5.2.1
         version: 5.2.1

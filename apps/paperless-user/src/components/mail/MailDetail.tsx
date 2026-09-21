@@ -158,6 +158,16 @@ const getLogColor = (action: string) => {
   }
 }
 
+export const getStatusLabel = (status: string) =>
+  ({
+    approved: "Disetujui",
+    revision: "Revisi",
+    sent: "Terkirim",
+    rejected: "Ditolak",
+    pending: "Menunggu",
+    draft: "Draft",
+  })[status.toLowerCase()] ?? status
+
 export const getBadgeClass = (status?: string) => {
   switch (status?.toLowerCase()) {
     case "approved":
@@ -187,9 +197,9 @@ function StatusBadge({
   return (
     <Badge
       variant="outline"
-      className={`text-xs font-medium capitalize ${getBadgeClass(status)} ${className}`}
+      className={`text-xs font-medium ${getBadgeClass(status)} ${className}`}
     >
-      {status}
+      {getStatusLabel(status)}
     </Badge>
   )
 }
@@ -338,6 +348,8 @@ export function MailDetail({
   onClose,
   showCloseButton = false,
 }: MailDetailProps) {
+  const { data: userData } = useUser()
+
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
@@ -422,8 +434,7 @@ export function MailDetail({
   const isSendable = detail.status.toLowerCase() === "draft"
   const isSendMail = detail.status.toLowerCase() === "sent"
 
-  const { data: userData } = useUser()
-  const currentUserId = userData.hris_user_id || ""
+  const currentUserId = userData?.hris_user_id || ""
   const isCurrentUser = senderUserId === currentUserId
 
   const approverStatus = getApproverStatus(

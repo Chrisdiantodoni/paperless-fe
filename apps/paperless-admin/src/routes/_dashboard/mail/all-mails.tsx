@@ -5,11 +5,11 @@ import { MailList } from "@/components/mail/mail-list"
 import {
   mailKeys,
   mailListQueryOptions,
+  useEditMailRecipient,
   useMailDetail,
   useMailList,
 } from "@/hooks/queries/use-mail"
 import { useUser } from "@/hooks/queries/use-user"
-import { useDebounce } from "@/hooks/use-debounce"
 import { useMailData } from "@/hooks/use-mail-data"
 import { listRequestQuerySchema } from "@/schema/mail/schema"
 import { isMailReadByUser } from "@/utils/mail-helpers"
@@ -18,7 +18,10 @@ import { createFileRoute } from "@tanstack/react-router"
 import { zodValidator } from "@tanstack/zod-adapter"
 import type { AllMailProps } from "@workspace/types/mail"
 import { PageWrapper } from "@workspace/ui/components/page-wrapper"
+import { Button } from "@workspace/ui/components/ui/button"
+import { useSidebar } from "@workspace/ui/components/ui/sidebar"
 import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
 export const Route = createFileRoute("/_dashboard/mail/all-mails")({
   validateSearch: zodValidator(listRequestQuerySchema),
@@ -32,6 +35,11 @@ export const Route = createFileRoute("/_dashboard/mail/all-mails")({
 
 function RouteComponent() {
   const search = Route.useSearch()
+  const { setOpen } = useSidebar()
+
+  useEffect(() => {
+    setOpen(false)
+  }, [setOpen])
   const navigate = Route.useNavigate()
 
   const filters: MailFilterState = {
@@ -92,18 +100,28 @@ function RouteComponent() {
   const {
     data: mailPagination,
     isFetching,
+    isError: isListError,
+    error: listError,
     refetch,
   } = useMailList(listSearch, page === search.page ? initialData! : undefined)
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setRefreshing(true)
-    refetch()
-    setRefreshing(false)
+    try {
+      const result = await refetch()
+      if (result.isError) toast.error("Gagal memuat ulang daftar surat")
+    } finally {
+      setRefreshing(false)
+    }
   }
 
-  const { data: mailDetail, isLoading: isLoadingDetail } = useMailDetail(
-    selectedId!
-  )
+  const {
+    data: mailDetail,
+    isLoading: isLoadingDetail,
+    isError: isDetailError,
+    error: detailError,
+    refetch: refetchDetail,
+  } = useMailDetail(selectedId!)
 
   const queryClient = useQueryClient()
 
@@ -124,37 +142,32 @@ function RouteComponent() {
   }
 
   const handleMailClick = async (id: string) => {
-    queryClient.refetchQueries({ queryKey: mailKeys.detail(id) })
+    await queryClient.refetchQueries({ queryKey: mailKeys.detail(id) })
     setSelectedId(id)
     setShowDetail(true)
     setLocalReadIds((prev) => new Set(prev).add(id))
   }
 
-  const handleCancelRecipient = (recipientId: string) => {
-    console.log("Batal Aksi", selectedId, recipientId)
-  }
+  const { mutateAsync: editRecipients } = useEditMailRecipient()
 
-  const handleApproveOnBehalf = (recipientId: string) => {
-    console.log("Setujui Atas Nama", selectedId, recipientId)
-  }
-
-  const handleEditRecipients = (payload: {
+  const handleEditRecipients = async (payload: {
     recipients: {
       user_id: string
-      recipient_type: "approver" | "cc" | "to"
+      recipient_type: "cc" | "to"
       sequence: number
     }[]
   }) => {
-    console.log("Edit Recipients", selectedId, payload)
+    await editRecipients({ id: selectedId!, body: payload.recipients })
   }
 
   return (
-    <main className="flex h-screen flex-col bg-background text-foreground">
-      <PageWrapper className="mx-2 flex min-h-0 flex-1 flex-col space-y-6 px-2 py-4 sm:px-2 lg:px-0">
+    <main className="flex min-h-0 flex-1 flex-col bg-background text-foreground">
+      <PageWrapper className="mx-2 flex min-h-0 flex-1 flex-col space-y-2 px-2 py-2 sm:px-2 lg:px-0">
         <MailHeader
           onRefresh={handleRefresh}
           onFiltersChange={handleFiltersChange}
           filterValue={filters}
+          searchValue={search.search}
           refreshing={refreshing}
         />
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-stretch">
@@ -163,28 +176,52 @@ function RouteComponent() {
               showDetail ? "hidden" : "flex flex-col"
             }`}
           >
-            <MailList
-              isLoading={isFetching}
-              pageCount={mailPagination?.last_page || 1}
-              pageSize={mailPagination?.per_page || 10}
-              mails={mailPagination!}
-              page={page}
-              selectedId={selectedId}
-              currentUserId={currentUserId}
-              localReadIds={localReadIds}
-              onPageChange={handlePageChange}
-              onItemClick={handleMailClick}
-            />
+            {isListError ? (
+              <div role="alert" className="m-auto space-y-3 p-6 text-center">
+                <p className="text-sm text-destructive">
+                  {listError.message || "Gagal memuat daftar surat"}
+                </p>
+                <Button variant="outline" size="sm" onClick={() => refetch()}>
+                  Coba Lagi
+                </Button>
+              </div>
+            ) : (
+              <MailList
+                isLoading={isFetching}
+                pageCount={mailPagination?.last_page || 1}
+                pageSize={mailPagination?.per_page || 10}
+                mails={mailPagination!}
+                page={page}
+                selectedId={selectedId}
+                currentUserId={currentUserId}
+                localReadIds={localReadIds}
+                onPageChange={handlePageChange}
+                onItemClick={handleMailClick}
+              />
+            )}
           </div>
           <article
             className={`min-h-0 flex-1 lg:block ${showDetail ? "block" : "hidden"}`}
           >
-            {selectedId ? (
+            {selectedId && isDetailError ? (
+              <div role="alert" className="m-auto space-y-3 p-6 text-center">
+                <p className="text-sm text-destructive">
+                  {detailError.message || "Gagal memuat detail surat"}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetchDetail()}
+                >
+                  Coba Lagi
+                </Button>
+              </div>
+            ) : selectedId ? (
               <MailDetail
-                detail={mailDetail}
+                detail={mailDetail ?? undefined}
                 isLoading={isLoadingDetail}
-                onCancelRecipient={handleCancelRecipient}
-                onApproveOnBehalf={handleApproveOnBehalf}
+                showCloseButton
+                onClose={() => setShowDetail(false)}
                 onEditRecipients={handleEditRecipients}
               />
             ) : (

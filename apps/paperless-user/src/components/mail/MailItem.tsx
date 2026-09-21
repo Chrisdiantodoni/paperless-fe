@@ -4,7 +4,7 @@ import type { AllMailProps } from "@workspace/types/mail"
 import { getInitials } from "@workspace/ui/lib/utils"
 import { formatDate, getRequestTypeLabel } from "@workspace/utils"
 import { isMailReadByUser } from "@/utils/mail-helpers"
-import { getBadgeClass } from "./MailDetail"
+import { getBadgeClass, getStatusLabel } from "./MailDetail"
 
 export interface MailItemProps {
   mail: AllMailProps
@@ -90,7 +90,7 @@ export function MailItem({
                 mail.status
               )}`}
             >
-              {mail.status}
+              {getStatusLabel(mail.status)}
             </Badge>
 
             <span className="font-mono text-[11px] text-muted-foreground">

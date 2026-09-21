@@ -56,8 +56,12 @@ const emptyCcRecipient: RecipientItem = {
 
 interface FieldOptions {
   branchOptions: { value: string; label: string; regions: string }[]
-  departmentOptions: { value: string; label: string }[]
-  positionOptions: { value: string; label: string }[]
+  departmentOptions: {
+    value: string
+    label: string
+    dept_category: string
+  }[]
+  positionOptions: { value: string; label: string; category: string }[]
 }
 
 // ---------------------------------------------------------------------------
@@ -194,7 +198,7 @@ const EmailPreview = memo(function EmailPreview({
                     const branch = options.branchOptions.find(
                       (b) => b.value === item.value
                     )
-                    return branch?.region ?? "Lainnya"
+                    return branch?.regions ?? "Lainnya"
                   }}
                 />
               ) : (
@@ -417,6 +421,7 @@ const TemplateFormFields = memo(function TemplateFormFields({
                 form={form}
                 name="recipients"
                 label="Penerima"
+                sortable
                 defaultItem={() => ({ ...emptyRecipient })}
                 renderItem={(index) => (
                   <form.Field name={`recipients[${index}].user_id`}>
@@ -455,6 +460,7 @@ const TemplateFormFields = memo(function TemplateFormFields({
                 form={form}
                 name="recipients_cc"
                 label="Tembusan"
+                sortable
                 defaultItem={() => ({ ...emptyCcRecipient })}
                 renderItem={(index) => (
                   <form.Field name={`recipients_cc[${index}].user_id`}>

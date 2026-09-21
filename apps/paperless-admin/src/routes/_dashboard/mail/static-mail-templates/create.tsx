@@ -1,6 +1,6 @@
 import { StaticMailTemplateForm } from "@/components/forms/static-mail-template"
 import { getBranches, getDepartments, getPositions } from "@/server/master"
-import { createFileRoute, useRouter } from "@tanstack/react-router"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
   Card,
@@ -32,7 +32,7 @@ export const Route = createFileRoute(
 })
 
 function RouteComponent() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { branches, departments, positions } = Route.useLoaderData()
   return (
     <div className="container mx-auto max-w-7xl space-y-6 p-4 md:p-6">
@@ -41,7 +41,24 @@ function RouteComponent() {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => router.history.back()}
+          aria-label="Kembali ke daftar template"
+          onClick={() =>
+            navigate({
+              to: "/mail/static-mail-templates",
+              search: {
+                page: 1,
+                search: "",
+                per_page: 10,
+                branch_id: "",
+                branch_label: "",
+                department_id: "",
+                department_label: "",
+                position_id: "",
+                position_label: "",
+                is_active: "",
+              },
+            })
+          }
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>

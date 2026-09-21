@@ -1,9 +1,9 @@
-// app/components/data-table.tsx
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+import { useEffect, useRef, useState } from "react"
 import {
   Table,
   TableBody,
@@ -18,7 +18,7 @@ import type { ColumnDef } from "@tanstack/react-table"
 interface DataTableProps<TData, TValue> {
   columns: Array<ColumnDef<TData, TValue>>
   data: Array<TData>
-  isFetching?: boolean // Tambahkan prop penanda refetching
+  isFetching?: boolean
 }
 
 export function DataTable<TData, TValue>({
@@ -31,61 +31,74 @@ export function DataTable<TData, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
+  const wasFetching = useRef(isFetching)
+  const [status, setStatus] = useState(isFetching ? "Memuat data." : "")
+
+  useEffect(() => {
+    if (isFetching) setStatus("Memuat data.")
+    else if (wasFetching.current) setStatus("Data selesai dimuat.")
+    wasFetching.current = isFetching
+  }, [isFetching])
 
   return (
-    <Table className="relative overflow-hidden">
-      <TableHeader>
-        {table.getHeaderGroups().map((headerGroup) => (
-          <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => (
-              <TableHead key={header.id}>
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-              </TableHead>
-            ))}
-          </TableRow>
-        ))}
-      </TableHeader>
-
-      {/* Tambahkan transisi halus saat fetching latar belakang terjadi */}
-      <TableBody
-        className={
-          isFetching
-            ? "pointer-events-none opacity-40 transition-opacity duration-200"
-            : "transition-opacity duration-200"
-        }
-      >
-        {/* HANYA RENDER DATA LAMA JIKA TIDAK SEDANG FETCHING */}
-        {!isFetching && table.getRowModel().rows.length ? (
-          table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
+    <div
+      className="relative overflow-x-auto rounded-md border"
+      aria-busy={isFetching}
+    >
+      <span className="sr-only" role="status" aria-live="polite">
+        {status}
+      </span>
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </TableHead>
               ))}
             </TableRow>
-          ))
-        ) : !isFetching ? (
-          <TableRow>
-            <TableCell colSpan={columns.length} className="h-24 text-center">
-              Tidak ada data.
-            </TableCell>
-          </TableRow>
-        ) : null}
+          ))}
+        </TableHeader>
 
-        {/* JIKA SEDANG FETCHING, HANYA RENDER SKELETON (Tinggi tabel terjaga) */}
-        {isFetching && (
-          <DataTableSkeleton
-            columnCount={columns.length}
-            rowCount={data.length || 5} // Menyesuaikan jumlah baris halaman sebelumnya
-          />
-        )}
-      </TableBody>
-    </Table>
+        <TableBody
+          className={
+            isFetching
+              ? "pointer-events-none opacity-40 transition-opacity duration-200"
+              : "transition-opacity duration-200"
+          }
+        >
+          {table.getRowModel().rows.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : !isFetching ? (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                Tidak ada data.
+              </TableCell>
+            </TableRow>
+          ) : null}
+
+          {isFetching && !table.getRowModel().rows.length && (
+            <DataTableSkeleton
+              columnCount={columns.length}
+              rowCount={data.length || 5}
+            />
+          )}
+        </TableBody>
+      </Table>
+    </div>
   )
 }

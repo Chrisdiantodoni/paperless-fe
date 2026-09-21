@@ -27,6 +27,7 @@ export default function StaticMailTemplateDetail({
 }: {
   data: StaticMailTemplate
 }) {
+  const isActive = String(data.is_active) === "true"
   const toRecipients = data.recipients
     .filter((r) => r.recipient_type === "to")
     .sort((a, b) => a.sequence - b.sequence)
@@ -59,7 +60,7 @@ export default function StaticMailTemplateDetail({
     [ccRecipients]
   )
   return (
-    <Card className="min-w-5xl shadow-sm">
+    <Card className="w-full min-w-0 shadow-sm">
       {/* HEADER */}
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -70,10 +71,10 @@ export default function StaticMailTemplateDetail({
                 {data.type}
               </Badge>
               <Badge
-                variant={data.is_active ? "default" : "secondary"}
+                variant={isActive ? "default" : "secondary"}
                 className="text-xs"
               >
-                {data.is_active ? "Active" : "Inactive"}
+                {isActive ? "Aktif" : "Tidak Aktif"}
               </Badge>
             </div>
             {data.description && (
@@ -97,7 +98,7 @@ export default function StaticMailTemplateDetail({
 
       <CardContent className="space-y-8">
         {/* INFORMASI UMUM */}
-        <div className="grid grid-cols-2 gap-6 rounded-lg border bg-muted/30 p-4">
+        <div className="grid grid-cols-1 gap-6 rounded-lg border bg-muted/30 p-4 sm:grid-cols-2">
           <div>
             <p className="mb-1 text-sm font-medium text-muted-foreground">
               Kode Template

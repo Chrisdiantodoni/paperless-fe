@@ -44,6 +44,7 @@ export function SearchInput({
     <div className={`relative w-full lg:max-w-sm ${className ?? ""} h-8`}>
       <Search className="absolute top-2 left-2.5 h-4 w-4 text-muted-foreground" />
       <Input
+        aria-label={placeholder || "Cari"}
         className="pl-8"
         placeholder={placeholder}
         value={internalValue}

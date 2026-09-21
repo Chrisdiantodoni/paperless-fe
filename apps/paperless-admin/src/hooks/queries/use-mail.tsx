@@ -7,6 +7,7 @@ import type {
 import {
   approvalMail,
   cancelMail,
+  editMailRecipient,
   getMailDetail,
   getMailList,
 } from "@/server/mail"
@@ -40,7 +41,8 @@ export const mailListQueryOptions = (
     queryKey: mailKeys.list(search),
     queryFn: async () => {
       const result = await getMailList({ data: search })
-      return result.success ? result.data : null
+      if (!result.success) throw new Error(result.error)
+      return result.data
     },
     placeholderData: keepPreviousData,
     staleTime: 30_000,
@@ -53,8 +55,10 @@ export const mailDetailQueryOptions = (id: string) => {
     queryKey: mailKeys.detail(id),
     queryFn: async () => {
       const result = await getMailDetail({ data: id })
-      return result.success ? result.data : null
+      if (!result.success) throw new Error(result.error)
+      return result.data
     },
+    enabled: Boolean(id),
   })
 }
 
@@ -100,6 +104,33 @@ export function useCancel() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: mailKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: mailKeys.detail(variables.id) })
+    },
+  })
+}
+
+export const useEditMailRecipient = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      body,
+    }: {
+      id: string
+      body: Array<{
+        user_id: string
+        recipient_type: "to" | "cc"
+        sequence: number
+      }>
+    }) => {
+      const response = await editMailRecipient({ data: { id, body } })
+      if (!response.success) {
+        throw new Error(response.error)
+      }
+      return response
+    },
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: mailKeys.detail(variables.id) })
     },
   })

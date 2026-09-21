@@ -6,7 +6,7 @@ export const Route = createFileRoute("/_dashboard/mail")({
 
 function RouteComponent() {
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="flex min-h-0 flex-1 bg-background text-foreground">
       <div className="min-w-0 flex-1">
         <Outlet />
       </div>

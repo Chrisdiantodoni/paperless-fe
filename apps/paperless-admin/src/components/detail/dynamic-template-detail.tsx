@@ -28,6 +28,7 @@ export default function DynamicTemplateDetail({
 }: {
   data: IDynamicMailTemplate
 }) {
+  const isActive = String(data.is_active) === "true"
   const recipients = data?.recipients ?? []
 
   const toRecipients = recipients
@@ -39,7 +40,7 @@ export default function DynamicTemplateDetail({
     .sort((a, b) => a.sequence - b.sequence)
 
   return (
-    <Card className="min-w-5xl shadow-sm">
+    <Card className="w-full min-w-0 shadow-sm">
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1.5">
@@ -51,10 +52,10 @@ export default function DynamicTemplateDetail({
                 </Badge>
               )}
               <Badge
-                variant={data.is_active ? "default" : "secondary"}
+                variant={isActive ? "default" : "secondary"}
                 className="text-xs"
               >
-                {data.is_active ? "Active" : "Inactive"}
+                {isActive ? "Aktif" : "Tidak Aktif"}
               </Badge>
             </div>
             {data.description && (

@@ -32,6 +32,7 @@ export interface MailFilterState {
 interface MailHeaderProps {
   onFiltersChange: (filters: MailFilterState) => void
   filterValue: MailFilterState
+  searchValue?: string
   refreshing: boolean
   onRefresh: () => void
 }
@@ -41,7 +42,7 @@ const REQUEST_TYPES = getRequestTypeOptions()
 const STATUS_OPTIONS = [
   { value: "Draft", label: "Draft", dot: "bg-muted" },
   { value: "Sent", label: "Terkirim", dot: "bg-blue-500" },
-  { value: "Revision", label: "Revisi", dot: "bg-blue-500" },
+  { value: "Revision", label: "Revisi", dot: "bg-orange-500" },
   { value: "Approved", label: "Disetujui", dot: "bg-emerald-500" },
   { value: "Rejected", label: "Ditolak", dot: "bg-rose-500" },
 ]
@@ -54,13 +55,14 @@ const SORT_OPTIONS = [
 
 export default function MailHeader({
   filterValue,
+  searchValue = "",
   onFiltersChange,
   refreshing,
   onRefresh,
 }: MailHeaderProps) {
   const navigate = useNavigate({ from: "/mail/all-mails" })
   const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState("")
+  const [search, setSearch] = useState(searchValue)
   const debouncedSearchValue = useDebounce(search, 500)
 
   useEffect(() => {
@@ -71,9 +73,13 @@ export default function MailHeader({
         page: 1,
       }),
     })
-  }, [debouncedSearchValue])
+  }, [debouncedSearchValue, navigate])
+
+  useEffect(() => setSearch(searchValue), [searchValue])
 
   const [filters, setFilters] = useState<MailFilterState>(filterValue)
+
+  useEffect(() => setFilters(filterValue), [filterValue])
 
   const applyFilters = (next: MailFilterState) => {
     setFilters(next)
@@ -96,7 +102,10 @@ export default function MailHeader({
 
   return (
     <div className="border-border bg-card py-2">
-      <PageHeader title="All Mail" description="Kelola semua surat yang ada" />
+      <PageHeader
+        title="Semua Mail"
+        description="Kelola semua surat yang ada"
+      />
 
       <header className="flex flex-col gap-4 border-b bg-background p-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="hidden lg:block" />
@@ -105,6 +114,7 @@ export default function MailHeader({
             <Search className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
+              aria-label="Cari surat"
               placeholder="Cari surat, orang, atau dokumen..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -192,29 +202,47 @@ export default function MailHeader({
                   <p className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
                     Rentang Tanggal
                   </p>
-                  <div className="flex gap-2">
-                    <Input
-                      type="date"
-                      value={filters.start_date ?? ""}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          start_date: e.target.value || undefined,
-                        }))
-                      }
-                      className="h-8"
-                    />
-                    <Input
-                      type="date"
-                      value={filters.end_date ?? ""}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          end_date: e.target.value || undefined,
-                        }))
-                      }
-                      className="h-8"
-                    />
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <label
+                        htmlFor="mail-start-date"
+                        className="text-xs text-muted-foreground"
+                      >
+                        Dari
+                      </label>
+                      <Input
+                        id="mail-start-date"
+                        type="date"
+                        value={filters.start_date ?? ""}
+                        onChange={(e) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            start_date: e.target.value || undefined,
+                          }))
+                        }
+                        className="h-8"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label
+                        htmlFor="mail-end-date"
+                        className="text-xs text-muted-foreground"
+                      >
+                        Sampai
+                      </label>
+                      <Input
+                        id="mail-end-date"
+                        type="date"
+                        value={filters.end_date ?? ""}
+                        onChange={(e) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            end_date: e.target.value || undefined,
+                          }))
+                        }
+                        className="h-8"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -272,7 +300,7 @@ export default function MailHeader({
                   <Button variant="ghost" size="sm" onClick={resetFilters}>
                     Reset
                   </Button>
-                  <Button size="sm" onClick={() => applyFilters(filterValue)}>
+                  <Button size="sm" onClick={() => applyFilters(filters)}>
                     Terapkan
                   </Button>
                 </div>
@@ -285,6 +313,7 @@ export default function MailHeader({
             onClick={onRefresh}
             disabled={refreshing}
             className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
+            aria-label="Muat ulang surat"
             title="Muat ulang surat"
           >
             <RefreshCw

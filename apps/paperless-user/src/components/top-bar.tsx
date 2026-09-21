@@ -40,7 +40,9 @@ import {
   useNotifications,
 } from "@/hooks/queries/use-notifications"
 import { useUser } from "@/hooks/queries/use-user"
-import { Loader2, Loader2Icon } from "lucide-react"
+import { Loader2 } from "lucide-react"
+import { ListIcon } from "@phosphor-icons/react"
+import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
 
 interface TopBarProps {
   user?: UserData
@@ -55,6 +57,7 @@ export function TopBar({ user, sidebar }: TopBarProps) {
   const markAllRead = useMarkAllNotificationsAsRead()
   const deleteNotification = useDeleteNotification()
   const deleteAllNotifications = useDeleteAllNotifications()
+  const confirm = useConfirm()
   const notifications =
     notificationsQuery.data?.pages.flatMap((page) => page.data) ?? []
   const unreadCount = Number(data.unread_count ?? 0)
@@ -178,7 +181,47 @@ export function TopBar({ user, sidebar }: TopBarProps) {
               )
             })}
           </nav>
-          <div className="min-w-0 lg:hidden">
+          <div className="flex min-w-0 items-center gap-1 lg:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Buka navigasi utama"
+                >
+                  <ListIcon size={20} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuLabel>Navigasi utama</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {sidebar.flatMap((item) =>
+                  item.children?.length
+                    ? item.children.map((child) => (
+                        <DropdownMenuItem key={child.title} asChild>
+                          <Link
+                            to={child.url}
+                            activeOptions={child.activeOptions}
+                          >
+                            {child.title}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))
+                    : item.title && item.url
+                      ? [
+                          <DropdownMenuItem key={item.title} asChild>
+                            <Link
+                              to={item.url}
+                              activeOptions={item.activeOptions}
+                            >
+                              {item.title}
+                            </Link>
+                          </DropdownMenuItem>,
+                        ]
+                      : []
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <DynamicBreadcrumb sidebar={sidebar} />
           </div>
         </div>
@@ -202,10 +245,13 @@ export function TopBar({ user, sidebar }: TopBarProps) {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-96 p-0">
+            <DropdownMenuContent
+              align="end"
+              className="w-[calc(100vw-2rem)] max-w-96 p-0"
+            >
               <div className="flex items-center justify-between px-4 py-3">
                 <DropdownMenuLabel className="p-0 font-semibold">
-                  Notifications
+                  Notifikasi
                 </DropdownMenuLabel>
                 <div className="flex items-center gap-1">
                   {unreadCount > 0 && (
@@ -216,7 +262,10 @@ export function TopBar({ user, sidebar }: TopBarProps) {
                       disabled={markAllRead.isPending}
                       onClick={() => markAllRead.mutate()}
                     >
-                      Mark all read
+                      {markAllRead.isPending && (
+                        <Loader2 size={14} className="animate-spin" />
+                      )}
+                      {markAllRead.isPending ? "Menandai..." : "Tandai dibaca"}
                     </Button>
                   )}
                   {notifications.length > 0 && (
@@ -225,9 +274,18 @@ export function TopBar({ user, sidebar }: TopBarProps) {
                       size="sm"
                       className="h-7 px-2 text-xs text-destructive hover:text-destructive"
                       disabled={deleteAllNotifications.isPending}
-                      onClick={() => deleteAllNotifications.mutate()}
+                      onClick={async () => {
+                        if (
+                          await confirm({
+                            title: "Hapus Semua Notifikasi",
+                            description:
+                              "Semua notifikasi akan dihapus secara permanen.",
+                          })
+                        )
+                          deleteAllNotifications.mutate()
+                      }}
                     >
-                      Delete all
+                      Hapus semua
                     </Button>
                   )}
                 </div>
@@ -236,13 +294,26 @@ export function TopBar({ user, sidebar }: TopBarProps) {
               <div className="max-h-96 overflow-y-auto">
                 {notificationsQuery.isPending && (
                   <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-                    Loading notifications...
+                    Memuat notifikasi...
+                  </div>
+                )}
+                {notificationsQuery.isError && (
+                  <div className="space-y-3 px-4 py-8 text-center text-sm text-muted-foreground">
+                    <p>Notifikasi gagal dimuat.</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => notificationsQuery.refetch()}
+                    >
+                      Coba lagi
+                    </Button>
                   </div>
                 )}
                 {!notificationsQuery.isPending &&
+                  !notificationsQuery.isError &&
                   notifications.length === 0 && (
                     <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-                      No notifications yet
+                      Belum ada notifikasi
                     </div>
                   )}
                 {Object.entries(groupedNotifications).map(
@@ -287,20 +358,29 @@ export function TopBar({ user, sidebar }: TopBarProps) {
                             </div>
                           </button>
                           <Button
-                             type="button"
-                             variant="ghost"
-                             size="icon"
-
-                            className="h-8 w-8 shrink-0 rounded-full text-destructive opacity-0 transition-colors group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive focus-visible:bg-destructive/10 focus-visible:text-destructive focus-visible:opacity-100"
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 shrink-0 rounded-full text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:bg-destructive/10 focus-visible:text-destructive sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
                             aria-label="Hapus notifikasi"
-                            disabled={deleteNotification.isPending}
-                             onClick={(e) => {
-                               e.stopPropagation()
-                              deleteNotification.mutate(notification.id)
+                            disabled={
+                              deleteNotification.isPending &&
+                              deleteNotification.variables === notification.id
+                            }
+                            onClick={async (e) => {
+                              e.stopPropagation()
+                              if (
+                                await confirm({
+                                  title: "Hapus Notifikasi",
+                                  description:
+                                    "Notifikasi ini akan dihapus secara permanen.",
+                                })
+                              )
+                                deleteNotification.mutate(notification.id)
                             }}
                           >
-
-                            {deleteNotification.isPending ? (
+                            {deleteNotification.isPending &&
+                            deleteNotification.variables === notification.id ? (
                               <Loader2 size={15} className="animate-spin" />
                             ) : (
                               <TrashIcon size={15} />

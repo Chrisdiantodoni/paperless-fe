@@ -34,7 +34,11 @@ export function ActionCell({ rowData }: { rowData: DynamicMailTemplateRow }) {
   return (
     <div className="flex flex-row gap-1">
       <Button asChild variant="ghost" size="sm">
-        <Link to="/mail/dynamic-mail-templates/$id" params={{ id: rowData.id }}>
+        <Link
+          to="/mail/dynamic-mail-templates/$id"
+          params={{ id: rowData.id }}
+          aria-label={`Lihat template ${rowData.name}`}
+        >
           <Eye className="h-4 w-4" />
         </Link>
       </Button>
@@ -43,13 +47,19 @@ export function ActionCell({ rowData }: { rowData: DynamicMailTemplateRow }) {
         <Link
           to="/mail/dynamic-mail-templates/$id/edit"
           params={{ id: rowData.id }}
+          aria-label={`Edit template ${rowData.name}`}
         >
           <Pencil className="h-4 w-4" />
         </Link>
       </Button>
 
       {/* Gunakan Button biasa dengan onClick, jangan dibungkus <Link> */}
-      <Button variant="ghost" size="sm" onClick={handleDelete}>
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label={`Hapus template ${rowData.name}`}
+        onClick={handleDelete}
+      >
         <Trash className="h-4 w-4 text-red-500" />
       </Button>
     </div>
@@ -90,14 +100,11 @@ export const columns: ColumnDef<DynamicMailTemplateRow>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      console.log(row)
-      const statusLabel =
-        row.original.is_active === true ? "Aktif" : "Tidak Aktif"
+      const isActive = String(row.original.is_active) === "true"
+      const statusLabel = isActive ? "Aktif" : "Tidak Aktif"
       return (
         <Badge
-          variant={
-            row.original.is_active === true ? "secondary" : "destructive"
-          }
+          variant={isActive ? "secondary" : "destructive"}
           className="rounded-md"
         >
           {statusLabel}

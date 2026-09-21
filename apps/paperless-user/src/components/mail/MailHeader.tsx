@@ -52,7 +52,7 @@ export interface MailHeaderProps {
 }
 
 const NAV_ITEMS: { value: MailNav; label: string; icon: typeof Inbox }[] = [
-  { value: "all", label: "Semua Mail", icon: Inbox },
+  { value: "all", label: "Semua Surat", icon: Inbox },
   { value: "sent", label: "Terkirim", icon: Send },
   { value: "draft", label: "Draft", icon: FileText },
 ]
@@ -106,49 +106,49 @@ export function MailHeader({
       filters.sort_dir,
     ].filter(Boolean).length + (filters.start_date || filters.end_date ? 1 : 0)
 
-  const activeLabel =
-    NAV_ITEMS.find((item) => item.value === activeNav)?.label ?? "Semua Surat"
-
   return (
     <div className="border-border bg-card py-2">
       <PageHeader
-        title="Mail"
+        title="Surat"
         description="Kelola surat masuk, terkirim, dan draft"
       />
       <header className="flex flex-col gap-4 border-b bg-background p-4 lg:flex-row lg:items-center lg:justify-between">
-        {/* Left: Compose button & nav tabs */}
-        <div className="flex flex-wrap items-center gap-2">
-          <CreateMail />
-          <Button asChild className="gap-2 shadow-sm">
-            <Link to="/mail/user-mails/compose">
-              <Plus className="h-4 w-4" />
-              <span>Memo Internal</span>
-            </Link>
-          </Button>
-          <div className="mx-1 hidden h-4 w-[1px] bg-border sm:block" />
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="grid grid-cols-2 gap-2 sm:flex">
+            <CreateMail />
+            <Button asChild className="gap-2 shadow-sm">
+              <Link to="/mail/user-mails/compose">
+                <Plus className="h-4 w-4" />
+                <span>Memo Internal</span>
+              </Link>
+            </Button>
+          </div>
+          <div className="mx-1 hidden h-4 w-px bg-border sm:block" />
           <Tabs
             value={activeNav}
             onValueChange={(value) => onNavChange(value as MailNav)}
-            className="w-fit"
+            className="w-full sm:w-auto"
           >
-            <TabsList variant="default" className="h-9 gap-1 rounded-lg p-1">
+            <TabsList
+              variant="default"
+              className="grid h-9 w-full grid-cols-3 gap-1 rounded-lg p-1 sm:flex sm:w-auto"
+            >
               {NAV_ITEMS.map(({ value, label, icon: Icon }) => (
                 <TabsTrigger
                   key={value}
                   value={value}
                   aria-label={label}
-                  className="gap-2 px-3 text-xs font-medium"
+                  className="min-w-0 gap-1 px-2 text-xs font-medium sm:gap-2 sm:px-3"
                 >
-                  <Icon className="h-3.5 w-3.5" />
-                  {label}
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{label}</span>
                 </TabsTrigger>
               ))}
             </TabsList>
           </Tabs>
         </div>
 
-        {/* Right: Search bar & action/filter buttons */}
-        <div className="flex flex-1 items-center justify-end gap-2 lg:max-w-lg">
+        <div className="flex w-full items-center gap-2 lg:max-w-lg">
           <div className="relative flex-1">
             <Search className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input

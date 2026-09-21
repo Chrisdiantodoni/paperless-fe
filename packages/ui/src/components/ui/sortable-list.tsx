@@ -33,6 +33,7 @@ interface SortableListProps<T> {
     }
   ) => ReactNode
   disabled?: boolean
+  isItemDisabled?: (item: T) => boolean
   className?: string
 }
 
@@ -42,6 +43,7 @@ export function SortableList<T>({
   onReorder,
   renderItem,
   disabled = false,
+  isItemDisabled,
   className,
 }: SortableListProps<T>) {
   return (
@@ -55,7 +57,12 @@ export function SortableList<T>({
         {items.map((item, index) => {
           const id = getId(item)
           return (
-            <SortableItem key={id} id={id} index={index} disabled={disabled}>
+            <SortableItem
+              key={id}
+              id={id}
+              index={index}
+              disabled={disabled || isItemDisabled?.(item)}
+            >
               {(state) => renderItem(item, state)}
             </SortableItem>
           )

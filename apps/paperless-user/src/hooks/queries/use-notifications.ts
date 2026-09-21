@@ -13,6 +13,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 import type { NotificationPage } from "@/services/API/notifications"
+import { toast } from "sonner"
 
 export const notificationListQueryOptions = () => ({
   queryKey: notificationKeys.list(),
@@ -52,6 +53,7 @@ export function useMarkNotificationAsRead() {
   return useMutation({
     mutationFn: (id: string) => markNotificationAsRead({ data: id }),
     onSuccess: () => invalidateNotifications(queryClient),
+    onError: () => toast.error("Notifikasi gagal ditandai sebagai dibaca"),
   })
 }
 
@@ -60,6 +62,7 @@ export function useMarkAllNotificationsAsRead() {
   return useMutation({
     mutationFn: () => markAllNotificationsAsRead(),
     onSuccess: () => invalidateNotifications(queryClient),
+    onError: () => toast.error("Notifikasi gagal ditandai sebagai dibaca"),
   })
 }
 
@@ -68,6 +71,7 @@ export function useDeleteNotification() {
   return useMutation({
     mutationFn: (id: string) => deleteNotification({ data: id }),
     onSuccess: () => invalidateNotifications(queryClient),
+    onError: () => toast.error("Notifikasi gagal dihapus"),
   })
 }
 
@@ -76,5 +80,6 @@ export function useDeleteAllNotifications() {
   return useMutation({
     mutationFn: () => deleteAllNotifications(),
     onSuccess: () => invalidateNotifications(queryClient),
+    onError: () => toast.error("Semua notifikasi gagal dihapus"),
   })
 }

@@ -20,7 +20,11 @@ export function ActionCell({ rowData }: { rowData: AdminUserRow }) {
   return (
     <div className="flex flex-row gap-1">
       <Button asChild variant="ghost" size="sm">
-        <Link to="/system/users/$id" params={{ id: rowData.id }}>
+        <Link
+          to="/system/users/$id"
+          params={{ id: rowData.id }}
+          aria-label={`Lihat pengguna ${rowData.staff.fullname}`}
+        >
           <Eye className="h-4 w-4" />
         </Link>
       </Button>

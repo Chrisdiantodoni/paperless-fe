@@ -13,7 +13,6 @@ export function DataTablePagination<T>({
   isFetching = false,
   onPageChange,
 }: DataTablePaginationProps<T>) {
-  console.log(pagination)
   const isFirstPage = pagination.current_page <= 1
   const isLastPage =
     pagination.current_page >= pagination.last_page ||

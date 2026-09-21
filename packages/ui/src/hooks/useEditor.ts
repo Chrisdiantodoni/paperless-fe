@@ -20,7 +20,7 @@ export function useEditor(
   format: EditorOutputFormat = "html",
   onHtmlPaste?: (html: string) => void
 ): Editor | null {
-  const editor = useTiptapEditor({
+  const editor: Editor | null = useTiptapEditor({
     extensions: [
       StarterKit.configure({
         bulletList: {
@@ -84,10 +84,7 @@ export function useEditor(
             : markdownToHtml(initialContent || "")) || "<p></p>"
         : markdownToHtml(initialContent || "") || "<p></p>",
     editorProps: {
-      attributes: {
-        class: "focus:outline-none",
-      },
-      handleKeyDown: (_view, event) => {
+      handleKeyDown: (_view, event): boolean => {
         if (event.key !== "Enter" || event.shiftKey) return false
 
         const { $from } = _view.state.selection
@@ -95,7 +92,7 @@ export function useEditor(
 
         return editor?.commands.setHardBreak() ?? false
       },
-      handlePaste: (view, event) => {
+      handlePaste: (_view, event) => {
         if (format !== "html") return false
 
         const clipboard = event.clipboardData

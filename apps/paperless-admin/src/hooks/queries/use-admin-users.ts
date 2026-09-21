@@ -6,7 +6,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import type { AdminUser, AdminUserPage } from "@workspace/types/admin"
+import type { AdminUser } from "@workspace/types/admin"
 import type { LaravelPaginationData } from "@workspace/types/api"
 
 export const adminUserKeys = {

@@ -6,7 +6,7 @@ import {
   getPositions,
   getStaticMailTemplateById,
 } from "@/server/master"
-import { createFileRoute, useRouter } from "@tanstack/react-router"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
   Card,
@@ -43,7 +43,8 @@ export const Route = createFileRoute(
 })
 
 function RouteComponent() {
-  const router = useRouter()
+  const navigate = useNavigate()
+  const { id } = Route.useParams()
   const { branches, departments, positions, resStaticMailTemplate } =
     Route.useLoaderData()
 
@@ -89,7 +90,9 @@ function RouteComponent() {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => router.history.back()}
+          onClick={() =>
+            navigate({ to: "/mail/static-mail-templates/$id", params: { id } })
+          }
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>

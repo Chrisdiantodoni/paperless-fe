@@ -68,8 +68,12 @@ const emptyCcRecipient: RecipientItem = {
 
 interface FieldOptions {
   branchOptions: { value: string; label: string; regions: string }[]
-  departmentOptions: { value: string; label: string }[]
-  positionOptions: { value: string; label: string }[]
+  departmentOptions: {
+    value: string
+    label: string
+    dept_category: string
+  }[]
+  positionOptions: { value: string; label: string; category: string }[]
 }
 
 const TemplateFormFields = ({
@@ -181,49 +185,36 @@ const TemplateFormFields = ({
                                   variant="ghost"
                                   size="icon"
                                   type="button"
+                                  aria-label={`Hapus field ${f.label || i + 1}`}
                                   onClick={() => removeField(i)}
                                 >
                                   <Trash className="h-3.5 w-3.5" />
                                 </Button>
                               </div>
 
-                              <div className="grid grid-cols-3 gap-2">
-                                <div>
-                                  <label className="mb-1 block text-xs text-muted-foreground">
-                                    Field Name
-                                  </label>
-                                  <form.AppField
-                                    name={`form_schema[${i}].name`}
-                                  >
-                                    {(field) => (
-                                      <field.TextField
-                                        label=""
-                                        placeholder="e.g. department_id"
-                                      />
-                                    )}
-                                  </form.AppField>
-                                </div>
-                                <div>
-                                  <label className="mb-1 block text-xs text-muted-foreground">
-                                    Label
-                                  </label>
-                                  <form.AppField
-                                    name={`form_schema[${i}].label`}
-                                  >
-                                    {(field) => (
-                                      <field.TextField
-                                        label=""
-                                        placeholder="e.g. Departemen"
-                                      />
-                                    )}
-                                  </form.AppField>
-                                </div>
+                              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                                <form.AppField name={`form_schema[${i}].name`}>
+                                  {(field) => (
+                                    <field.TextField
+                                      label="Nama Field"
+                                      placeholder="contoh: department_id"
+                                    />
+                                  )}
+                                </form.AppField>
+                                <form.AppField name={`form_schema[${i}].label`}>
+                                  {(field) => (
+                                    <field.TextField
+                                      label="Label"
+                                      placeholder="contoh: Departemen"
+                                    />
+                                  )}
+                                </form.AppField>
                                 <div className="flex items-end pb-2">
                                   <form.AppField
                                     name={`form_schema[${i}].is_required`}
                                   >
                                     {(field) => (
-                                      <field.CheckboxField label="Required" />
+                                      <field.CheckboxField label="Wajib" />
                                     )}
                                   </form.AppField>
                                 </div>
@@ -235,7 +226,7 @@ const TemplateFormFields = ({
                                 fieldDefs.length > 1 && (
                                   <div>
                                     <label className="mb-1 block text-xs text-muted-foreground">
-                                      Depends On
+                                      Bergantung Pada
                                     </label>
                                     <form.AppField
                                       name={`form_schema[${i}].dependsOn`}
@@ -298,7 +289,7 @@ const TemplateFormFields = ({
               <div className="col-span-3">
                 <form.AppField name="content">
                   {(field: any) => (
-                    <field.RichTextEditorField label="Content" format="html" />
+                    <field.RichTextEditorField label="Konten" format="html" />
                   )}
                 </form.AppField>
               </div>
@@ -363,6 +354,7 @@ const TemplateFormFields = ({
                 form={form}
                 name="recipients"
                 label="Penerima"
+                sortable
                 defaultItem={() => ({ ...emptyRecipient })}
                 renderItem={(index) => (
                   <form.Field name={`recipients[${index}].user_id`}>
@@ -401,6 +393,7 @@ const TemplateFormFields = ({
                 form={form}
                 name="recipients_cc"
                 label="Tembusan"
+                sortable
                 defaultItem={() => ({ ...emptyCcRecipient })}
                 renderItem={(index) => (
                   <form.Field name={`recipients_cc[${index}].user_id`}>

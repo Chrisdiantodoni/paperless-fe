@@ -17,4 +17,4 @@ export interface AdminPermission {
 }
 
 export type AdminUserPage = LaravelPaginationData<AdminUser[]>
-export type AdminPermissionPage = LaravelPaginationData<AdminPermission[]>
+export type AdminPermissionPage = AdminPermission[]

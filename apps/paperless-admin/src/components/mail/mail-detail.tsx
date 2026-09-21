@@ -28,7 +28,11 @@ import {
 import { Avatar, AvatarFallback } from "@workspace/ui/components/ui/avatar"
 import { getInitials } from "@workspace/ui/lib/utils"
 import { formatDate } from "@workspace/utils"
-import type { AllMailProps, Recipient } from "@workspace/types/mail"
+import type {
+  AllMailProps,
+  MailTemplateType,
+  Recipient,
+} from "@workspace/types/mail"
 import { useUser } from "@/hooks/queries/use-user"
 import { DocumentPreview } from "@workspace/ui/components/editor"
 
@@ -349,7 +353,7 @@ function RecipientGroup({
 export type EditableRecipient = {
   user_id: string
   user_label?: string
-  recipient_type: "approver" | "cc" | "to"
+  recipient_type: "superior" | "cc" | "to"
   sequence: number
 }
 
@@ -367,7 +371,13 @@ export interface MailDetailProps {
   onReject?: () => void
   onCancelRecipient?: (recipientId: string) => void
   onApproveOnBehalf?: (recipientId: string) => void
-  onEditRecipients?: (payload: { recipients: EditableRecipient[] }) => void
+  onEditRecipients?: (payload: {
+    recipients: Array<{
+      user_id: string
+      recipient_type: "to" | "cc"
+      sequence: number
+    }>
+  }) => Promise<void>
   onEdit?: () => void
   onSend?: () => void
   onRevise?: () => void
@@ -385,8 +395,6 @@ export function MailDetail({
   isEditingRecipients = false,
   onApprove,
   onReject,
-  onCancelRecipient,
-  onApproveOnBehalf,
   onEditRecipients,
   onEdit,
   onSend,
@@ -410,7 +418,7 @@ export function MailDetail({
   const senderUserId = detail.sent_by.hris_user_id
 
   const resolveTitle = () => {
-    switch (req.type) {
+    switch (req.type as MailTemplateType) {
       case "leave_request":
         return req.leave_type ? `Cuti: ${req.leave_type}` : "Permohonan Cuti"
       case "permit_request":
@@ -528,12 +536,9 @@ export function MailDetail({
     user_id: recipient.recipient_user_id,
     user_label: recipient.name,
     user_position: recipient.position,
-    recipient_type:
-      recipient.recipient_type === "superior"
-        ? ("approver" as const)
-        : recipient.recipient_type,
+    recipient_type: recipient.recipient_type,
     sequence: recipient.sequence,
-    locked: recipient.status.toLowerCase() !== "pending",
+    locked: recipient.recipient_type === "superior",
   }))
 
   return (
@@ -545,8 +550,8 @@ export function MailDetail({
             <Button
               variant="ghost"
               size="icon"
-              className="size-8"
-              aria-label="Tutup"
+              className="size-8 lg:hidden"
+              aria-label="Kembali ke daftar surat"
               onClick={onClose}
             >
               <X className="size-4" />
@@ -840,11 +845,8 @@ export function MailDetail({
                       <EditRecipientDialog
                         initialRecipients={editableRecipients}
                         onSubmit={async (body: UpdateRecipientsBody) => {
-                          onEditRecipients({
-                            recipients: body.recipients.map((recipient) => ({
-                              ...recipient,
-                              id: recipient.user_id,
-                            })),
+                          await onEditRecipients({
+                            recipients: body.recipients,
                           })
                         }}
                       />
@@ -960,8 +962,6 @@ export function MailDetail({
                               ? firstPendingRecipient?.id
                               : undefined
                           }
-                          onCancelRecipient={onCancelRecipient}
-                          onApproveOnBehalf={onApproveOnBehalf}
                           mailId={detail.id}
                         />
                         <RecipientGroup
@@ -980,8 +980,6 @@ export function MailDetail({
                               ? firstPendingRecipient?.id
                               : undefined
                           }
-                          onCancelRecipient={onCancelRecipient}
-                          onApproveOnBehalf={onApproveOnBehalf}
                           mailId={detail.id}
                         />
                         <RecipientGroup
@@ -1000,8 +998,6 @@ export function MailDetail({
                               ? firstPendingRecipient?.id
                               : undefined
                           }
-                          onCancelRecipient={onCancelRecipient}
-                          onApproveOnBehalf={onApproveOnBehalf}
                           mailId={detail.id}
                         />
                       </div>

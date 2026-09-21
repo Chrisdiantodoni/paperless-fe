@@ -27,13 +27,14 @@ import {
   SortableRecipientRow,
   type EditableRecipientItem,
 } from "./sortable-recipient-row"
+import { toast } from "sonner"
 
 export const updateRecipientsBodySchema = z.object({
   recipients: z
     .array(
       z.object({
         user_id: z.string().min(1, { message: "User wajib dipilih" }),
-        recipient_type: z.enum(["approver", "to", "cc"], {
+        recipient_type: z.enum(["to", "cc"], {
           message: "Tipe penerima tidak valid",
         }),
         sequence: z.number().int().min(1),
@@ -59,7 +60,7 @@ const groups: {
   icon: LucideIcon
 }[] = [
   {
-    type: "approver",
+    type: "superior",
     label: "Diketahui",
     description: "Penerima yang ikut alur persetujuan.",
     icon: UserCheck,
@@ -160,7 +161,7 @@ export function EditRecipientDialog({
   function addRecipient(type: RecipientType) {
     setRecipients((current) => {
       const approvalSequences = current
-        .filter((item) => item.recipient_type !== "cc")
+        .filter((item) => item.recipient_type !== "cc" && item.recipient_type !== "superior")
         .map((item) => item.sequence)
       const sequence = type === "cc" ? 1 : Math.max(0, ...approvalSequences) + 1
       return [...current, createRecipient(type, sequence)]
@@ -172,18 +173,17 @@ export function EditRecipientDialog({
     event.stopPropagation()
     setErrorMessage(null)
 
-    const approvalSequence = new Map<string, number>()
-    recipients
-      .filter((item) => item.recipient_type !== "cc")
-      .sort((a, b) => a.sequence - b.sequence)
-      .forEach((item, index) => approvalSequence.set(item.id, index + 1))
-
     const payload = {
-      recipients: recipients.map(({ id, user_id, recipient_type }) => ({
-        user_id,
-        recipient_type,
-        sequence: approvalSequence.get(id) ?? 1,
-      })),
+      recipients: recipients
+        .filter(
+          (item): item is typeof item & { recipient_type: "to" | "cc" } =>
+            item.recipient_type === "to" || item.recipient_type === "cc"
+        )
+        .map(({ user_id, recipient_type, sequence }) => ({
+          user_id,
+          recipient_type,
+          sequence,
+        })),
     }
     const validation = updateRecipientsBodySchema.safeParse(payload)
     if (!validation.success) {
@@ -193,6 +193,7 @@ export function EditRecipientDialog({
 
     try {
       await onSubmit(validation.data)
+      toast.success("Penerima surat berhasil diperbarui")
       setOpen(false)
     } catch (error) {
       setErrorMessage(
@@ -308,16 +309,18 @@ export function EditRecipientDialog({
                     </div>
                   </DragDropProvider>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="mt-2.5 w-full gap-1.5 border-dashed border-border bg-background/50 font-normal text-muted-foreground hover:bg-accent hover:text-foreground"
-                    onClick={() => addRecipient(type)}
-                  >
-                    <Plus className="size-3.5" />
-                    Tambah penerima
-                  </Button>
+                   {type !== "superior" && (
+                     <Button
+                       type="button"
+                       variant="outline"
+                       size="sm"
+                       className="mt-2.5 w-full gap-1.5 border-dashed border-border bg-background/50 font-normal text-muted-foreground hover:bg-accent hover:text-foreground"
+                       onClick={() => addRecipient(type)}
+                     >
+                       <Plus className="size-3.5" />
+                       Tambah penerima
+                     </Button>
+                   )}
                 </section>
               )
             })}

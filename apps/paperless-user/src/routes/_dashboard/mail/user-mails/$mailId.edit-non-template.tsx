@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@workspace/ui/components/ui/card"
 import { Button } from "@workspace/ui/components/ui/button"
+import { SortableList } from "@workspace/ui/components/ui/sortable-list"
 import { Badge } from "@workspace/ui/components/ui/badge"
 import { toast } from "sonner"
 import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
@@ -108,7 +109,7 @@ interface RecipientRepeaterProps {
 }
 
 function RecipientRepeater({ form, name, label }: RecipientRepeaterProps) {
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [reorderAnnouncement, setReorderAnnouncement] = useState("")
 
   const moveTo = (
     arrayField: any,
@@ -126,6 +127,10 @@ function RecipientRepeater({ form, name, label }: RecipientRepeaterProps) {
     )
       return
     arrayField.swapValues(from, to)
+    const recipient = items[from]?.user_id.label || `${label} ${from + 1}`
+    setReorderAnnouncement(
+      `${recipient} dipindahkan ke urutan ${to + 1} pada ${label}.`
+    )
   }
 
   const moveUp = (
@@ -198,25 +203,28 @@ function RecipientRepeater({ form, name, label }: RecipientRepeaterProps) {
               </div>
             )}
 
-            {items.map((item, index) => (
-              <div
-                key={index}
-                draggable={!item.locked}
-                onDragStart={() => {
-                  if (!item.locked) setDraggedIndex(index)
-                }}
-                onDragEnd={() => setDraggedIndex(null)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => {
-                  if (draggedIndex !== null && draggedIndex !== index) {
-                    moveTo(arrayField, items, draggedIndex, index)
-                  }
-                  setDraggedIndex(null)
-                }}
-                className={`flex items-center gap-2 rounded-md border p-2.5 transition-colors ${
-                  item.locked ? "bg-muted/40 opacity-80" : "border-border"
-                } ${draggedIndex === index ? "opacity-50" : ""}`}
-              >
+            <p className="sr-only" aria-live="polite">
+              {reorderAnnouncement}
+            </p>
+
+             <SortableList
+               items={items}
+               getId={(item) => `${name}-${item.user_id.value}`}
+               isItemDisabled={(item) => item.locked}
+               onReorder={(nextItems) => {
+                 const from = items.findIndex((item, index) => item !== nextItems[index])
+                 const to = nextItems.findIndex((item, index) => item !== items[index])
+                 if (from >= 0 && to >= 0) moveTo(arrayField, items, from, to)
+               }}
+               renderItem={(item, state) => {
+                 const index = items.indexOf(item)
+                 return (
+               <div
+                 ref={state.ref}
+                 className={`flex items-center gap-2 rounded-md border p-2.5 transition-colors ${
+                   item.locked ? "bg-muted/40 opacity-80" : "border-border"
+                 } ${state.isDragging ? "opacity-50" : ""}`}
+               >
                 <button
                   type="button"
                   disabled={item.locked}
@@ -274,6 +282,7 @@ function RecipientRepeater({ form, name, label }: RecipientRepeaterProps) {
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6"
+                      aria-label={`Pindahkan ${label} ${index + 1} ke atas`}
                       onClick={() => moveUp(arrayField, items, index)}
                     >
                       <ArrowUp className="h-3 w-3" />
@@ -283,15 +292,19 @@ function RecipientRepeater({ form, name, label }: RecipientRepeaterProps) {
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6"
+                      aria-label={`Pindahkan ${label} ${index + 1} ke bawah`}
                       onClick={() => moveDown(arrayField, items, index)}
                     >
                       <ArrowDown className="h-3 w-3" />
                     </Button>
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
+                </div>
+                  )
+                }}
+              />
+           </div>
+
         )
       }}
     </form.Field>
@@ -579,7 +592,7 @@ function RouteComponent() {
           </div>
 
           <div className="lg:col-span-1">
-            <Card className="sticky top-6">
+            <Card className="lg:sticky lg:top-6">
               <CardHeader>
                 <CardTitle className="text-base">Penerima</CardTitle>
               </CardHeader>

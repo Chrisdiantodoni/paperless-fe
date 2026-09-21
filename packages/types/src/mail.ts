@@ -1,3 +1,12 @@
+export type MailTemplateType =
+  | "leave_request"
+  | "permit_request"
+  | "absence_request"
+  | "overtime_request"
+  | "dynamic_form"
+  | "non_template"
+  | "dynamic_template"
+
 export interface AllMailProps {
   id: string
   document_number: string
@@ -196,4 +205,33 @@ export interface CreateMailPayload {
   absence_data?: CreateMailAbsenceData
   overtime_data?: CreateMailOvertimeData
   dynamic_data?: CreateMailDynamicData
+}
+
+export interface MailSkipProps {
+  id: string
+  reason: string
+  date_to: string
+  date_from: string
+  is_active: boolean
+  skipper: MailPerson
+  created_by: MailPerson
+  skipped_mails: SkippedMail[]
+}
+
+export interface MailPerson {
+  id: string
+  name: string
+  position?: string
+  department?: string
+  branch?: string
+}
+
+export interface SkippedMail {
+  id: string
+  user_mail_id: string
+  document_number: string
+  mail_owner?: string
+  mail_type?: string
+  template_name?: string
+  template_type?: MailTemplateType
 }

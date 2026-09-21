@@ -126,6 +126,7 @@ function RouteComponent() {
           <Button
             variant="outline"
             size="icon"
+            aria-label="Kembali ke daftar template"
             onClick={() => router.history.back()}
           >
             <ArrowLeft className="h-4 w-4" />

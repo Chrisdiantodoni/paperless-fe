@@ -27,9 +27,32 @@
  * owns the array shell: add, remove, reorder, empty state.
  */
 
-import type { ReactNode } from "react"
-import { ArrowDown, ArrowUp, Plus, Trash2, ListPlus } from "lucide-react"
+import { useRef, useState, type ReactNode } from "react"
+import {
+  ArrowDown,
+  ArrowUp,
+  GripVertical,
+  ListPlus,
+  Plus,
+  Trash2,
+} from "lucide-react"
+import { SortableList } from "@workspace/ui/components/ui/sortable-list"
 import { Button } from "@workspace/ui/components/ui/button"
+
+const generatedIds = new WeakMap<object, string>()
+let nextGeneratedId = 0
+
+function getGeneratedId(item: unknown) {
+  if (typeof item === "object" && item !== null) {
+    let id = generatedIds.get(item)
+    if (!id) {
+      id = `repeater-item-${nextGeneratedId++}`
+      generatedIds.set(item, id)
+    }
+    return id
+  }
+  return `repeater-item-${String(item)}-${nextGeneratedId++}`
+}
 
 // `form` is typed as `any` on purpose. useAppForm()'s real return type has
 // `Field`'s `name` constrained to a strict union of deep-key paths inferred
@@ -52,6 +75,8 @@ interface RepeaterProps<TItem> {
   renderItem: (index: number) => ReactNode
   minItems?: number
   maxItems?: number
+  sortable?: boolean
+  getItemId?: (item: TItem, index: number) => string
 }
 
 export function Repeater<TItem>({
@@ -62,7 +87,12 @@ export function Repeater<TItem>({
   renderItem,
   minItems = 0,
   maxItems,
+  sortable = false,
+  getItemId,
 }: RepeaterProps<TItem>) {
+  const ids = useRef(new WeakMap<object, string>())
+  const [reorderAnnouncement, setReorderAnnouncement] = useState("")
+
   return (
     <form.Field name={name} mode="array">
       {(arrayField: any) => {
@@ -114,57 +144,144 @@ export function Repeater<TItem>({
               </div>
             )}
 
-            {items.map((_: TItem, index: number) => (
-              <div
-                key={index}
-                role="group"
-                aria-label={`${label} item ${index + 1}`}
-                className="rounded-md border p-3"
-              >
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
-                    Item {index + 1}
-                  </span>
-                  <div className="flex gap-1">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      disabled={index === 0}
-                      onClick={() => arrayField.swapValues(index, index - 1)}
-                      aria-label="Move item up"
-                    >
-                      <ArrowUp className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      disabled={index === items.length - 1}
-                      onClick={() => arrayField.swapValues(index, index + 1)}
-                      aria-label="Move item down"
-                    >
-                      <ArrowDown className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      disabled={items.length <= minItems}
-                      onClick={() => arrayField.removeValue(index)}
-                      aria-label="Remove item"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+            {sortable ? (
+              <SortableList
+                items={items}
+                getId={(item: TItem) => {
+                  const index = items.indexOf(item)
+                  if (getItemId) return getItemId(item, index)
+                  if (typeof item === "object" && item !== null) {
+                    let id = ids.current.get(item)
+                    if (!id) {
+                      id = getGeneratedId(item)
+                      ids.current.set(item, id)
+                    }
+                    return id
+                  }
+                  return `repeater-item-${index}`
+                }}
+                onReorder={(nextItems) => {
+                  arrayField.handleChange(nextItems)
+                  setReorderAnnouncement(`${label} reordered`)
+                }}
+                renderItem={(_: TItem, state) => {
+                  const index = items.findIndex((item: TItem) => item === _)
+                  return (
+                    <div ref={state.ref} className="rounded-md border p-3">
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">
+                          Item {index + 1}
+                        </span>
+                        <div className="flex gap-1">
+                          <button
+                            ref={state.handleRef}
+                            type="button"
+                            aria-label={`Drag ${label} item ${index + 1}`}
+                            className="cursor-grab"
+                          >
+                            <GripVertical className="h-3.5 w-3.5" />
+                          </button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            disabled={index === 0}
+                            onClick={() =>
+                              arrayField.swapValues(index, index - 1)
+                            }
+                            aria-label="Move item up"
+                          >
+                            <ArrowUp className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            disabled={index === items.length - 1}
+                            onClick={() =>
+                              arrayField.swapValues(index, index + 1)
+                            }
+                            aria-label="Move item down"
+                          >
+                            <ArrowDown className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            disabled={items.length <= minItems}
+                            onClick={() => arrayField.removeValue(index)}
+                            aria-label="Remove item"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                      {renderItem(index)}
+                    </div>
+                  )
+                }}
+              />
+            ) : (
+              items.map((_: TItem, index: number) => (
+                <div
+                  key={index}
+                  role="group"
+                  aria-label={`${label} item ${index + 1}`}
+                  className="rounded-md border p-3"
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      Item {index + 1}
+                    </span>
+                    <div className="flex gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        disabled={index === 0}
+                        onClick={() => arrayField.swapValues(index, index - 1)}
+                        aria-label="Move item up"
+                      >
+                        <ArrowUp className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        disabled={index === items.length - 1}
+                        onClick={() => arrayField.swapValues(index, index + 1)}
+                        aria-label="Move item down"
+                      >
+                        <ArrowDown className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        disabled={items.length <= minItems}
+                        onClick={() => arrayField.removeValue(index)}
+                        aria-label="Remove item"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
+                  {renderItem(index)}
                 </div>
-
-                {renderItem(index)}
-              </div>
-            ))}
+              ))
+            )}
+            {sortable && (
+              <p className="sr-only" aria-live="polite">
+                {reorderAnnouncement}
+              </p>
+            )}
           </div>
         )
       }}

@@ -1,5 +1,6 @@
 import {
   HeadContent,
+  Link,
   Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router"
@@ -45,9 +46,20 @@ export const Route = createRootRouteWithContext<RouteContext>()({
   }),
 
   notFoundComponent: () => (
-    <main className="container mx-auto p-4 pt-16">
-      <h1>404</h1>
-      <p>The requested page could not be found.</p>
+    <main className="flex min-h-screen items-center justify-center p-6 text-center">
+      <div className="space-y-4">
+        <p className="text-sm font-medium text-muted-foreground">404</p>
+        <h1 className="text-2xl font-semibold">Halaman tidak ditemukan</h1>
+        <p className="text-muted-foreground">
+          Alamat mungkin salah atau halaman sudah dipindahkan.
+        </p>
+        <Link
+          to="/dashboard"
+          className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground outline-none hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          Kembali ke dashboard
+        </Link>
+      </div>
     </main>
   ),
   shellComponent: RootDocument,
@@ -56,7 +68,7 @@ export const Route = createRootRouteWithContext<RouteContext>()({
 function RootDocument({ children }: { children: React.ReactNode }) {
   const { queryClient } = Route.useRouteContext()
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="id" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

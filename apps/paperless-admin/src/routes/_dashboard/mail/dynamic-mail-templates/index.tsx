@@ -110,7 +110,7 @@ function RouteComponent() {
       />
       <div className="flex flex-col justify-between gap-2 lg:flex-row">
         <SearchInput
-          placeholder="Search template..."
+          placeholder="Cari template..."
           value={searchQuery}
           onChange={(q) => {
             navigate({
@@ -121,7 +121,7 @@ function RouteComponent() {
                 is_active:
                   prev.is_active === true || prev.is_active === false
                     ? prev.is_active
-                    : "all",
+                    : "",
               }),
             })
           }}
@@ -137,11 +137,13 @@ function RouteComponent() {
                   : "all"
             }
             onValueChange={(value) => {
-              setIsActiveValue(value == "true" ? true : false)
+              const isActive =
+                value === "true" ? true : value === "false" ? false : ""
+              setIsActiveValue(isActive)
               navigate({
                 search: (prev) => ({
                   ...prev,
-                  is_active: value,
+                  is_active: isActive,
                   page: 1,
                 }),
               })

@@ -6,6 +6,7 @@ import { Textarea } from "@workspace/ui/components/ui/textarea"
 import { Label } from "@workspace/ui/components/ui/label"
 import { cn } from "@workspace/ui/lib/utils"
 import { useFieldContext } from "../forms/form-context"
+import { getErrorMessage } from "../utils/get-error-message"
 
 interface TextareaFieldProps {
   label: string
@@ -40,10 +41,11 @@ export function TextareaField({
   const isTouched = useStore(field.store, (state) => state.meta.isTouched)
   const isValidating = useStore(field.store, (state) => state.meta.isValidating)
 
+  const showErrors = isTouched && errors.length > 0
+
   // "onTouched"-style UX: don't show errors until the user has left this
   // field at least once (or a submit attempt was made, which also marks
   // fields touched) — not immediately on the first keystroke.
-  const showErrors = isTouched && errors.length > 0
 
   return (
     <div className="space-y-2">
@@ -75,7 +77,6 @@ export function TextareaField({
         maxLength={maxLength}
         onBlur={field.handleBlur}
         onChange={(e) => field.handleChange(e.target.value)}
-        required={required}
         aria-required={required}
         // aria-invalid={showErrors}
         aria-describedby={showErrors ? errorId : undefined}
@@ -88,7 +89,7 @@ export function TextareaField({
       )}
       {showErrors && (
         <p id={errorId} role="alert" className="text-sm text-destructive">
-          {errors.map(String).join(", ")}
+          {errors.map(getErrorMessage).join(", ")}
         </p>
       )}
     </div>

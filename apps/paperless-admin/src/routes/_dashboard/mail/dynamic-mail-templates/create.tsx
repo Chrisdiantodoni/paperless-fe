@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/ui/card"
-import { createFileRoute, useRouter } from "@tanstack/react-router"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { ArrowLeft, Trash } from "lucide-react"
 import { getBranches, getDepartments, getPositions } from "@/server/master"
 import { DynamicMailTemplateForm } from "@/components/forms/dynamic-mail-template"
@@ -39,7 +39,7 @@ export const Route = createFileRoute(
 })
 
 function RouteComponent() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { branches, departments, positions } = Route.useLoaderData()
 
   return (
@@ -48,7 +48,24 @@ function RouteComponent() {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => router.history.back()}
+          aria-label="Kembali ke daftar template"
+          onClick={() =>
+            navigate({
+              to: "/mail/dynamic-mail-templates",
+              search: {
+                page: 1,
+                search: "",
+                per_page: 10,
+                branch_id: "",
+                branch_label: "",
+                department_id: "",
+                department_label: "",
+                position_id: "",
+                position_label: "",
+                is_active: "",
+              },
+            })
+          }
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>

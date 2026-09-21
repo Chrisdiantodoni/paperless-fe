@@ -1,3 +1,4 @@
+import { Button } from "@workspace/ui/components/ui/button"
 import { Card, CardContent } from "@workspace/ui/components/ui/card"
 import { useDashboardSummary } from "@/hooks/useDashboard"
 import { createFileRoute } from "@tanstack/react-router"
@@ -37,7 +38,34 @@ const iconBgColors: Record<Variant, string> = {
 }
 
 function RouteComponent() {
-  const { data: summary } = useDashboardSummary()
+  const { data: summary, isPending, isError, refetch } = useDashboardSummary()
+
+  if (isPending)
+    return (
+      <PageWrapper>
+        <div className="flex min-h-64 items-center justify-center text-sm text-muted-foreground">
+          Memuat ringkasan...
+        </div>
+      </PageWrapper>
+    )
+
+  if (isError)
+    return (
+      <PageWrapper>
+        <div className="flex min-h-64 flex-col items-center justify-center gap-4 text-center">
+          <AlertCircle className="h-10 w-10 text-destructive" />
+          <div>
+            <h1 className="text-lg font-semibold">Dashboard gagal dimuat</h1>
+            <p className="text-sm text-muted-foreground">
+              Terjadi kesalahan saat memuat ringkasan.
+            </p>
+          </div>
+          <Button variant="outline" onClick={() => refetch()}>
+            Coba lagi
+          </Button>
+        </div>
+      </PageWrapper>
+    )
 
   const stats = [
     {

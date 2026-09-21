@@ -23,7 +23,19 @@ const parseTimeString = (val?: string) => {
 
 const TimePicker = React.forwardRef<HTMLInputElement, TimePickerProps>(
   (
-    { className, value = "00:00", onChange, invalid, disabled, ...props },
+    {
+      className,
+      value = "00:00",
+      onChange,
+      invalid,
+      disabled,
+      id,
+      name,
+      required,
+      "aria-describedby": ariaDescribedBy,
+      "aria-label": ariaLabel = "Waktu",
+      ...props
+    },
     ref
   ) => {
     const [flag, setFlag] = React.useState(false)
@@ -38,10 +50,23 @@ const TimePicker = React.forwardRef<HTMLInputElement, TimePickerProps>(
     const parsed = React.useMemo(() => parseTimeString(value), [value])
 
     const updateTime = (segment: "hours" | "minutes", newSegVal: string) => {
-      const formattedSeg = newSegVal.padStart(2, "0").slice(-2)
-      const next = { ...parsed, [segment]: formattedSeg }
+      const maxVal = segment === "hours" ? 23 : 59
+      const numericValue = Math.min(
+        Number(newSegVal.replace(/\D/g, "")) || 0,
+        maxVal
+      )
+      const next = {
+        ...parsed,
+        [segment]: numericValue.toString().padStart(2, "0"),
+      }
       onChange?.(`${next.hours}:${next.minutes}`)
     }
+
+    const handleSegmentChange =
+      (segment: "hours" | "minutes") =>
+      (event: React.ChangeEvent<HTMLInputElement>) => {
+        updateTime(segment, event.target.value)
+      }
 
     const handleSegmentKeyDown =
       (segment: "hours" | "minutes") =>
@@ -81,35 +106,50 @@ const TimePicker = React.forwardRef<HTMLInputElement, TimePickerProps>(
       }
 
     return (
-      <div className="flex items-center">
+      <div
+        {...props}
+        className={cn("flex items-center", className)}
+        role="group"
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
+        aria-invalid={invalid || undefined}
+      >
         <input
           ref={ref}
+          id={id}
+          name={name ? `${name}.hours` : undefined}
           type="tel"
           inputMode="numeric"
           maxLength={2}
+          required={required}
           disabled={disabled}
           value={parsed.hours}
+          aria-label="Jam"
           onKeyDown={handleSegmentKeyDown("hours")}
-          onChange={() => undefined}
+          onChange={handleSegmentChange("hours")}
           className={cn(
             "h-9 w-11 rounded-l-md border border-input bg-transparent text-center font-mono text-sm tabular-nums caret-transparent transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30",
             invalid &&
-              "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/40 dark:border-destructive/50",
-            className
+              "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/40 dark:border-destructive/50"
           )}
-          {...props}
         />
-        <span className="mx-2 text-sm font-medium text-muted-foreground select-none">
+        <span
+          aria-hidden="true"
+          className="mx-2 text-sm font-medium text-muted-foreground select-none"
+        >
           :
         </span>
         <input
+          name={name ? `${name}.minutes` : undefined}
           type="tel"
           inputMode="numeric"
           maxLength={2}
+          required={required}
           disabled={disabled}
           value={parsed.minutes}
+          aria-label="Menit"
           onKeyDown={handleSegmentKeyDown("minutes")}
-          onChange={() => undefined}
+          onChange={handleSegmentChange("minutes")}
           className={cn(
             "-ml-px h-9 w-11 rounded-r-md border border-input bg-transparent text-center font-mono text-sm tabular-nums caret-transparent transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30",
             invalid &&

@@ -1,4 +1,4 @@
-import { forwardRef, useState } from "react"
+import { forwardRef, useEffect, useState } from "react"
 import { cn } from "@workspace/ui/lib/utils"
 
 export interface TimeInputProps
@@ -13,6 +13,11 @@ const TimeInput = forwardRef<HTMLInputElement, TimeInputProps>(
     const [hours, minutes] = value.split(":").map((v) => v || "00")
     const [hoursValue, setHoursValue] = useState(hours)
     const [minutesValue, setMinutesValue] = useState(minutes)
+
+    useEffect(() => {
+      setHoursValue(hours)
+      setMinutesValue(minutes)
+    }, [hours, minutes])
 
     const handleHoursChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       let val = e.target.value.replace(/\D/g, "")

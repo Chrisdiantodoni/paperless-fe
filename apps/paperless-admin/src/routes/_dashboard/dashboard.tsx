@@ -8,8 +8,11 @@ export const Route = createFileRoute("/_dashboard/dashboard")({
 
 function RouteComponent() {
   return (
-    <div>
-      <PageHeader title="Dashboard" />
-    </div>
+    <PageWrapper>
+      <PageHeader
+        title="Dashboard"
+        description="Kelola surat, template, dan pengguna dari satu tempat."
+      />
+    </PageWrapper>
   )
 }
