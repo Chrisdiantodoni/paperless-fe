@@ -1,7 +1,11 @@
 export function formatPermissionPart(value: string) {
   return value
     .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .map((part) =>
+      part.length <= 3
+        ? part.toUpperCase()
+        : part.charAt(0).toUpperCase() + part.slice(1)
+    )
     .join(" ")
 }
 

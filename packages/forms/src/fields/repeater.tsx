@@ -167,20 +167,12 @@ export function Repeater<TItem>({
                 renderItem={(_: TItem, state) => {
                   const index = items.findIndex((item: TItem) => item === _)
                   return (
-                    <div ref={state.ref} className="rounded-md border p-3">
+                    <div ref={state.ref} className="my-2 rounded-md border p-3">
                       <div className="mb-2 flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">
                           Item {index + 1}
                         </span>
                         <div className="flex gap-1">
-                          <button
-                            ref={state.handleRef}
-                            type="button"
-                            aria-label={`Drag ${label} item ${index + 1}`}
-                            className="cursor-grab"
-                          >
-                            <GripVertical className="h-3.5 w-3.5" />
-                          </button>
                           <Button
                             type="button"
                             variant="ghost"
@@ -220,7 +212,17 @@ export function Repeater<TItem>({
                           </Button>
                         </div>
                       </div>
-                      {renderItem(index)}
+                      <div className="flex gap-2">
+                        <button
+                          ref={state.handleRef}
+                          type="button"
+                          aria-label={`Drag ${label} item ${index + 1}`}
+                          className="cursor-grab"
+                        >
+                          <GripVertical className="h-3.5 w-3.5" />
+                        </button>
+                        <div className="w-full">{renderItem(index)}</div>
+                      </div>
                     </div>
                   )
                 }}

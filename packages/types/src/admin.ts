@@ -13,6 +13,7 @@ export interface AdminPermission {
   id: number
   name: string
   guard_name: string
+  category: string | null
   created_at: string
 }
 
