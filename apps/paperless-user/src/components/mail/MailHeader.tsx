@@ -28,6 +28,7 @@ import {
 import CreateMail from "../create/create-mail"
 import { getRequestTypeOptions } from "@workspace/utils"
 import { PageHeader } from "@workspace/ui/components/page-header"
+import { DatePickerInput } from "@workspace/ui/components/ui/date-picker"
 
 export type MailNav = "all" | "sent" | "draft"
 
@@ -66,6 +67,15 @@ const STATUS_OPTIONS = [
   { value: "Approved", label: "Disetujui", dot: "bg-emerald-500" },
   { value: "Rejected", label: "Ditolak", dot: "bg-rose-500" },
 ]
+
+const parseDate = (value?: string) => (value ? new Date(value) : undefined)
+
+const toDateBoundary = (date: Date | undefined, end = false) => {
+  if (!date) return undefined
+  const next = new Date(date)
+  next.setHours(end ? 23 : 0, end ? 59 : 0, end ? 59 : 0, end ? 999 : 0)
+  return next.toISOString()
+}
 
 const SORT_OPTIONS = [
   { value: "created_at", label: "Tanggal Dibuat" },
@@ -138,7 +148,7 @@ export function MailHeader({
                   key={value}
                   value={value}
                   aria-label={label}
-                  className="min-w-0 gap-1 px-2 text-xs font-medium sm:gap-2 sm:px-3"
+                  className="gap-1 px-2 text-xs font-medium sm:gap-2 sm:px-3"
                 >
                   <Icon className="h-3.5 w-3.5 shrink-0" />
                   <span className="truncate">{label}</span>
@@ -176,93 +186,111 @@ export function MailHeader({
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-72">
+            <PopoverContent align="end" className="w-auto">
               <div className="flex flex-col gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <p className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-                    Jenis Permohonan
-                  </p>
-                  <Select
-                    value={draft.request_type ?? "all"}
-                    onValueChange={(value) =>
-                      setDraft((prev) => ({
-                        ...prev,
-                        request_type: value === "all" ? undefined : value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="h-8 w-full">
-                      <SelectValue placeholder="Semua jenis" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Semua jenis</SelectItem>
-                      {REQUEST_TYPES.map((item) => (
-                        <SelectItem key={item.value} value={item.value}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <p className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-                    Status
-                  </p>
-                  <Select
-                    value={draft.status ?? "all"}
-                    onValueChange={(value) =>
-                      setDraft((prev) => ({
-                        ...prev,
-                        status: value === "all" ? undefined : value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="h-8 w-full">
-                      <SelectValue placeholder="Semua status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Semua status</SelectItem>
-                      {STATUS_OPTIONS.map((item) => (
-                        <SelectItem key={item.value} value={item.value}>
-                          <span className="flex items-center gap-2">
-                            <span
-                              className={`size-2 rounded-full ${item.dot}`}
-                            />
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Jenis Permohonan */}
+                  <div className="flex flex-col gap-1.5">
+                    <label
+                      htmlFor="request-type-select"
+                      className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase"
+                    >
+                      Jenis Permohonan
+                    </label>
+                    <Select
+                      value={draft.request_type ?? "all"}
+                      onValueChange={(value) =>
+                        setDraft((prev) => ({
+                          ...prev,
+                          request_type: value === "all" ? undefined : value,
+                        }))
+                      }
+                    >
+                      <SelectTrigger
+                        id="request-type-select"
+                        className="h-8 w-full"
+                      >
+                        <SelectValue placeholder="Semua jenis" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Semua jenis</SelectItem>
+                        {REQUEST_TYPES.map((item) => (
+                          <SelectItem key={item.value} value={item.value}>
                             {item.label}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Status */}
+                  <div className="flex flex-col gap-1.5">
+                    <label
+                      htmlFor="status-select"
+                      className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase"
+                    >
+                      Status
+                    </label>
+                    <Select
+                      value={draft.status ?? "all"}
+                      onValueChange={(value) =>
+                        setDraft((prev) => ({
+                          ...prev,
+                          status: value === "all" ? undefined : value,
+                        }))
+                      }
+                    >
+                      <SelectTrigger id="status-select" className="h-8 w-full">
+                        <SelectValue placeholder="Semua status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Semua status</SelectItem>
+                        {STATUS_OPTIONS.map((item) => (
+                          <SelectItem key={item.value} value={item.value}>
+                            <span className="flex items-center gap-2">
+                              <span
+                                className={`size-2 rounded-full ${item.dot ?? ""}`}
+                                aria-hidden="true"
+                              />
+                              {item.label}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   <p className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
                     Rentang Tanggal
                   </p>
-                  <div className="flex gap-2">
-                    <Input
-                      type="date"
-                      value={draft.start_date ?? ""}
-                      onChange={(e) =>
+                  <div className="grid grid-cols-2 gap-2">
+                    <DatePickerInput
+                      id="mail-filter-start-date"
+                      value={parseDate(draft.start_date)}
+                      maxDate={parseDate(draft.end_date)}
+                      placeholder="Tanggal mulai"
+                      className="min-w-0"
+                      onChange={(date) =>
                         setDraft((prev) => ({
                           ...prev,
-                          start_date: e.target.value || undefined,
+                          start_date: toDateBoundary(date),
                         }))
                       }
-                      className="h-8"
                     />
-                    <Input
-                      type="date"
-                      value={draft.end_date ?? ""}
-                      onChange={(e) =>
+                    <DatePickerInput
+                      id="mail-filter-end-date"
+                      value={parseDate(draft.end_date)}
+                      minDate={parseDate(draft.start_date)}
+                      placeholder="Tanggal selesai"
+                      className="min-w-0"
+                      onChange={(date) =>
                         setDraft((prev) => ({
                           ...prev,
-                          end_date: e.target.value || undefined,
+                          end_date: toDateBoundary(date, true),
                         }))
                       }
-                      className="h-8"
                     />
                   </div>
                 </div>

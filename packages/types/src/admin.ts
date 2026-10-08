@@ -1,9 +1,18 @@
+export interface AdminUserPermission {
+  id: number
+  name: string
+}
+
 export interface AdminUser {
   id: string
   hris_user_id: string
   user_account: { username: string; is_active: boolean }
   staff: { fullname: string; position: string | null; branch: string | null }
-  permissions: string[]
+  permissions: (string | AdminUserPermission | null)[]
+  branch_ids?: string[] | null
+  department_ids?: string[] | null
+  position_ids?: string[] | null
+  category_mail_ids?: string[] | null
   created_at: string
 }
 

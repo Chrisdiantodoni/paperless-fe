@@ -16,6 +16,9 @@ import {
   Users,
   UserCheck,
   Copy,
+  FileEdit,
+  ShieldCheck,
+  type LucideIcon,
 } from "lucide-react"
 import { AttachmentItem } from "./AttachmentItem"
 import { Button } from "@workspace/ui/components/ui/button"
@@ -115,12 +118,16 @@ const getLogActionLabel = (action: string) => {
       return "Disetujui"
     case "REJECTED":
       return "Ditolak"
+    case "UPDATED":
+      return "Diupdate"
+    case "APPROVED_BY_ADMIN":
+      return "Disetujui Admin"
     default:
       return action
   }
 }
-
-const getLogIcon = (action: string) => {
+// Mengembalikan komponen ikon Lucide
+const getLogIcon = (action: string): LucideIcon => {
   switch (action.toUpperCase()) {
     case "CREATED":
       return FilePlus
@@ -134,23 +141,54 @@ const getLogIcon = (action: string) => {
       return CheckCircle2
     case "REJECTED":
       return XCircle
+    case "UPDATED":
+      return FileEdit
+    case "APPROVED_BY_ADMIN":
+      return ShieldCheck
     default:
       return Circle
   }
 }
 
-const getLogColor = (action: string) => {
+// Mengembalikan label teks yang sebelumnya tercampur di getLogIcon
+const getLogLabel = (action: string): string => {
   switch (action.toUpperCase()) {
     case "CREATED":
+      return "Dibuat"
+    case "READ":
+      return "Dilihat"
+    case "SENT":
+      return "Dikirim"
+    case "REVISION":
+      return "Revisi"
+    case "APPROVED":
+      return "Disetujui"
+    case "REJECTED":
+      return "Ditolak"
+    case "UPDATED":
+      return "Diupdate"
+    case "APPROVED_BY_ADMIN":
+      return "Disetujui Admin"
+    default:
+      return action
+  }
+}
+
+// Mengembalikan styling warna Tailwind
+const getLogColor = (action: string): string => {
+  switch (action.toUpperCase()) {
+    case "CREATED":
+    case "SENT":
       return "text-blue-600 dark:text-blue-400"
     case "READ":
       return "text-gray-600 dark:text-gray-400"
-    case "SENT":
-      return "text-blue-600 dark:text-blue-400"
     case "REVISION":
       return "text-orange-600 dark:text-orange-400"
     case "APPROVED":
+    case "APPROVED_BY_ADMIN":
       return "text-emerald-600 dark:text-emerald-400"
+    case "UPDATED":
+      return "text-amber-600 dark:text-amber-400"
     case "REJECTED":
       return "text-rose-600 dark:text-rose-400"
     default:
@@ -489,14 +527,17 @@ export function MailDetail({
           {/* Full Width Section - Isi Surat */}
           {(req.type === "non_template" || req.type === "dynamic_template") &&
             req.content && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Isi Surat</CardTitle>
-                </CardHeader>
-                <CardContent className="overflow-x-hidden p-0">
-                  <DocumentPreview html={req.content} />
-                </CardContent>
-              </Card>
+              <div className="border-0.5 rounded-xl border">
+                <DocumentPreview html={req.content} />
+              </div>
+              // <Card>
+              //   <CardHeader>
+              //     <CardTitle className="text-base">Isi Surat</CardTitle>
+              //   </CardHeader>
+              //   <CardContent className="overflow-x-hidden p-0">
+              //     <DocumentPreview html={req.content} />
+              //   </CardContent>
+              // </Card>
             )}
 
           {/* Full Width Section - Detail Permintaan (non-template types) */}

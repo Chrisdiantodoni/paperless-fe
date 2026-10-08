@@ -19,7 +19,7 @@ export function getRouter() {
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
     defaultPendingMs: 200,
-    defaultPendingComponent: PageLoading,
+    // defaultPendingComponent: PageLoading,
   })
 
   return router

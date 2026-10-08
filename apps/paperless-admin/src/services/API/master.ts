@@ -176,9 +176,15 @@ class MasterService {
 
   async updateUser(
     id: string,
-    permissions: string[] | null
+    data: {
+      permissions: string[] | null
+      branch_ids: string[] | null
+      department_ids: string[] | null
+      position_ids: string[] | null
+      category_mail_ids: string[] | null
+    }
   ): Promise<APIResponse<AdminUser>> {
-    const res = await api.put(`/admin/users/${id}`, { permissions })
+    const res = await api.put(`/admin/users/${id}`, data)
     return res.data
   }
 
@@ -186,6 +192,34 @@ class MasterService {
     params?: Record<string, string | number | undefined>
   ): Promise<APIResponse<AdminPermissionPage>> {
     const res = await api.get("/admin/permissions", { params })
+    return res.data
+  }
+
+  async getBranchesWithDropdown(
+    params?: Record<string, string | undefined>
+  ): Promise<APIResponse<Branch[]>> {
+    const res = await api.get("/master/branches-web-dropdown", { params })
+    return res.data
+  }
+
+  async getCategoryMailWithDropdown(
+    params?: Record<string, string | undefined>
+  ): Promise<APIResponse<{ id: string; name: string }[]>> {
+    const res = await api.get("/master/categorymail-web-dropdown", { params })
+    return res.data
+  }
+
+  async getDepartmentsMailWithDropdown(
+    params?: Record<string, string | undefined>
+  ): Promise<APIResponse<Department[]>> {
+    const res = await api.get("/master/departments-web-dropdown", { params })
+    return res.data
+  }
+
+  async getPositionMailWithDropdown(
+    params?: Record<string, string | undefined>
+  ): Promise<APIResponse<Position[]>> {
+    const res = await api.get("/master/positions-web-dropdown", { params })
     return res.data
   }
 }

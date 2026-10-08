@@ -2,7 +2,7 @@ export function formatPermissionPart(value: string) {
   return value
     .split("_")
     .map((part) =>
-      part.length <= 3
+      part.length <= 2
         ? part.toUpperCase()
         : part.charAt(0).toUpperCase() + part.slice(1)
     )
@@ -12,6 +12,7 @@ export function formatPermissionPart(value: string) {
 export function groupPermissions(names: string[]) {
   return Object.entries(
     names.reduce<Record<string, string[]>>((groups, name) => {
+      if (!name) return groups
       const separator = name.indexOf(".")
       const group = separator === -1 ? name : name.slice(0, separator)
       ;(groups[group] ??= []).push(name)

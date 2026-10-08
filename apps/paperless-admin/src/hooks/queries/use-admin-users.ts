@@ -56,13 +56,14 @@ export function useAdminPermissions(page: number) {
 export function useUpdateAdminUser() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({
-      id,
-      permissions,
-    }: {
+    mutationFn: (data: {
       id: string
       permissions: string[] | null
-    }) => updateUser({ data: { id, permissions } }),
+      branch_ids: string[] | null
+      department_ids: string[] | null
+      position_ids: string[] | null
+      category_mail_ids: string[] | null
+    }) => updateUser({ data }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: adminUserKeys.all })
       queryClient.invalidateQueries({

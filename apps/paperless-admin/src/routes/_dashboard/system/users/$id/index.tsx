@@ -46,7 +46,13 @@ function RouteComponent() {
   } = useAdminPermissions(1)
 
   const userPermissions = useMemo(
-    () => data?.permissions ?? [],
+    () =>
+      data?.permissions
+        .map((permission) =>
+          typeof permission === "string" ? permission : permission?.name
+        )
+        .filter((permission): permission is string => Boolean(permission)) ??
+      [],
     [data?.permissions]
   )
   const groupedPermissions = useMemo(
@@ -119,7 +125,7 @@ function RouteComponent() {
 
       {/* User Information Card */}
       <Card className="overflow-hidden border-border/70 shadow-xs">
-        <CardHeader className="border-b bg-muted/20 pb-4">
+        <CardHeader className="border-b bg-muted/20 pt-4 pb-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle className="text-xl font-bold tracking-tight">

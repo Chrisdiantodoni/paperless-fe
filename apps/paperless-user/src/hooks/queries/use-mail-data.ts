@@ -1,5 +1,5 @@
 import type { ListRequestQueryMail } from "@/schema/mail/schema"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 
 export interface Mail {
   id: number
@@ -20,23 +20,11 @@ export interface Mail {
 export function useMailData(search: ListRequestQueryMail) {
   const [activeNav, setActiveNav] = useState(search.type)
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [query, setQuery] = useState("")
-  const [status, setStatus] = useState("")
-  const [page, setPage] = useState(1)
-  const [approvalStatus, setApprovalStatus] = useState<
-    Record<number, "Approved" | "Rejected">
-  >({})
+  const [query, setQuery] = useState(search.search ?? "")
   const [approvalNote, setApprovalNote] = useState("")
   const [approvalOpen, setApprovalOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
-
-  const current = selectedId
-
-  const submitApproval = (nextStatus: "Approved" | "Rejected") => {
-    if (!current) return
-    setApprovalStatus((items) => ({ ...items, [current.id]: nextStatus }))
-  }
 
   return {
     activeNav,
@@ -45,12 +33,6 @@ export function useMailData(search: ListRequestQueryMail) {
     setSelectedId,
     query,
     setQuery,
-    status,
-    setStatus,
-    page,
-    setPage,
-    approvalStatus,
-    setApprovalStatus,
     approvalNote,
     setApprovalNote,
     approvalOpen,
@@ -59,7 +41,5 @@ export function useMailData(search: ListRequestQueryMail) {
     setRefreshing,
     showDetail,
     setShowDetail,
-    current,
-    submitApproval,
   }
 }

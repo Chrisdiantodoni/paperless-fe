@@ -15,6 +15,9 @@ import {
   Users,
   UserCheck,
   Copy,
+  type LucideIcon,
+  FileEdit,
+  ShieldCheck,
 } from "lucide-react"
 import { AttachmentItem } from "./attachment-item"
 import { Button } from "@workspace/ui/components/ui/button"
@@ -125,12 +128,16 @@ const getLogActionLabel = (action: string) => {
       return "Disetujui"
     case "REJECTED":
       return "Ditolak"
+    case "UPDATED":
+      return "Diupdate"
+    case "APPROVED_BY_ADMIN":
+      return "Disetujui Admin"
     default:
       return action
   }
 }
-
-const getLogIcon = (action: string) => {
+// Mengembalikan komponen ikon Lucide
+const getLogIcon = (action: string): LucideIcon => {
   switch (action.toUpperCase()) {
     case "CREATED":
       return FilePlus
@@ -144,45 +151,58 @@ const getLogIcon = (action: string) => {
       return CheckCircle2
     case "REJECTED":
       return XCircle
+    case "UPDATED":
+      return FileEdit
+    case "APPROVED_BY_ADMIN":
+      return ShieldCheck
     default:
       return Circle
   }
 }
 
-const getLogColor = (action: string) => {
+// Mengembalikan label teks yang sebelumnya tercampur di getLogIcon
+const getLogLabel = (action: string): string => {
   switch (action.toUpperCase()) {
     case "CREATED":
+      return "Dibuat"
+    case "READ":
+      return "Dilihat"
+    case "SENT":
+      return "Dikirim"
+    case "REVISION":
+      return "Revisi"
+    case "APPROVED":
+      return "Disetujui"
+    case "REJECTED":
+      return "Ditolak"
+    case "UPDATED":
+      return "Diupdate"
+    case "APPROVED_BY_ADMIN":
+      return "Disetujui Admin"
+    default:
+      return action
+  }
+}
+
+// Mengembalikan styling warna Tailwind
+const getLogColor = (action: string): string => {
+  switch (action.toUpperCase()) {
+    case "CREATED":
+    case "SENT":
       return "text-blue-600 dark:text-blue-400"
     case "READ":
       return "text-gray-600 dark:text-gray-400"
-    case "SENT":
-      return "text-blue-600 dark:text-blue-400"
     case "REVISION":
       return "text-orange-600 dark:text-orange-400"
     case "APPROVED":
+    case "APPROVED_BY_ADMIN":
       return "text-emerald-600 dark:text-emerald-400"
+    case "UPDATED":
+      return "text-amber-600 dark:text-amber-400"
     case "REJECTED":
       return "text-rose-600 dark:text-rose-400"
     default:
       return "text-muted-foreground"
-  }
-}
-
-export const getBadgeClass = (status?: string) => {
-  switch (status?.toLowerCase()) {
-    case "approved":
-      return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
-    case "revision":
-      return "bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20"
-    case "sent":
-      return "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
-    case "rejected":
-      return "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20"
-    case "pending":
-      return "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/20"
-    case "draft":
-    default:
-      return "bg-muted text-muted-foreground border-border"
   }
 }
 

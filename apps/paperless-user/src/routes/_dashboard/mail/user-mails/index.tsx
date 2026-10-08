@@ -14,9 +14,6 @@ import {
 import { useMailData } from "@/hooks/queries/use-mail-data"
 import { listRequestQuerySchema } from "@/schema/mail/schema"
 import {
-  AllDraftMailQueryOptions,
-  allMailQueryOptions,
-  allSentMailQueryOptions,
   useMailDetail,
   useMailList,
   useSendMail,
@@ -24,7 +21,6 @@ import {
   useApproveMail,
   useRejectMail,
 } from "@/hooks/queries/use-mails"
-import type { LaravelPaginationData } from "@workspace/types/api"
 import type { AllMailProps } from "@workspace/types/mail"
 import type { MailFilterState } from "@/components/mail/MailHeader"
 import { toast } from "sonner"
@@ -37,23 +33,10 @@ import { PageWrapper } from "@workspace/ui/components/page-wrapper"
 
 export const Route = createFileRoute("/_dashboard/mail/user-mails/")({
   validateSearch: zodValidator(listRequestQuerySchema),
-  loaderDeps: ({ search }) => search,
-  loader: async ({ context: { queryClient }, deps: search }) => {
-    let data: LaravelPaginationData<AllMailProps[]> | undefined
-    if (search.type === "all") {
-      data = await queryClient.ensureQueryData(allMailQueryOptions(search))
-    } else if (search.type === "sent") {
-      data = await queryClient.ensureQueryData(allSentMailQueryOptions(search))
-    } else {
-      data = await queryClient.ensureQueryData(AllDraftMailQueryOptions(search))
-    }
-    return { data }
-  },
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const { data: initialData } = Route.useLoaderData()
   const search = Route.useSearch()
 
   const navigate = Route.useNavigate()
@@ -66,8 +49,6 @@ function RouteComponent() {
     query,
     setQuery,
     refreshing,
-    page,
-    setPage,
     approvalNote,
     setApprovalNote,
     approvalOpen,
@@ -76,16 +57,14 @@ function RouteComponent() {
     showDetail,
     setRefreshing,
   } = useMailData(search)
-  const listSearch = { ...search, page }
-  const {
-    data: mailPagination,
-    isFetching,
-    refetch,
-  } = useMailList(listSearch, page === search.page ? initialData : undefined)
+  const page = search.page ?? 1
+  const { data: mailPagination, isFetching, refetch } = useMailList(search)
 
   const debouncedQuery = useDebounce(query, 500)
 
   useEffect(() => {
+    if (debouncedQuery === (search.search ?? "")) return
+
     navigate({
       search: (prev) => ({
         ...prev,
@@ -93,7 +72,7 @@ function RouteComponent() {
         page: 1,
       }),
     })
-  }, [debouncedQuery])
+  }, [debouncedQuery, navigate, search.search])
 
   const { data: mailDetail, isLoading: isLoadingDetail } =
     useMailDetail(selectedId)
@@ -188,7 +167,12 @@ function RouteComponent() {
   }
 
   const handlePageChange = (nextPage: number) => {
-    setPage(nextPage)
+    navigate({
+      search: {
+        ...search,
+        page: nextPage,
+      },
+    })
   }
 
   const handleRefresh = () => {
@@ -206,7 +190,7 @@ function RouteComponent() {
 
   const handleEdit = () => {
     if (!selectedId) return
-    const listMail = mailPagination?.data?.find(
+    const listMail = mailPagination?.data.find(
       (m) => String(m.id) === String(selectedId)
     )
     const type =
@@ -337,7 +321,7 @@ function RouteComponent() {
               isLoading={isFetching}
               pageCount={mailPagination?.last_page || 1}
               pageSize={mailPagination?.per_page || 10}
-              mails={mailPagination!}
+              mails={mailPagination}
               page={page}
               selectedId={selectedId}
               currentUserId={currentUserId}

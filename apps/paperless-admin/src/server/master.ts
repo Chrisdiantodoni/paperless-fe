@@ -32,11 +32,18 @@ export const getUser = createServerFn({ method: "GET" })
 
 export const updateUser = createServerFn({ method: "POST" })
   .validator(
-    z.object({ id: z.string(), permissions: z.array(z.string()).nullable() })
+    z.object({
+      id: z.string(),
+      permissions: z.array(z.string()).nullable(),
+      branch_ids: z.array(z.string()).nullable(),
+      department_ids: z.array(z.string()).nullable(),
+      position_ids: z.array(z.string()).nullable(),
+      category_mail_ids: z.array(z.string()).nullable(),
+    })
   )
   .handler(
-    async ({ data }) =>
-      (await master.updateUser(data.id, data.permissions)).data
+    async ({ data: { id, ...data } }) =>
+      (await master.updateUser(id, data)).data
   )
 
 export const getPermissions = createServerFn({ method: "GET" })
@@ -311,6 +318,58 @@ export const requestDynamicMailTemplateRevision = createServerFn({
     try {
       const response = await master.requestDynamicMailTemplateRevision(id, data)
       return response
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  })
+
+export const getBranchesWithDropdown = createServerFn({
+  method: "GET",
+})
+  .validator(z.object({ search: z.string().optional() }))
+  .handler(async ({ data }) => {
+    try {
+      const response = await master.getBranchesWithDropdown(data)
+      return response.data
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  })
+
+export const getCategoryMailWithDropdown = createServerFn({
+  method: "GET",
+})
+  .validator(z.object({ search: z.string().optional() }))
+  .handler(async ({ data }) => {
+    try {
+      const response = await master.getCategoryMailWithDropdown(data)
+      return response.data
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  })
+
+export const getDepartmentsMailWithDropdown = createServerFn({
+  method: "GET",
+})
+  .validator(z.object({ search: z.string().optional() }))
+  .handler(async ({ data }) => {
+    try {
+      const response = await master.getDepartmentsMailWithDropdown(data)
+      return response.data
+    } catch (error: any) {
+      throw new Error(error.message)
+    }
+  })
+
+export const getPositionMailWithDropdown = createServerFn({
+  method: "GET",
+})
+  .validator(z.object({ search: z.string().optional() }))
+  .handler(async ({ data }) => {
+    try {
+      const response = await master.getPositionMailWithDropdown(data)
+      return response.data
     } catch (error: any) {
       throw new Error(error.message)
     }

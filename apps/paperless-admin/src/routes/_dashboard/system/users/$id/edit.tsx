@@ -20,6 +20,13 @@ import {
   CollapsibleTrigger,
 } from "@workspace/ui/components/ui/collapsible"
 import { Input } from "@workspace/ui/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/ui/select"
 import { PageWrapper } from "@workspace/ui/components/page-wrapper"
 import { Skeleton } from "@workspace/ui/components/ui/skeleton"
 import {
@@ -31,19 +38,119 @@ import {
   ShieldCheck,
 } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
+import type { Dispatch, SetStateAction } from "react"
 import { toast } from "sonner"
 import {
   formatPermissionPart,
   groupPermissions,
   permissionLabel,
 } from "@/lib/permissions"
+import { getBranches, getDepartments, getPositions } from "@/server/master"
 
 export const Route = createFileRoute("/_dashboard/system/users/$id/edit")({
   component: RouteComponent,
+  loader: async () => {
+    const [branches, departments, positions] = await Promise.all([
+      getBranches({ data: { is_paginate: false } }),
+      getDepartments({ data: { is_paginate: false } }),
+      getPositions({ data: { is_paginate: false } }),
+    ])
+
+    return [branches, departments, positions] as const
+  },
 })
+
+interface AccessPanelProps {
+  title: string
+  options: { id: string; name: string }[]
+  selected: string[]
+  setSelected: Dispatch<SetStateAction<string[]>>
+}
+
+function AccessPanel({
+  title,
+  options,
+  selected,
+  setSelected,
+}: AccessPanelProps) {
+  const [search, setSearch] = useState("")
+  const query = search.trim().toLowerCase()
+  const filteredOptions = options.filter((item) =>
+    item.name.toLowerCase().includes(query)
+  )
+  const optionIds = options.map((item) => item.id)
+  const selectedCount = optionIds.filter((id) => selected.includes(id)).length
+  const isAllSelected = options.length > 0 && selectedCount === options.length
+  const isPartial = selectedCount > 0 && !isAllSelected
+
+  return (
+    <Card className="gap-0 py-0 shadow-sm">
+      <CardHeader className="space-y-3 border-b px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-sm">{title}</CardTitle>
+          <Badge variant="secondary">{selectedCount} dipilih</Badge>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="relative min-w-0 flex-1">
+            <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={`Cari ${title.toLowerCase()}...`}
+              className="h-8 pl-8 text-xs"
+            />
+          </div>
+          <label className="flex shrink-0 cursor-pointer items-center gap-2 text-xs font-medium">
+            <Checkbox
+              checked={isPartial ? "indeterminate" : isAllSelected}
+              onCheckedChange={(checked) =>
+                setSelected((current) => {
+                  const unrelated = current.filter(
+                    (value) => !optionIds.includes(value)
+                  )
+                  return checked === true
+                    ? [...unrelated, ...optionIds]
+                    : unrelated
+                })
+              }
+            />
+            Semua
+          </label>
+        </div>
+      </CardHeader>
+      <CardContent className="grid max-h-56 gap-2 overflow-y-auto p-3 sm:grid-cols-2">
+        {filteredOptions.length === 0 ? (
+          <p className="col-span-full py-4 text-center text-xs text-muted-foreground">
+            Data tidak ditemukan.
+          </p>
+        ) : (
+          filteredOptions.map((item) => (
+            <label
+              key={item.id}
+              className="flex cursor-pointer items-center gap-2 rounded-md border p-2.5 text-xs hover:bg-muted/50"
+            >
+              <Checkbox
+                checked={selected.includes(item.id)}
+                onCheckedChange={() =>
+                  setSelected((current) =>
+                    current.includes(item.id)
+                      ? current.filter((value) => value !== item.id)
+                      : [...current, item.id]
+                  )
+                }
+              />
+              <span className="line-clamp-2">{item.name}</span>
+            </label>
+          ))
+        )}
+      </CardContent>
+    </Card>
+  )
+}
 
 function RouteComponent() {
   const { id } = Route.useParams()
+  const [branches, departments, positions] = Route.useLoaderData()
   const navigate = useNavigate()
 
   const { data: user, isLoading: isLoadingUser } = useAdminUser(id)
@@ -52,6 +159,12 @@ function RouteComponent() {
   const update = useUpdateAdminUser()
 
   const [selected, setSelected] = useState<string[]>([])
+  const [selectedBranches, setSelectedBranches] = useState<string[]>([])
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([])
+  const [selectedPositions, setSelectedPositions] = useState<string[]>([])
+  const [selectedCategoryMails, setSelectedCategoryMails] = useState<string[]>(
+    []
+  )
   const [permissionSearch, setPermissionSearch] = useState("")
   const [permissionFilter, setPermissionFilter] = useState<
     "all" | "selected" | "unselected"
@@ -60,9 +173,19 @@ function RouteComponent() {
 
   useEffect(() => {
     if (user?.permissions) {
-      setSelected(user.permissions)
+      setSelected(
+        user.permissions
+          .map((permission) =>
+            typeof permission === "string" ? permission : permission?.name
+          )
+          .filter((permission): permission is string => Boolean(permission))
+      )
     }
-  }, [user?.permissions])
+    setSelectedBranches(user?.branch_ids ?? [])
+    setSelectedDepartments(user?.department_ids ?? [])
+    setSelectedPositions(user?.position_ids ?? [])
+    setSelectedCategoryMails(user?.category_mail_ids ?? [])
+  }, [user])
 
   const availablePermissions = permissions ?? []
   const allPermissionNames = useMemo(
@@ -100,21 +223,6 @@ function RouteComponent() {
           ] as [string, string[]]
       )
       .filter(([, names]) => names.length > 0)
-      .sort(([a], [b]) => {
-        const bottomGroups = [
-          "branches",
-          "category_mails",
-          "department",
-          "positions",
-        ]
-        const aIndex = bottomGroups.indexOf(a)
-        const bIndex = bottomGroups.indexOf(b)
-
-        if (aIndex === -1 && bIndex === -1) return 0
-        if (aIndex === -1) return -1
-        if (bIndex === -1) return 1
-        return aIndex - bIndex
-      })
   }, [
     allPermissionNames,
     availablePermissions,
@@ -159,6 +267,10 @@ function RouteComponent() {
       await update.mutateAsync({
         id,
         permissions: selected,
+        branch_ids: selectedBranches,
+        department_ids: selectedDepartments,
+        position_ids: selectedPositions,
+        category_mail_ids: selectedCategoryMails,
       })
       toast.success("Hak akses berhasil diperbarui")
       handleNavigateBack()
@@ -232,7 +344,46 @@ function RouteComponent() {
         </div>
       </div>
 
-      {/* Main Container */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {[
+          {
+            title: "Cabang",
+            options: branches.map((item) => ({
+              id: item.id,
+              name: item.name_branch,
+            })),
+            selected: selectedBranches,
+            setter: setSelectedBranches,
+          },
+          {
+            title: "Departemen",
+            options: departments,
+            selected: selectedDepartments,
+            setter: setSelectedDepartments,
+          },
+          {
+            title: "Posisi",
+            options: positions,
+            selected: selectedPositions,
+            setter: setSelectedPositions,
+          },
+          {
+            title: "Kategori Surat",
+            options: departments,
+            selected: selectedCategoryMails,
+            setter: setSelectedCategoryMails,
+          },
+        ].map(({ title, options, selected: values, setter }) => (
+          <AccessPanel
+            key={title}
+            title={title}
+            options={options}
+            selected={values}
+            setSelected={setter}
+          />
+        ))}
+      </div>
+
       <Card className="shadow-sm">
         <CardHeader className="flex flex-col gap-3 border-b bg-muted/20 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -267,12 +418,8 @@ function RouteComponent() {
                   className="pl-9"
                 />
               </div>
-              <select
-                aria-label="Lompat ke grup permission"
-                defaultValue=""
-                onChange={(event) => {
-                  const group = event.target.value
-                  if (!group) return
+              <Select
+                onValueChange={(group) => {
                   setOpenGroups((current) =>
                     current.includes(group) ? current : [...current, group]
                   )
@@ -281,24 +428,34 @@ function RouteComponent() {
                       .getElementById(`permission-group-${group}`)
                       ?.scrollIntoView({ behavior: "smooth", block: "start" })
                   )
-                  event.target.value = ""
                 }}
-                className="h-9 rounded-md border bg-background px-3 text-sm shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <option value="">Lompat ke grup...</option>
-                {groupPermissions(allPermissionNames).map(([group]) => (
-                  <option key={group} value={group}>
-                    {formatPermissionPart(group)}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger
+                  aria-label="Lompat ke grup permission"
+                  className="h-9 w-full sm:w-auto"
+                >
+                  <SelectValue placeholder="Lompat ke grup..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {groupPermissions(allPermissionNames).map(([group]) => (
+                    <SelectItem key={group} value={group}>
+                      {formatPermissionPart(group)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="flex flex-wrap gap-2" aria-label="Filter permission">
-              {([
-                ["all", "Semua"],
-                ["selected", `Terpilih (${selected.length})`],
-                ["unselected", "Belum dipilih"],
-              ] as const).map(([value, label]) => (
+            <div
+              className="flex flex-wrap gap-2"
+              aria-label="Filter permission"
+            >
+              {(
+                [
+                  ["all", "Semua"],
+                  ["selected", `Terpilih (${selected.length})`],
+                  ["unselected", "Belum dipilih"],
+                ] as const
+              ).map(([value, label]) => (
                 <Button
                   key={value}
                   type="button"
@@ -362,14 +519,16 @@ function RouteComponent() {
                   <CollapsibleTrigger asChild>
                     <button
                       type="button"
-                      className="group/trigger flex items-center gap-2 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="group/trigger flex items-center gap-2 rounded-sm text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                       <ChevronDown className="h-4 w-4 transition-transform group-data-[state=closed]/trigger:-rotate-90" />
                       <span className="text-sm font-semibold tracking-wide">
                         {formatPermissionPart(group)}
                       </span>
                       <Badge
-                        variant={groupSelectedCount > 0 ? "default" : "secondary"}
+                        variant={
+                          groupSelectedCount > 0 ? "default" : "secondary"
+                        }
                         className="text-[11px] font-normal"
                       >
                         {groupSelectedCount} / {names.length}
@@ -393,65 +552,65 @@ function RouteComponent() {
                 <CollapsibleContent>
                   <div className="space-y-4 p-3">
                     {categories.map(([category, categoryNames]) => {
-                    const categorySelectedCount = categoryNames.filter((name) =>
-                      selected.includes(name)
-                    ).length
-                    const isCategoryAllSelected =
-                      categorySelectedCount === categoryNames.length
-                    const isCategoryPartial =
-                      categorySelectedCount > 0 && !isCategoryAllSelected
+                      const categorySelectedCount = categoryNames.filter(
+                        (name) => selected.includes(name)
+                      ).length
+                      const isCategoryAllSelected =
+                        categorySelectedCount === categoryNames.length
+                      const isCategoryPartial =
+                        categorySelectedCount > 0 && !isCategoryAllSelected
 
-                    return (
-                      <div key={category} className="space-y-2">
-                        {showCategories && (
-                          <div className="flex items-center justify-between gap-3">
-                            <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                              {category}
-                            </h3>
-                            <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground">
-                              <Checkbox
-                                checked={
-                                  isCategoryPartial
-                                    ? "indeterminate"
-                                    : isCategoryAllSelected
-                                }
-                                onCheckedChange={(checked) =>
-                                  setGroup(categoryNames, checked === true)
-                                }
-                              />
-                              <span>Pilih kategori ini</span>
-                            </label>
-                          </div>
-                        )}
-                        <div className="grid gap-2.5 sm:grid-cols-2 md:grid-cols-3">
-                          {categoryNames.map((name) => {
-                            const isChecked = selected.includes(name)
-
-                            return (
-                              <label
-                                key={name}
-                                className={`group relative flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-xs font-medium transition-all ${
-                                  isChecked
-                                    ? "border-primary/50 bg-primary/5 text-foreground shadow-2xs"
-                                    : "border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:bg-muted/30"
-                                }`}
-                              >
+                      return (
+                        <div key={category} className="space-y-2">
+                          {showCategories && (
+                            <div className="flex items-center justify-between gap-3">
+                              <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                                {category}
+                              </h3>
+                              <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground">
                                 <Checkbox
-                                  checked={isChecked}
-                                  onCheckedChange={() => toggle(name)}
-                                  className="shrink-0"
+                                  checked={
+                                    isCategoryPartial
+                                      ? "indeterminate"
+                                      : isCategoryAllSelected
+                                  }
+                                  onCheckedChange={(checked) =>
+                                    setGroup(categoryNames, checked === true)
+                                  }
                                 />
-                                <span className="line-clamp-2 flex-1 leading-snug">
-                                  {permissionLabel(name)}
-                                </span>
-                                {isChecked && (
-                                  <Check className="h-3.5 w-3.5 text-primary opacity-60 group-hover:opacity-100" />
-                                )}
+                                <span>Pilih kategori ini</span>
                               </label>
-                            )
-                          })}
+                            </div>
+                          )}
+                          <div className="grid gap-2.5 sm:grid-cols-2 md:grid-cols-3">
+                            {categoryNames.map((name) => {
+                              const isChecked = selected.includes(name)
+
+                              return (
+                                <label
+                                  key={name}
+                                  className={`group relative flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-xs font-medium transition-all ${
+                                    isChecked
+                                      ? "border-primary/50 bg-primary/5 text-foreground shadow-2xs"
+                                      : "border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:bg-muted/30"
+                                  }`}
+                                >
+                                  <Checkbox
+                                    checked={isChecked}
+                                    onCheckedChange={() => toggle(name)}
+                                    className="shrink-0"
+                                  />
+                                  <span className="line-clamp-2 flex-1 leading-snug">
+                                    {permissionLabel(name)}
+                                  </span>
+                                  {isChecked && (
+                                    <Check className="h-3.5 w-3.5 text-primary opacity-60 group-hover:opacity-100" />
+                                  )}
+                                </label>
+                              )
+                            })}
+                          </div>
                         </div>
-                      </div>
                       )
                     })}
                   </div>
