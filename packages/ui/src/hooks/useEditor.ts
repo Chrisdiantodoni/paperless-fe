@@ -1,6 +1,6 @@
 "use client"
 
-import { useEditorState, useEditor as useTiptapEditor } from "@tiptap/react"
+import { useEditor as useTiptapEditor } from "@tiptap/react"
 import type { Editor } from "@tiptap/core"
 import { markdownToHtml } from "@workspace/ui/lib/markdown-utils"
 import StarterKit from "@tiptap/starter-kit"
@@ -21,6 +21,7 @@ export function useEditor(
   onHtmlPaste?: (html: string) => void
 ): Editor | null {
   const editor: Editor | null = useTiptapEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         bulletList: {
@@ -107,10 +108,6 @@ export function useEditor(
         return true
       },
     },
-  })
-  useEditorState({
-    editor,
-    selector: (ctx) => ctx.editor.state,
   })
   return editor
 }
@@ -222,7 +219,7 @@ export function getEditorContent(
   editor: Editor | null,
   format: EditorOutputFormat
 ): string {
-  if (!editor) return ""
+  if (!editor || editor.isDestroyed || !editor.isInitialized) return ""
   return format === "html" ? editor.getHTML() : getMarkdownFromEditor(editor)
 }
 
@@ -234,7 +231,7 @@ export function setEditorContent(
   content: string,
   format: EditorOutputFormat
 ): void {
-  if (!editor) return
+  if (!editor || editor.isDestroyed || !editor.isInitialized) return
   if (format === "html") {
     // Legacy rows may still contain markdown — render it before importing
     const html = /<[a-z][\s\S]*?>/i.test(content.trim())

@@ -73,6 +73,7 @@ export interface Recipient {
   approved_at?: string
   rejected_at?: string
   revision_requested_at?: string
+  signature_path?: string | null
 }
 
 export interface RequestData {
@@ -93,6 +94,14 @@ export interface RequestData {
   exit_time?: string
   return_time?: string
   table_details?: any[]
+  title?: string
+  additional_info?: string
+  qualifications?: string[]
+  deadline_at?: string
+  branch?: string
+  branch_name?: string
+  address?: string
+  areas?: string[]
 }
 
 export interface ObligatedTemplate {

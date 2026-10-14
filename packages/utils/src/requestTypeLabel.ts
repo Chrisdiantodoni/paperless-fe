@@ -3,6 +3,7 @@ export const REQUEST_TYPE_LABELS: Record<string, string> = {
   permit_request: "Izin",
   absence_request: "Absen",
   overtime_request: "Lembur",
+  job_posting_request: "Pengajuan Karyawan",
   dynamic_template: "Memo Internal",
   non_template: "Memo Internal (Non Template)",
 }
@@ -20,6 +21,7 @@ export function getRequestTypeOptions() {
     { value: "permit_request", label: "Izin" },
     { value: "absence_request", label: "Absen" },
     { value: "overtime_request", label: "Lembur" },
+    { value: "job_posting_request", label: "Pengajuan Karyawan" },
   ]
 }
 
@@ -29,5 +31,6 @@ export function getStaticRequestTypeOptions() {
     { value: "permit_request", label: "Izin" },
     { value: "absence_request", label: "Absen" },
     { value: "overtime_request", label: "Lembur" },
+    { value: "job_posting_request", label: "Pengajuan Karyawan" },
   ]
 }

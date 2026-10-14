@@ -57,6 +57,7 @@ function getDefaultFormValues(
   return {
     request_type: search.request_type,
     notes: "" as string | null,
+    sub_title: "" as string,
     delegations: [] as Array<{ value: string; label?: string }>,
     attachments: [] as File[],
 
@@ -130,6 +131,20 @@ function getDefaultFormValues(
                 : [],
           }
         : undefined,
+    job_posting_data:
+      search.request_type === "job_posting_request"
+        ? {
+            static_mail_template_id: templateId,
+            title: "",
+            description: "",
+            additional_info: "",
+            qualifications: [],
+            areas: [],
+            deadline_at: "",
+            branch_id: "",
+            address: "",
+          }
+        : undefined,
   }
 }
 
@@ -163,6 +178,7 @@ function RouteComponent() {
         title: "Konfirmasi Kirim Mail",
         description: "Apakah Anda yakin ingin mengirim mail ini?",
       })
+      console.log(value)
 
       if (!confirmed) return
 
@@ -183,6 +199,9 @@ function RouteComponent() {
         formData.append("user_id", user.id)
         if (value.notes) {
           formData.append("notes", value.notes)
+        }
+        if (value.sub_title) {
+          formData.append("sub_title", value.sub_title)
         }
 
         if (value.delegations && value.delegations.length > 0) {
@@ -238,6 +257,30 @@ function RouteComponent() {
             if (v !== undefined && v !== null) {
               formData.append(`absence_data[${k}]`, String(v))
             }
+          })
+        }
+
+        if (
+          value.request_type === "job_posting_request" &&
+          value.job_posting_data
+        ) {
+          const jobPostingData = {
+            ...value.job_posting_data,
+            static_mail_template_id:
+              value.job_posting_data.static_mail_template_id || templateId,
+          }
+          Object.entries(jobPostingData).forEach(([key, fieldValue]) => {
+            if (fieldValue === undefined || fieldValue === null) return
+            if (Array.isArray(fieldValue)) {
+              fieldValue.forEach((item, index) => {
+                formData.append(
+                  `job_posting_data[${key}][${index}]`,
+                  String(item)
+                )
+              })
+              return
+            }
+            formData.append(`job_posting_data[${key}]`, String(fieldValue))
           })
         }
 

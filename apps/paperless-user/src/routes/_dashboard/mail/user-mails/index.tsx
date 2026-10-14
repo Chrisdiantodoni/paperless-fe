@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { zodValidator } from "@tanstack/zod-adapter"
-import { useState, useEffect } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import {
   MailHeader,
@@ -89,7 +89,10 @@ function RouteComponent() {
   const confirm = useConfirm()
 
   const { data: userData } = useUser()
-  const currentUserId = userData.id || ""
+  const currentUserIds = useMemo(
+    () => [userData.id, userData.hris_user_id].filter(Boolean),
+    [userData.hris_user_id, userData.id]
+  )
   const queryClient = useQueryClient()
 
   const [localReadIds, setLocalReadIds] = useState<Set<string>>(new Set())
@@ -98,13 +101,13 @@ function RouteComponent() {
     if (mailPagination?.data) {
       const readIds = new Set<string>()
       mailPagination.data.forEach((mail: AllMailProps) => {
-        if (isMailReadByUser(mail, currentUserId)) {
+        if (isMailReadByUser(mail, currentUserIds)) {
           readIds.add(mail.id)
         }
       })
       setLocalReadIds(readIds)
     }
-  }, [mailPagination?.data, currentUserId])
+  }, [mailPagination?.data, currentUserIds])
 
   const handleClose = () => {
     setSelectedId(null)
@@ -299,7 +302,7 @@ function RouteComponent() {
 
   return (
     <main className="flex min-h-0 flex-1 flex-col bg-background text-foreground">
-      <PageWrapper className="flex min-h-0 flex-1 flex-col space-y-6">
+      <PageWrapper className="flex min-h-0 flex-1 flex-col">
         <MailHeader
           activeNav={activeNav}
           query={query}
@@ -324,7 +327,7 @@ function RouteComponent() {
               mails={mailPagination}
               page={page}
               selectedId={selectedId}
-              currentUserId={currentUserId}
+              currentUserIds={currentUserIds}
               localReadIds={localReadIds}
               onPageChange={handlePageChange}
               onItemClick={handleMailClick}

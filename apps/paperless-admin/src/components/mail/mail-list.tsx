@@ -12,7 +12,7 @@ export interface MailListProps {
   pageSize: number
   pageCount: number
   selectedId: string | number | null
-  currentUserId: string
+  currentUserIds: string[]
   localReadIds: Set<string>
   onPageChange: (page: number) => void
   onItemClick: (id: string) => void
@@ -25,7 +25,7 @@ export function MailList({
   pageSize,
   pageCount,
   selectedId,
-  currentUserId,
+  currentUserIds,
   localReadIds,
   onPageChange,
   onItemClick,
@@ -75,7 +75,7 @@ export function MailList({
               key={mail.id}
               mail={mail}
               isSelected={String(mail.id) === String(selectedId)}
-              currentUserId={currentUserId}
+              currentUserIds={currentUserIds}
               localReadIds={localReadIds}
               onSelect={onItemClick}
             />

@@ -1,6 +1,11 @@
 // route: /_dashboard/mail/user-mails/$mailId/edit
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/ui/card"
 import { useAppForm } from "@workspace/forms/src/forms"
 import { useUser } from "@/hooks/queries/use-user"
 import { handleApiError } from "@/lib/handle-api-error"
@@ -23,10 +28,7 @@ import type { AllMailProps } from "@workspace/types/mail"
 import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
 import { PageHeader } from "@workspace/ui/components/page-header"
 import { PageWrapper } from "@workspace/ui/components/page-wrapper"
-import {
-  getFormFieldErrors,
-  useFormFieldErrors,
-} from "@/hooks/use-form-errors"
+import { getFormFieldErrors, useFormFieldErrors } from "@/hooks/use-form-errors"
 
 export const Route = createFileRoute(
   "/_dashboard/mail/user-mails/$mailId/edit"
@@ -44,6 +46,7 @@ function getDefaultFormValues(mail: AllMailProps) {
 
   return {
     request_type: req.type,
+    sub_title: req.sub_title,
     notes: req.notes ?? "",
     delegations:
       mail.delegations?.map((d) => ({
@@ -99,6 +102,7 @@ function getDefaultFormValues(mail: AllMailProps) {
               })) ?? [],
           }
         : undefined,
+    job_posting_data: req.type === "job_posting_request" ? {} : undefined,
 
     dynamic_data:
       req.type === "dynamic" || req.type === "dynamic_template"
@@ -259,6 +263,30 @@ function RouteComponent() {
               })
             })
           }
+        }
+
+        if (
+          value.request_type === "job_posting_request" &&
+          value.job_posting_data
+        ) {
+          const jobPostingData = {
+            ...value.job_posting_data,
+            static_mail_template_id:
+              value.job_posting_data.static_mail_template_id || templateId,
+          }
+          Object.entries(jobPostingData).forEach(([key, fieldValue]) => {
+            if (fieldValue === undefined || fieldValue === null) return
+            if (Array.isArray(fieldValue)) {
+              fieldValue.forEach((item, index) => {
+                formData.append(
+                  `job_posting_data[${key}][${index}]`,
+                  String(item)
+                )
+              })
+              return
+            }
+            formData.append(`job_posting_data[${key}]`, String(fieldValue))
+          })
         }
 
         if (

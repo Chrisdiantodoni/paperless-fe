@@ -36,6 +36,15 @@ export function BasicInfoSection({
       </CardHeader>
       <CardContent>
         <FieldGroup className="gap-4">
+          <form.AppField name="sub_title">
+            {(field: any) => {
+              return (
+                <div className="flex w-full flex-col space-y-1.5">
+                  <field.TextField label="Perihal" required />
+                </div>
+              )
+            }}
+          </form.AppField>
           <form.AppField name="attachments">
             {(field: any) => {
               const fileCount = field.state.value?.length || 0
@@ -43,9 +52,7 @@ export function BasicInfoSection({
                 <div className="flex w-full flex-col space-y-1.5">
                   <div className="flex items-center gap-2">
                     <Paperclip className="h-4 w-4 text-muted-foreground" />
-                    <Label>
-                      Lampiran {fileCount > 0 && `(${fileCount}/5)`}
-                    </Label>
+                    <Label>Lampiran</Label>
                   </div>
                   <field.FileUploadField
                     label=""

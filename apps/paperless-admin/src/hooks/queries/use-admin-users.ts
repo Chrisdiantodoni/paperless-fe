@@ -58,7 +58,7 @@ export function useUpdateAdminUser() {
   return useMutation({
     mutationFn: (data: {
       id: string
-      permissions: string[] | null
+      permissions: number[] | null
       branch_ids: string[] | null
       department_ids: string[] | null
       position_ids: string[] | null

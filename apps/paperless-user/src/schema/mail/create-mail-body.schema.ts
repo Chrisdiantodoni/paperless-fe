@@ -153,6 +153,33 @@ export const createMailOvertimeDataSchema = z.object({
     .min(1, "Minimal 1 detail lembur"),
 })
 
+export const createJobPostingDataSchema = z.object({
+  static_mail_template_id: z.string().nullish(),
+
+  // Di Zod 4, z.string("pesan") valid untuk error invalid_type / required
+  title: z
+    .string("Judul wajib diisi")
+    .trim()
+    .min(1, "Judul wajib diisi"),
+
+  description: z.string().nullish(),
+  additional_info: z.string().nullish(),
+
+  qualifications: z
+    .array(z.string().trim().min(1, "Kualifikasi tidak boleh kosong"))
+    .min(1, "Minimal 1 kualifikasi wajib diisi"),
+
+  deadline_at: dateSchema,
+
+  branch_id: z.string("Cabang wajib diisi").min(1, "Cabang wajib diisi"),
+
+  address: z.string().nullish(),
+
+  areas: z
+    .array(z.string().trim().min(1, "Area tidak boleh kosong"))
+    .min(1, "Minimal 1 Area wajib dipilih"),
+})
+
 export const createMailDynamicDataSchema = z.object({
   dynamic_mail_template_id: z.string().nullish(),
   payload: z.string().min(1, "Isi surat wajib diisi"),
@@ -184,15 +211,18 @@ export const createMailPayloadSchema = z
         "permit_request",
         "absence_request",
         "overtime_request",
+        "job_posting_request",
       ])
       .transform((val) => (val === "dynamic_template" ? "dynamic" : val)),
     notes: optionalString,
+    sub_title: z.string("Perihal wajib diisi"),
     delegations: z.array(createMailDelegationSchema).nullish(),
     leave_data: createMailLeaveDataSchema.optional(),
     permit_data: createMailPermitDataSchema.optional(),
     absence_data: createMailAbsenceDataSchema.optional(),
     overtime_data: createMailOvertimeDataSchema.optional(),
     dynamic_data: createMailDynamicDataSchema.optional(),
+    job_posting_data: createJobPostingDataSchema.optional(),
   })
   .superRefine((data, ctx) => {
     if (
@@ -233,11 +263,21 @@ export const createMailPayloadSchema = z
         path: ["overtime_data"],
       })
     }
-    if (data.request_type === "dynamic_template" && !data.dynamic_data) {
+    if (data.request_type === "dynamic" && !data.dynamic_data) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Data template dynamic wajib diisi",
         path: ["dynamic_data"],
+      })
+    }
+    if (
+      data.request_type === "job_posting_request" &&
+      !data.job_posting_data
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Data pengajuan karyawan wajib diisi",
+        path: ["job_posting_data"],
       })
     }
   })

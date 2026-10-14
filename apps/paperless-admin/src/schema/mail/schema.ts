@@ -23,6 +23,11 @@ export const listRequestQuerySchema = z.object({
     .enum(["Draft", "Sent", "Revision", "Approved", "Rejected"])
     .optional(),
 
+  branch_id: z.string().nullable().optional(),
+  category_mail_id: z.string().nullable().optional(),
+  department_id: z.string().nullable().optional(),
+  position_id: z.string().nullable().optional(),
+
   sort_by: z.enum(["created_at", "status", "document_number"]).optional(),
 
   sort_dir: z.enum(["asc", "desc"]).optional(),

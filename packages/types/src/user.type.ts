@@ -37,6 +37,7 @@ export interface StaffDetails {
   driver_license_number: string | null
   driver_license_type: string | null
   photo_path: string | null
+  avatar_path: string | null
   signature_path: string | null
   id_card_photo_path: string | null
   latest_education_certificate_path: string | null

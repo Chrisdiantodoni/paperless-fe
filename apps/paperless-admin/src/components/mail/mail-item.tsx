@@ -9,7 +9,7 @@ import { getBadgeClass } from "./mail-detail"
 export interface MailItemProps {
   mail: AllMailProps
   isSelected: boolean
-  currentUserId: string
+  currentUserIds: string[]
   localReadIds: Set<string>
   onSelect: (id: string) => void
 }
@@ -17,12 +17,12 @@ export interface MailItemProps {
 export function MailItem({
   mail,
   isSelected,
-  currentUserId,
+  currentUserIds,
   localReadIds,
   onSelect,
 }: MailItemProps) {
   const isRead =
-    localReadIds.has(mail.id) || isMailReadByUser(mail, currentUserId)
+    localReadIds.has(mail.id) || isMailReadByUser(mail, currentUserIds)
 
   // Ambil label judul request (misal: "Terlambat Masuk Kantor" atau default request type)
   const permitTitle =

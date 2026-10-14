@@ -7,7 +7,7 @@ import type { EditableRecipient } from "@/components/mail/mail-detail"
 
 class mails {
   async getMails(
-    params?: Record<string, string | number | undefined>
+    params?: Record<string, string | number | null | undefined>
   ): Promise<APIResponse<LaravelPaginationData<AllMailProps[]>>> {
     const res = await api.get("/mail/user-mail/all-requests", { params })
     return res.data

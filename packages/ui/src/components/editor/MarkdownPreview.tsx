@@ -7,9 +7,14 @@ import { cn } from "@workspace/ui/lib/utils"
 interface MarkdownPreviewProps {
   markdown: string
   className?: string
+  autoHeight?: boolean
 }
 
-export function MarkdownPreview({ markdown, className }: MarkdownPreviewProps) {
+export function MarkdownPreview({
+  markdown,
+  className,
+  autoHeight = false,
+}: MarkdownPreviewProps) {
   const html = useMemo(() => markdownToHtml(markdown || ""), [markdown])
 
   return (
@@ -17,7 +22,9 @@ export function MarkdownPreview({ markdown, className }: MarkdownPreviewProps) {
       <div
         className={cn(
           "tiptap ProseMirror prose prose-sm dark:prose-invert max-w-none focus:outline-none",
-          "max-h-[600px] min-h-80 overflow-y-auto px-4 py-3",
+          autoHeight
+            ? "px-4 py-3"
+            : "max-h-[600px] min-h-80 overflow-y-auto px-4 py-3",
 
           "[&_table]:my-3 [&_table]:w-full [&_table]:table-fixed [&_table]:border-collapse",
           "[&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:p-2.5 [&_th]:text-left [&_th]:font-semibold [&_th]:text-foreground",

@@ -177,7 +177,7 @@ class MasterService {
   async updateUser(
     id: string,
     data: {
-      permissions: string[] | null
+      permissions: number[] | null
       branch_ids: string[] | null
       department_ids: string[] | null
       position_ids: string[] | null

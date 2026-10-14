@@ -33,18 +33,22 @@ export function SummaryCard({
 }: SummaryCardProps) {
   const isReady = status === "ready"
 
-  const dateDisplay = startDate && endDate
-    ? formatDateRange(startDate, endDate)
-    : singleDate
-      ? formatSingleDate(singleDate)
-      : "-"
+  const dateDisplay =
+    startDate && endDate
+      ? formatDateRange(startDate, endDate)
+      : singleDate
+        ? formatSingleDate(singleDate)
+        : "-"
 
   return (
     <Card className="sticky top-4">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <CardTitle className="text-base">Ringkasan</CardTitle>
-          <Badge variant={isReady ? "default" : "secondary"} className="text-xs">
+          <Badge
+            variant={isReady ? "default" : "secondary"}
+            className="text-xs"
+          >
             {isReady ? "Siap Kirim" : "Draft"}
           </Badge>
         </div>
@@ -52,7 +56,9 @@ export function SummaryCard({
       <CardContent className="space-y-4">
         <div className="space-y-3 text-sm">
           <div>
-            <p className="text-xs font-medium text-muted-foreground">Template</p>
+            <p className="text-xs font-medium text-muted-foreground">
+              Template
+            </p>
             <p className="mt-1 font-medium">{templateLabel}</p>
           </div>
 
@@ -63,13 +69,15 @@ export function SummaryCard({
             <p className="mt-1">{departmentLabel}</p>
           </div>
 
-          <div className="border-t pt-3">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span className="text-xs font-medium">Tanggal</span>
+          {singleDate && (
+            <div className="border-t pt-3">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                <span className="text-xs font-medium">Tanggal</span>
+              </div>
+              <p className="mt-1">{dateDisplay}</p>
             </div>
-            <p className="mt-1">{dateDisplay}</p>
-          </div>
+          )}
 
           {duration && (
             <div>
@@ -80,18 +88,19 @@ export function SummaryCard({
               <p className="mt-1">{duration}</p>
             </div>
           )}
-
-          <div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span className="text-xs font-medium">Delegasi</span>
+          {delegations.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Users className="h-4 w-4" />
+                <span className="text-xs font-medium">Delegasi</span>
+              </div>
+              <p className="mt-1">
+                {delegations.length > 0
+                  ? `${delegations.length} staff`
+                  : "Tidak ada"}
+              </p>
             </div>
-            <p className="mt-1">
-              {delegations.length > 0
-                ? `${delegations.length} staff`
-                : "Tidak ada"}
-            </p>
-          </div>
+          )}
 
           <div>
             <div className="flex items-center gap-2 text-muted-foreground">

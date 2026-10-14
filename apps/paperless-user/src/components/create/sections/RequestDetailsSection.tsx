@@ -11,6 +11,7 @@ import { AbsenceRequestForm } from "@/components/create/absence-request-form"
 import { OvertimeRequestForm } from "@/components/create/overtime-request-form"
 import { DynamicFormRenderer } from "@/components/create/dynamic-form-renderer"
 import type { IDynamicMailTemplate } from "@workspace/types"
+import { JobPostingRequestForm } from "../job-posting-request-form"
 
 export interface MailRequestTemplateShape {
   content?: string
@@ -42,6 +43,8 @@ export function RequestDetailsSection({
         return "Detail Memo Internal"
       case "dynamic_template":
         return "Detail Memo Internal"
+      case "job_posting_request":
+        return "Detail Memo Pengajuan Karyawan"
       default:
         return "Detail"
     }
@@ -68,6 +71,9 @@ export function RequestDetailsSection({
         )}
         {requestType === "dynamic_template" && (
           <DynamicFormRenderer form={form} template={template!} />
+        )}
+        {requestType === "job_posting_request" && (
+          <JobPostingRequestForm form={form} />
         )}
       </CardContent>
     </Card>

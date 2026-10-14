@@ -128,6 +128,7 @@ export const createUserMail = createServerFn({ method: "POST" })
     return data as FormData
   })
   .handler(async ({ data }) => {
+    console.log(data, "body")
     try {
       const response = await mails.createMail(data)
 

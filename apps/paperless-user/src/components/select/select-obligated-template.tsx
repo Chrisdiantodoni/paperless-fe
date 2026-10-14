@@ -6,6 +6,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@workspace/ui/components/ui/command"
 import {
   Popover,
@@ -50,6 +51,7 @@ export function ObligatedTemplateCombobox({
   return (
     <>
       <Popover
+        modal
         open={open}
         onOpenChange={(next) => {
           setOpen(next)
@@ -92,40 +94,48 @@ export function ObligatedTemplateCombobox({
             </span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+        <PopoverContent
+          side="bottom"
+          sideOffset={4}
+          align="start"
+          avoidCollisions={false}
+          className="w-[var(--radix-popover-trigger-width)] p-0"
+        >
           <Command shouldFilter={false}>
             <CommandInput
               placeholder="Cari template wajib..."
               value={search}
               onValueChange={setSearch}
             />
-            <CommandGroup>
-              {isLoading ? (
-                <div className="p-2 text-sm text-muted-foreground">
-                  Loading...
-                </div>
-              ) : !templates?.data || templates.data.length === 0 ? (
-                <CommandEmpty>Template tidak ditemukan</CommandEmpty>
-              ) : (
-                templates.data.map((template) => (
-                  <CommandItem
-                    key={template.id}
-                    value={template.id}
-                    onSelect={() => {
-                      onChange(template)
-                      setOpen(false)
-                    }}
-                  >
-                    <Check
-                      className={`mr-2 h-4 w-4 ${
-                        value?.id === template.id ? "opacity-100" : "opacity-0"
-                      }`}
-                    />
-                    {template.name}
-                  </CommandItem>
-                ))
-              )}
-            </CommandGroup>
+            <CommandList className="max-h-64">
+              <CommandGroup>
+                {isLoading ? (
+                  <div className="p-2 text-sm text-muted-foreground">
+                    Loading...
+                  </div>
+                ) : !templates?.data || templates.data.length === 0 ? (
+                  <CommandEmpty>Template tidak ditemukan</CommandEmpty>
+                ) : (
+                  templates.data.map((template) => (
+                    <CommandItem
+                      key={template.id}
+                      value={template.id}
+                      onSelect={() => {
+                        onChange(template)
+                        setOpen(false)
+                      }}
+                    >
+                      <Check
+                        className={`mr-2 h-4 w-4 ${
+                          value?.id === template.id ? "opacity-100" : "opacity-0"
+                        }`}
+                      />
+                      {template.name}
+                    </CommandItem>
+                  ))
+                )}
+              </CommandGroup>
+            </CommandList>
           </Command>
         </PopoverContent>
       </Popover>

@@ -42,13 +42,12 @@ export function NavUser({ user }: { user?: UserData }) {
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage
-                  src={
-                    user?.hris_user?.staff?.details?.photo_path ??
-                    "https://api.dicebear.com/10.x/adventurer-neutral/svg?seed=Doni"
-                  }
+                  src={user?.hris_user?.staff?.details?.photo_path ?? undefined}
                   alt={user?.hris_user.username}
                 />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">
+                  {user?.hris_user.username?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">
@@ -71,13 +70,12 @@ export function NavUser({ user }: { user?: UserData }) {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage
-                    src={
-                      user?.hris_user?.staff?.details?.photo_path ??
-                      "https://api.dicebear.com/10.x/adventurer-neutral/svg?seed=Doni"
-                    }
+                    src={user?.hris_user?.staff?.details?.avatar_path ?? undefined}
                     alt={user?.hris_user.username}
                   />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {user?.hris_user.username?.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">

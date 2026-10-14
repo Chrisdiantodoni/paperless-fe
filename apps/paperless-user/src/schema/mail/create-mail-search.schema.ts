@@ -12,6 +12,7 @@ export const createMailSearchSchema = z.object({
     "permit_request",
     "absence_request",
     "overtime_request",
+    "job_posting_request",
   ]),
   type: z.enum(["dynamic", "static"]),
 })

@@ -78,18 +78,19 @@ export const columns: ColumnDef<SkipperRow>[] = [
       )
     },
   },
-  {
-    accessorKey: "skipped_mails",
-    header: "Surat Dilewati",
-    cell: ({ row }) => {
-      const mails = row.original.skipped_mails ?? []
-      return (
-        <Badge variant="outline" className="rounded-md">
-          {mails.length} Surat
-        </Badge>
-      )
-    },
-  },
+  // {
+  //   accessorKey: "skipped_mails",
+  //   header: "Surat Dilewati",
+  //   cell: ({ row }) => {
+  //     const mails = row.original.skipped_mails ?? []
+  //     console.log(row.original)
+  //     return (
+  //       <Badge variant="outline" className="rounded-md">
+  //         {mails.length} Surat
+  //       </Badge>
+  //     )
+  //   },
+  // },
 
   {
     accessorKey: "actions",

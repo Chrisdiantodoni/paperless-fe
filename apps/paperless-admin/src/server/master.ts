@@ -34,7 +34,7 @@ export const updateUser = createServerFn({ method: "POST" })
   .validator(
     z.object({
       id: z.string(),
-      permissions: z.array(z.string()).nullable(),
+      permissions: z.array(z.number()).nullable(),
       branch_ids: z.array(z.string()).nullable(),
       department_ids: z.array(z.string()).nullable(),
       position_ids: z.array(z.string()).nullable(),

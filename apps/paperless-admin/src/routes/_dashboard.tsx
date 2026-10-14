@@ -36,6 +36,7 @@ export const Route = createFileRoute("/_dashboard")({
 
 function RouteComponent() {
   const { user, sidebar } = Route.useLoaderData()
+  console.log(user, "user")
   return (
     <>
       <AppSidebar user={user} sidebar={sidebar} />

@@ -62,6 +62,8 @@ export function TopBar({ user, sidebar }: TopBarProps) {
     notificationsQuery.data?.pages.flatMap((page) => page.data) ?? []
   const unreadCount = Number(data.unread_count ?? 0)
 
+  console.log(user)
+
   const groupedNotifications = notifications.reduce<
     Record<string, typeof notifications>
   >((groups, notification) => {
@@ -99,7 +101,7 @@ export function TopBar({ user, sidebar }: TopBarProps) {
             className="mt-1 mr-2 data-[orientation=vertical]:h-5"
           />*/}
           <Link to="/" className="flex shrink-0 items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
+            <span className="flex size-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
               P
             </span>
             <span className="hidden text-sm font-semibold sm:inline">
@@ -422,15 +424,12 @@ export function TopBar({ user, sidebar }: TopBarProps) {
                 variant="ghost"
                 className="flex h-9 items-center gap-2 px-2"
               >
-                <Avatar className="h-7 w-7 rounded-md">
+                <Avatar className="h-7 w-7 rounded-full">
                   <AvatarImage
-                    src={
-                      user?.hris_user?.staff?.details?.photo_path ??
-                      "https://api.dicebear.com/10.x/adventurer-neutral/svg?seed=Doni"
-                    }
+                    src={user?.hris_user?.staff?.details?.avatar_path}
                     alt={user?.hris_user.username}
                   />
-                  <AvatarFallback className="rounded-md text-xs">
+                  <AvatarFallback className="rounded-full text-xs">
                     {user?.hris_user.username?.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -442,15 +441,12 @@ export function TopBar({ user, sidebar }: TopBarProps) {
             <DropdownMenuContent align="end" className="w-80">
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-3 px-3 py-3">
-                  <Avatar className="h-12 w-12 rounded-md">
+                  <Avatar className="h-12 w-12 rounded-full">
                     <AvatarImage
-                      src={
-                        user?.hris_user?.staff?.details?.photo_path ??
-                        "https://api.dicebear.com/10.x/adventurer-neutral/svg?seed=Doni"
-                      }
+                      src={user?.hris_user?.staff?.details?.avatar_path}
                       alt={user?.hris_user.username}
                     />
-                    <AvatarFallback className="rounded-md">
+                    <AvatarFallback className="rounded-full">
                       {user?.hris_user.username?.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>

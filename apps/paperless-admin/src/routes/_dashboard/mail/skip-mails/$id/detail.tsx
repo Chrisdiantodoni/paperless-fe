@@ -54,6 +54,8 @@ export const resolveTitle = (templateType: MailTemplateType | undefined) => {
       return "Izin Kerja"
     case "absence_request":
       return "Permohonan Ketidakhadiran"
+    case "job_posting_request":
+      return "Pengajuan Karyawan"
     case "overtime_request":
       return "Permohonan Lembur (Overtime)"
     case "dynamic_form":

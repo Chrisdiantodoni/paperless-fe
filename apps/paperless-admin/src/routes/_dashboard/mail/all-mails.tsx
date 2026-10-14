@@ -1,10 +1,10 @@
 import { MailDetail } from "@/components/mail/mail-detail"
 import MailemptyState from "@/components/mail/mail-empty-state"
-import MailHeader, { type MailFilterState } from "@/components/mail/mail-header"
+import MailHeader from "@/components/mail/mail-header"
+import type { MailFilterState } from "@/components/mail/mail-header"
 import { MailList } from "@/components/mail/mail-list"
 import {
   mailKeys,
-  mailListQueryOptions,
   useEditMailRecipient,
   useMailDetail,
   useMailList,
@@ -20,24 +20,22 @@ import type { AllMailProps } from "@workspace/types/mail"
 import { PageWrapper } from "@workspace/ui/components/page-wrapper"
 import { Button } from "@workspace/ui/components/ui/button"
 import { useSidebar } from "@workspace/ui/components/ui/sidebar"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 
 export const Route = createFileRoute("/_dashboard/mail/all-mails")({
   validateSearch: zodValidator(listRequestQuerySchema),
-  loaderDeps: ({ search }) => search,
-  loader: async ({ context: { queryClient }, deps: search }) => {
-    const data = await queryClient.ensureQueryData(mailListQueryOptions(search))
-    return { data }
-  },
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const search = Route.useSearch()
   const { setOpen } = useSidebar()
+  const hasCollapsedSidebar = useRef(false)
 
   useEffect(() => {
+    if (hasCollapsedSidebar.current) return
+    hasCollapsedSidebar.current = true
     setOpen(false)
   }, [setOpen])
   const navigate = Route.useNavigate()
@@ -45,15 +43,21 @@ function RouteComponent() {
   const filters: MailFilterState = {
     request_type: search.request_type,
     status: search.status,
+    branch_id: search.branch_id,
+    category_mail_id: search.category_mail_id,
+    department_id: search.department_id,
+    position_id: search.position_id,
     start_date: search.start_date,
     end_date: search.end_date,
     sort_by: search.sort_by,
     sort_dir: search.sort_dir,
   }
-  const { data: initialData } = Route.useLoaderData()
   const [localReadIds, setLocalReadIds] = useState<Set<string>>(new Set())
   const { data: userData } = useUser()
-  const currentUserId = userData.id || ""
+  const currentUserIds = useMemo(
+    () => [userData.id, userData.hris_user_id].filter(Boolean),
+    [userData.hris_user_id, userData.id]
+  )
   const {
     selectedId,
     setSelectedId,
@@ -66,32 +70,36 @@ function RouteComponent() {
   } = useMailData(search)
   const listSearch = { ...search, page }
 
-  const handleFiltersChange = (filters: MailFilterState) => {
+  const handleFiltersChange = (nextFilters: MailFilterState) => {
     navigate({
       search: {
         ...search,
-        request_type: filters.request_type as
+        request_type: nextFilters.request_type as
           | "leave_request"
           | "permit_request"
           | "absence_request"
           | "overtime_request"
           | "dynamic_template"
           | undefined,
-        status: filters.status as
+        status: nextFilters.status as
           | "Draft"
           | "Sent"
           | "Revision"
           | "Approved"
           | "Rejected"
           | undefined,
-        start_date: filters.start_date ?? undefined,
-        end_date: filters.end_date ?? undefined,
-        sort_by: filters.sort_by as
+        branch_id: nextFilters.branch_id || undefined,
+        category_mail_id: nextFilters.category_mail_id || undefined,
+        department_id: nextFilters.department_id || undefined,
+        position_id: nextFilters.position_id || undefined,
+        start_date: nextFilters.start_date ?? undefined,
+        end_date: nextFilters.end_date ?? undefined,
+        sort_by: nextFilters.sort_by as
           | "status"
           | "created_at"
           | "document_number"
           | undefined,
-        sort_dir: filters.sort_dir as "asc" | "desc" | undefined,
+        sort_dir: nextFilters.sort_dir as "asc" | "desc" | undefined,
         page: 1,
       },
     })
@@ -103,7 +111,7 @@ function RouteComponent() {
     isError: isListError,
     error: listError,
     refetch,
-  } = useMailList(listSearch, page === search.page ? initialData! : undefined)
+  } = useMailList(listSearch)
 
   const handleRefresh = async () => {
     setRefreshing(true)
@@ -129,13 +137,13 @@ function RouteComponent() {
     if (mailPagination?.data) {
       const readIds = new Set<string>()
       mailPagination.data.forEach((mail: AllMailProps) => {
-        if (isMailReadByUser(mail, currentUserId)) {
+        if (isMailReadByUser(mail, currentUserIds)) {
           readIds.add(mail.id)
         }
       })
       setLocalReadIds(readIds)
     }
-  }, [mailPagination?.data, currentUserId])
+  }, [mailPagination?.data, currentUserIds])
 
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage)
@@ -162,7 +170,7 @@ function RouteComponent() {
 
   return (
     <main className="flex min-h-0 flex-1 flex-col bg-background text-foreground">
-      <PageWrapper className="mx-2 flex min-h-0 flex-1 flex-col space-y-2 px-2 py-2 sm:px-2 lg:px-0">
+      <PageWrapper className="mx-2 flex min-h-0 flex-1 flex-col px-2 py-2 sm:px-2 lg:px-0">
         <MailHeader
           onRefresh={handleRefresh}
           onFiltersChange={handleFiltersChange}
@@ -193,7 +201,7 @@ function RouteComponent() {
                 mails={mailPagination!}
                 page={page}
                 selectedId={selectedId}
-                currentUserId={currentUserId}
+                currentUserIds={currentUserIds}
                 localReadIds={localReadIds}
                 onPageChange={handlePageChange}
                 onItemClick={handleMailClick}

@@ -18,6 +18,7 @@ import {
   type LucideIcon,
   FileEdit,
   ShieldCheck,
+  Signature,
 } from "lucide-react"
 import { AttachmentItem } from "./attachment-item"
 import { Button } from "@workspace/ui/components/ui/button"
@@ -29,6 +30,14 @@ import {
   CardTitle,
 } from "@workspace/ui/components/ui/card"
 import { Avatar, AvatarFallback } from "@workspace/ui/components/ui/avatar"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@workspace/ui/components/ui/dialog"
 import { getInitials } from "@workspace/ui/lib/utils"
 import { formatDate } from "@workspace/utils"
 import type {
@@ -38,6 +47,7 @@ import type {
 } from "@workspace/types/mail"
 import { useUser } from "@/hooks/queries/use-user"
 import { DocumentPreview } from "@workspace/ui/components/editor"
+import { MarkdownPreview } from "@workspace/ui/components/editor/MarkdownPreview"
 
 import { ApproveDialog } from "./dialog/approve-dialog"
 import { CancelDialog } from "./dialog/cancel-dialog"
@@ -49,12 +59,12 @@ import {
 /**
  * Helper function untuk menentukan apakah user dapat melakukan approval
  * @param recipients - Array of recipients from mail detail
- * @param currentUserId - ID of currently logged-in user
+ * @param currentUserIds - ID of currently logged-in user
  * @returns Object dengan status approval permission
  */
 function getApproverStatus(
   recipients: Recipient[],
-  currentUserId: string
+  currentUserIds: string[]
 ): {
   canApprove: boolean
   reason?:
@@ -66,12 +76,12 @@ function getApproverStatus(
   sequence?: number
   recipient?: Recipient
 } {
-  if (!recipients.length || !currentUserId) {
+  if (!recipients.length || currentUserIds.length === 0) {
     return { canApprove: false, reason: "not_in_approval_list" }
   }
 
   const currentUserRecipient = recipients.find(
-    (r) => r.recipient_user_id === currentUserId
+    (r) => currentUserIds.includes(r.recipient_user_id)
   )
 
   if (!currentUserRecipient) {
@@ -111,6 +121,24 @@ function getApproverStatus(
     canApprove: true,
     sequence: currentUserRecipient.sequence,
     recipient: currentUserRecipient,
+  }
+}
+
+export const getBadgeClass = (status?: string) => {
+  switch (status?.toLowerCase()) {
+    case "approved":
+      return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
+    case "revision":
+      return "bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20"
+    case "sent":
+      return "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
+    case "rejected":
+      return "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20"
+    case "pending":
+      return "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/20"
+    case "draft":
+    default:
+      return "bg-muted text-muted-foreground border-border"
   }
 }
 
@@ -224,10 +252,50 @@ function StatusBadge({
   )
 }
 
+function SignaturePreview({ recipient }: { recipient: Recipient }) {
+  const status = recipient.status.toLowerCase()
+  if (
+    !recipient.signature_path ||
+    !["approved", "rejected", "reject"].includes(status)
+  ) {
+    return null
+  }
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="h-7 gap-1.5 text-xs">
+          <Signature className="size-3.5" />
+          Lihat Tanda Tangan
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {status === "approved"
+              ? "Tanda Tangan Persetujuan"
+              : "Tanda Tangan Penolakan"}
+          </DialogTitle>
+          <DialogDescription>
+            {recipient.name} · {recipient.position || "Jabatan tidak tersedia"}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex min-h-48 items-center justify-center rounded-lg border bg-white p-6">
+          <img
+            src={recipient.signature_path}
+            alt={`Tanda tangan ${recipient.name}`}
+            className="max-h-56 w-full object-contain"
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 /** Satu baris penerima (approver / tembusan), dipakai ulang di tiap grup. */
 function RecipientRow({
   rec,
-  currentUserId,
+  currentUserIds,
   logs,
   showCancelAction = false,
   showApproveOnBehalfAction = false,
@@ -236,7 +304,7 @@ function RecipientRow({
   mailId,
 }: {
   rec: Recipient
-  currentUserId: string
+  currentUserIds: string[]
   logs: AllMailProps["logs"]
   showCancelAction?: boolean
   showApproveOnBehalfAction?: boolean
@@ -244,7 +312,7 @@ function RecipientRow({
   onApproveOnBehalf?: () => void
   mailId: string
 }) {
-  const isCurrentUser = rec.recipient_user_id === currentUserId
+  const isCurrentUser = currentUserIds.includes(rec.recipient_user_id)
   const isActiveApprover =
     isCurrentUser && rec.status?.toLowerCase() === "pending"
 
@@ -305,6 +373,7 @@ function RecipientRow({
         )}
       </div>
       <div className="ml-3 flex items-center gap-2">
+        <SignaturePreview recipient={rec} />
         <StatusBadge status={rec.status} />
         {showCancelAction && onCancelRecipient && (
           <CancelDialog mailId={mailId} />
@@ -322,7 +391,7 @@ function RecipientGroup({
   label,
   icon: Icon,
   recipients,
-  currentUserId,
+  currentUserIds,
   logs,
   cancelRecipientId,
   approveOnBehalfId,
@@ -333,7 +402,7 @@ function RecipientGroup({
   label: string
   icon: React.ComponentType<{ className?: string }>
   recipients: Recipient[]
-  currentUserId: string
+  currentUserIds: string[]
   logs: AllMailProps["logs"]
   cancelRecipientId?: string
   approveOnBehalfId?: string
@@ -356,7 +425,7 @@ function RecipientGroup({
           <RecipientRow
             key={rec.id}
             rec={rec}
-            currentUserId={currentUserId}
+            currentUserIds={currentUserIds}
             logs={logs}
             showCancelAction={rec.id === cancelRecipientId}
             showApproveOnBehalfAction={rec.id === approveOnBehalfId}
@@ -447,6 +516,8 @@ export function MailDetail({
         return "Permohonan Ketidakhadiran"
       case "overtime_request":
         return "Permohonan Lembur (Overtime)"
+      case "job_posting_request":
+        return "Pengajuan Karyawan"
       case "dynamic_form":
         return "Formulir Khusus"
       case "non_template":
@@ -507,12 +578,14 @@ export function MailDetail({
   const isSendMail = detail.status.toLowerCase() === "sent"
 
   const { data: userData } = useUser()
-  const currentUserId = userData.hris_user_id || ""
-  const isCurrentUser = senderUserId === currentUserId
+  const currentUserIds = [userData.id, userData.hris_user_id].filter(Boolean)
+  const isCurrentUser = senderUserId
+    ? currentUserIds.includes(senderUserId)
+    : false
 
   const approverStatus = getApproverStatus(
     detail.recipients || [],
-    currentUserId
+    currentUserIds
   )
   const canShowApprovalButtons = isSendMail && approverStatus.canApprove
   const canShowRecipientActions = !["approved", "rejected"].includes(
@@ -593,104 +666,195 @@ export function MailDetail({
           {/* Full Width Section - Isi Surat */}
           {(req.type === "non_template" || req.type === "dynamic_template") &&
             req.content && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Isi Surat</CardTitle>
-                </CardHeader>
-                <CardContent className="min-w-0 overflow-x-hidden p-0">
-                  <DocumentPreview html={req.content} />
-                </CardContent>
-              </Card>
+              <div className="border-0.5 rounded-xl border">
+                <DocumentPreview html={req.content} />
+              </div>
             )}
 
-          {/* Full Width Section - Detail Permintaan (non-template types) */}
-          {req.type !== "non_template" && req.type !== "dynamic_template" && (
+          {req.type === "job_posting_request" && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Detail Permintaan</CardTitle>
+                <CardTitle className="text-base">
+                  {req.title || "Detail Pengajuan Karyawan"}
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2">
+              <CardContent className="space-y-6">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <div>
-                    <div className="text-sm font-medium text-muted-foreground">
-                      Periode / Tanggal
-                    </div>
-                    <div className="mt-1 text-sm">{dateRange}</div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Cabang
+                    </p>
+                    <p className="mt-1 text-sm">
+                      {req.branch_name || req.branch || "-"}
+                    </p>
                   </div>
-
-                  {timeDetails && (
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">
-                        Keterangan Jam
-                      </div>
-                      <div className="mt-1 text-sm">{timeDetails}</div>
-                    </div>
-                  )}
-
-                  {typeof req.quota_deducted === "number" && (
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">
-                        Potong Kuota Cuti
-                      </div>
-                      <div className="mt-1 text-sm">
-                        {req.quota_deducted} Hari
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="sm:col-span-2">
-                    <div className="text-sm font-medium text-muted-foreground">
-                      Alasan / Catatan
-                    </div>
-                    <div className="mt-1 text-sm">{reason}</div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Batas Lamaran
+                    </p>
+                    <p className="mt-1 text-sm">
+                      {req.deadline_at ? formatDate(req.deadline_at) : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Alamat Penempatan
+                    </p>
+                    <p className="mt-1 text-sm">{req.address || "-"}</p>
                   </div>
                 </div>
 
-                {req.type === "overtime_request" &&
-                  Array.isArray(req.table_details) && (
-                    <div className="mt-6">
-                      <div className="mb-2 text-sm font-medium text-muted-foreground">
-                        Daftar Staf Lembur ({req.table_details.length})
-                      </div>
-                      <div className="overflow-x-auto rounded-lg border border-border">
-                        <table className="w-full text-left text-xs">
-                          <thead className="bg-muted/50 text-muted-foreground">
-                            <tr>
-                              <th className="p-2.5 font-medium">Nama Staf</th>
-                              <th className="p-2.5 font-medium">Jabatan</th>
-                              <th className="p-2.5 font-medium">Tanggal</th>
-                              <th className="p-2.5 font-medium">Jam</th>
-                              <th className="p-2.5 font-medium">Alasan</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border">
-                            {req.table_details.map((staff) => (
-                              <tr key={staff.id} className="hover:bg-muted/20">
-                                <td className="p-2.5 font-medium text-foreground">
-                                  {staff.fullname}
-                                </td>
-                                <td className="p-2.5 text-muted-foreground">
-                                  {staff.position}
-                                </td>
-                                <td className="p-2.5 whitespace-nowrap">
-                                  {formatDate(staff.date)}
-                                </td>
-                                <td className="p-2.5 whitespace-nowrap">
-                                  {staff.start_time} - {staff.end_time}
-                                </td>
-                                <td className="p-2.5 text-muted-foreground">
-                                  {staff.reason}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                {req.description && (
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-muted-foreground">
+                      Deskripsi Pekerjaan
+                    </p>
+                    <MarkdownPreview
+                      markdown={req.description}
+                      className="rounded-lg border p-4"
+                      autoHeight
+                    />
+                  </div>
+                )}
+
+                {Array.isArray(req.qualifications) &&
+                  req.qualifications.length > 0 && (
+                    <div>
+                      <p className="mb-2 text-sm font-medium text-muted-foreground">
+                        Kualifikasi
+                      </p>
+                      <ul className="list-disc space-y-1 pl-5 text-sm">
+                        {req.qualifications.map((qualification) => (
+                          <li key={qualification}>{qualification}</li>
+                        ))}
+                      </ul>
                     </div>
                   )}
+
+                {Array.isArray(req.areas) && req.areas.length > 0 && (
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-muted-foreground">
+                      Area Penempatan
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {req.areas.map((area) => (
+                        <Badge key={area} variant="outline">
+                          {area}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {req.additional_info && (
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-muted-foreground">
+                      Informasi Tambahan
+                    </p>
+                    <MarkdownPreview
+                      markdown={req.additional_info}
+                      className="rounded-lg border p-4"
+                      autoHeight
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
+
+          {/* Full Width Section - Detail Permintaan (non-template types) */}
+          {req.type !== "non_template" &&
+            req.type !== "dynamic_template" &&
+            req.type !== "job_posting_request" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Detail Surat</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <div className="text-sm font-medium text-muted-foreground">
+                        Periode / Tanggal
+                      </div>
+                      <div className="mt-1 text-sm">{dateRange}</div>
+                    </div>
+
+                    {timeDetails && (
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          Keterangan Jam
+                        </div>
+                        <div className="mt-1 text-sm">{timeDetails}</div>
+                      </div>
+                    )}
+
+                    {typeof req.quota_deducted === "number" && (
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          Potong Kuota Cuti
+                        </div>
+                        <div className="mt-1 text-sm">
+                          {req.quota_deducted} Hari
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="sm:col-span-2">
+                      <div className="text-sm font-medium text-muted-foreground">
+                        Alasan / Catatan
+                      </div>
+                      <div className="mt-1 text-sm">{reason}</div>
+                    </div>
+                  </div>
+
+                  {req.type === "overtime_request" &&
+                    Array.isArray(req.table_details) && (
+                      <div className="mt-6">
+                        <div className="mb-2 text-sm font-medium text-muted-foreground">
+                          Daftar Staf Lembur ({req.table_details.length})
+                        </div>
+                        <div className="overflow-x-auto rounded-lg border border-border">
+                          <table className="w-full text-left text-xs">
+                            <thead className="bg-muted/50 text-muted-foreground">
+                              <tr>
+                                <th className="p-2.5 font-medium">Nama Staf</th>
+                                <th className="p-2.5 font-medium">Jabatan</th>
+                                <th className="p-2.5 font-medium">Tanggal</th>
+                                <th className="p-2.5 font-medium">Jam</th>
+                                <th className="p-2.5 font-medium">Alasan</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                              {req.table_details.map((staff) => (
+                                <tr
+                                  key={staff.id}
+                                  className="hover:bg-muted/20"
+                                >
+                                  <td className="p-2.5 font-medium text-foreground">
+                                    {staff.fullname}
+                                  </td>
+                                  <td className="p-2.5 text-muted-foreground">
+                                    {staff.position}
+                                  </td>
+                                  <td className="p-2.5 whitespace-nowrap">
+                                    {formatDate(staff.date)}
+                                  </td>
+                                  <td className="p-2.5 whitespace-nowrap">
+                                    {staff.start_time} - {staff.end_time}
+                                  </td>
+                                  <td className="p-2.5 text-muted-foreground">
+                                    {staff.reason}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                </CardContent>
+              </Card>
+            )}
 
           {/* Full Width Section - Data Formulir */}
           {req.type === "dynamic_template" &&
@@ -970,7 +1134,7 @@ export function MailDetail({
                           label="Diketahui"
                           icon={Users}
                           recipients={superiorRecipients}
-                          currentUserId={currentUserId}
+                          currentUserIds={currentUserIds}
                           logs={detail.logs}
                           cancelRecipientId={
                             canShowRecipientActions
@@ -988,7 +1152,7 @@ export function MailDetail({
                           label="Kepada"
                           icon={UserCheck}
                           recipients={toRecipients}
-                          currentUserId={currentUserId}
+                          currentUserIds={currentUserIds}
                           logs={detail.logs}
                           cancelRecipientId={
                             canShowRecipientActions
@@ -1006,7 +1170,7 @@ export function MailDetail({
                           label="Tembusan"
                           icon={Copy}
                           recipients={ccRecipients}
-                          currentUserId={currentUserId}
+                          currentUserIds={currentUserIds}
                           logs={detail.logs}
                           cancelRecipientId={
                             canShowRecipientActions

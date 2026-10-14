@@ -102,6 +102,13 @@ function RouteComponent() {
     )
   }
 
+  const accessScopes = [
+    { label: "Cabang", items: data.permission_branches ?? [] },
+    { label: "Departemen", items: data.permission_departments ?? [] },
+    { label: "Posisi", items: data.permission_positions ?? [] },
+    { label: "Kategori Surat", items: data.permission_category_mails ?? [] },
+  ]
+
   return (
     <PageWrapper className="max-w-4xl space-y-6 p-4 md:p-6">
       {/* Action Bar / Navigation */}
@@ -167,7 +174,7 @@ function RouteComponent() {
             <div>
               <p className="text-xs text-muted-foreground">Posisi</p>
               <p className="font-medium text-foreground">
-                {data.staff?.position || "-"}
+                {data.staff?.details || "-"}
               </p>
             </div>
           </div>
@@ -181,6 +188,47 @@ function RouteComponent() {
               </p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-xs">
+        <CardHeader className="border-b bg-muted/20 py-4">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base font-semibold">
+              Cakupan Akses
+            </CardTitle>
+          </div>
+          <CardDescription className="text-xs">
+            Cabang, departemen, posisi, dan kategori surat yang dapat diakses
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 p-4 sm:grid-cols-2 sm:p-6">
+          {accessScopes.map(({ label, items }) => (
+            <div key={label} className="rounded-xl border bg-card/60 p-4">
+              <div className="mb-3 flex items-center justify-between border-b pb-2">
+                <h3 className="text-sm font-semibold">{label}</h3>
+                <Badge variant="secondary" className="text-[11px] font-normal">
+                  {items.length} akses
+                </Badge>
+              </div>
+              {items.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {items.map((item) => (
+                    <Badge
+                      key={item.id}
+                      variant="outline"
+                      className="font-normal"
+                    >
+                      {item.name}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">Tidak ada akses</p>
+              )}
+            </div>
+          ))}
         </CardContent>
       </Card>
 

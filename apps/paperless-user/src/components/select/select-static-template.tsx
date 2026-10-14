@@ -6,6 +6,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@workspace/ui/components/ui/command"
 import {
   Popover,
@@ -75,6 +76,7 @@ export function StaticTemplateCombobox({
   return (
     <>
       <Popover
+        modal
         open={open}
         onOpenChange={(next) => {
           setOpen(next)
@@ -124,8 +126,9 @@ export function StaticTemplateCombobox({
               value={search}
               onValueChange={setSearch}
             />
-            <CommandGroup>
-              {isFetching ? (
+            <CommandList className="max-h-64">
+              <CommandGroup>
+                {isFetching ? (
                 <div className="p-2 text-sm text-muted-foreground">
                   Loading...
                 </div>
@@ -150,7 +153,8 @@ export function StaticTemplateCombobox({
                   </CommandItem>
                 ))
               )}
-            </CommandGroup>
+              </CommandGroup>
+            </CommandList>
           </Command>
         </PopoverContent>
       </Popover>

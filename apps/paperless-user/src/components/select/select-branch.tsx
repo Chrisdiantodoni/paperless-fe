@@ -6,6 +6,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@workspace/ui/components/ui/command"
 import {
   Popover,
@@ -46,7 +47,7 @@ export function BranchCombobox({ value, onChange }: BranchComboboxProps) {
     options.find((d) => d.id === resolvedValue)?.name_branch
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover modal open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           type="button"
@@ -85,8 +86,9 @@ export function BranchCombobox({ value, onChange }: BranchComboboxProps) {
             value={search}
             onValueChange={setSearch}
           />
-          <CommandGroup>
-            {isFetching ? (
+          <CommandList className="max-h-64">
+            <CommandGroup>
+              {isFetching ? (
               <div className="p-2 text-sm text-muted-foreground">
                 Loading...
               </div>
@@ -111,7 +113,8 @@ export function BranchCombobox({ value, onChange }: BranchComboboxProps) {
                 </CommandItem>
               ))
             )}
-          </CommandGroup>
+            </CommandGroup>
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>

@@ -1,3 +1,4 @@
+import { AsyncFilterCombobox } from "@/components/select/async-filter-combobox"
 import { useDebounce } from "@/hooks/use-debounce"
 import { useNavigate } from "@tanstack/react-router"
 import { PageHeader } from "@workspace/ui/components/page-header"
@@ -23,6 +24,14 @@ import { useEffect, useState } from "react"
 export interface MailFilterState {
   request_type?: string
   status?: string
+  branch_id?: string | null
+  branch_label?: string
+  category_mail_id?: string | null
+  category_mail_label?: string
+  department_id?: string | null
+  department_label?: string
+  position_id?: string | null
+  position_label?: string
   start_date?: string
   end_date?: string
   sort_by?: string
@@ -96,6 +105,10 @@ export default function MailHeader({
     [
       filters.request_type,
       filters.status,
+      filters.branch_id,
+      filters.category_mail_id,
+      filters.department_id,
+      filters.position_id,
       filters.sort_by,
       filters.sort_dir,
     ].filter(Boolean).length + (filters.start_date || filters.end_date ? 1 : 0)
@@ -137,7 +150,7 @@ export default function MailHeader({
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-72">
+            <PopoverContent align="end" className="w-auto">
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1.5">
                   <p className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
@@ -196,6 +209,60 @@ export default function MailHeader({
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    [
+                      "branch",
+                      "branch_id",
+                      "branch_label",
+                      "Cabang",
+                      "Semua cabang",
+                    ],
+                    [
+                      "categoryMail",
+                      "category_mail_id",
+                      "category_mail_label",
+                      "Kategori Surat",
+                      "Semua kategori",
+                    ],
+                    [
+                      "department",
+                      "department_id",
+                      "department_label",
+                      "Departemen",
+                      "Semua departemen",
+                    ],
+                    [
+                      "position",
+                      "position_id",
+                      "position_label",
+                      "Posisi",
+                      "Semua posisi",
+                    ],
+                  ] as const).map(
+                    ([type, idKey, labelKey, fieldLabel, placeholder]) => (
+                      <div key={idKey} className="flex flex-col gap-1.5">
+                        <p className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                          {fieldLabel}
+                        </p>
+                        <AsyncFilterCombobox
+                          type={type}
+                          value={filters[idKey] ?? undefined}
+                          label={filters[labelKey]}
+                          placeholder={placeholder}
+                          onChange={(value, label) =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              [idKey]: value,
+                              [labelKey]: label,
+                            }))
+                          }
+                        />
+                      </div>
+                    )
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-1.5">

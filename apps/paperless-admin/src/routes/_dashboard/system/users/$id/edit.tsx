@@ -158,7 +158,7 @@ function RouteComponent() {
     useAdminPermissions(1)
   const update = useUpdateAdminUser()
 
-  const [selected, setSelected] = useState<string[]>([])
+  const [selected, setSelected] = useState<number[]>([])
   const [selectedBranches, setSelectedBranches] = useState<string[]>([])
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([])
   const [selectedPositions, setSelectedPositions] = useState<string[]>([])
@@ -171,27 +171,53 @@ function RouteComponent() {
   >("all")
   const [openGroups, setOpenGroups] = useState<string[]>([])
 
+  const availablePermissions = useMemo(() => permissions ?? [], [permissions])
+
+  console.log(user, "admin user")
+
   useEffect(() => {
     if (user?.permissions) {
       setSelected(
-        user.permissions
-          .map((permission) =>
-            typeof permission === "string" ? permission : permission?.name
+        user.permissions.flatMap((permission) => {
+          if (typeof permission !== "string") {
+            return permission ? [permission.id] : []
+          }
+          const match = availablePermissions.find(
+            (available) => available.name === permission
           )
-          .filter((permission): permission is string => Boolean(permission))
+          return match ? [match.id] : []
+        })
       )
     }
-    setSelectedBranches(user?.branch_ids ?? [])
-    setSelectedDepartments(user?.department_ids ?? [])
-    setSelectedPositions(user?.position_ids ?? [])
-    setSelectedCategoryMails(user?.category_mail_ids ?? [])
-  }, [user])
-
-  const availablePermissions = permissions ?? []
+    setSelectedBranches(user?.permission_branches?.map((item) => item.id) ?? [])
+    setSelectedDepartments(
+      user?.permission_departments?.map((item) => item.id) ?? []
+    )
+    setSelectedPositions(
+      user?.permission_positions?.map((item) => item.id) ?? []
+    )
+    setSelectedCategoryMails(
+      user?.permission_category_mails?.map((item) => item.id) ?? []
+    )
+  }, [availablePermissions, user])
   const allPermissionNames = useMemo(
     () => availablePermissions.map((p) => p.name),
     [availablePermissions]
   )
+  const permissionIdByName = useMemo(
+    () =>
+      new Map(
+        availablePermissions.map((permission) => [
+          permission.name,
+          permission.id,
+        ])
+      ),
+    [availablePermissions]
+  )
+  const isPermissionSelected = (name: string) => {
+    const permissionId = permissionIdByName.get(name)
+    return permissionId !== undefined && selected.includes(permissionId)
+  }
 
   const groupedPermissions = useMemo(() => {
     const query = permissionSearch.trim().toLowerCase()
@@ -215,8 +241,8 @@ function RouteComponent() {
               const matchesFilter =
                 permissionFilter === "all" ||
                 (permissionFilter === "selected"
-                  ? selected.includes(name)
-                  : !selected.includes(name))
+                  ? isPermissionSelected(name)
+                  : !isPermissionSelected(name))
 
               return matchesSearch && matchesFilter
             }),
@@ -232,27 +258,35 @@ function RouteComponent() {
   ])
 
   const toggle = (name: string) => {
+    const permissionId = permissionIdByName.get(name)
+    if (permissionId === undefined) return
     setSelected((current) =>
-      current.includes(name)
-        ? current.filter((item) => item !== name)
-        : [...current, name]
+      current.includes(permissionId)
+        ? current.filter((item) => item !== permissionId)
+        : [...current, permissionId]
     )
   }
 
   const setGroup = (names: string[], checked: boolean) => {
     setSelected((current) => {
       const next = new Set(current)
-      names.forEach((name) => (checked ? next.add(name) : next.delete(name)))
+      names.forEach((name) => {
+        const permissionId = permissionIdByName.get(name)
+        if (permissionId !== undefined) {
+          if (checked) next.add(permissionId)
+          else next.delete(permissionId)
+        }
+      })
       return Array.from(next)
     })
   }
 
   const isAllChecked =
     allPermissionNames.length > 0 &&
-    allPermissionNames.every((name) => selected.includes(name))
+    allPermissionNames.every(isPermissionSelected)
 
   const isAllIndeterminate =
-    !isAllChecked && allPermissionNames.some((name) => selected.includes(name))
+    !isAllChecked && allPermissionNames.some(isPermissionSelected)
 
   const handleNavigateBack = () => {
     navigate({
@@ -261,7 +295,6 @@ function RouteComponent() {
       search: { page: 1, search: "" },
     })
   }
-
   const save = async () => {
     try {
       await update.mutateAsync({
@@ -275,6 +308,7 @@ function RouteComponent() {
       toast.success("Hak akses berhasil diperbarui")
       handleNavigateBack()
     } catch (error) {
+      console.log(error)
       toast.error(
         error instanceof Error ? error.message : "Gagal memperbarui hak akses"
       )
@@ -477,7 +511,7 @@ function RouteComponent() {
 
           {groupedPermissions.map(([group, names]) => {
             const groupSelectedCount = names.filter((name) =>
-              selected.includes(name)
+              isPermissionSelected(name)
             ).length
             const isGroupAllSelected =
               names.length > 0 && groupSelectedCount === names.length
@@ -553,7 +587,7 @@ function RouteComponent() {
                   <div className="space-y-4 p-3">
                     {categories.map(([category, categoryNames]) => {
                       const categorySelectedCount = categoryNames.filter(
-                        (name) => selected.includes(name)
+                        (name) => isPermissionSelected(name)
                       ).length
                       const isCategoryAllSelected =
                         categorySelectedCount === categoryNames.length
@@ -584,7 +618,7 @@ function RouteComponent() {
                           )}
                           <div className="grid gap-2.5 sm:grid-cols-2 md:grid-cols-3">
                             {categoryNames.map((name) => {
-                              const isChecked = selected.includes(name)
+                              const isChecked = isPermissionSelected(name)
 
                               return (
                                 <label
