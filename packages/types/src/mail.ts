@@ -6,6 +6,7 @@ export type MailTemplateType =
   | "dynamic_form"
   | "non_template"
   | "dynamic_template"
+  | "job_posting_request"
 
 export interface AllMailProps {
   id: string
@@ -78,6 +79,7 @@ export interface Recipient {
 
 export interface RequestData {
   type: string
+  sub_title?: string
   content?: string
   form_schema?: string
   description?: string

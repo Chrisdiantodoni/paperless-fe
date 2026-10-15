@@ -75,11 +75,13 @@ export function MailItem({
             >
               {permitTitle}
             </p>
-            <p
-              className={`my-1 truncate text-xs text-foreground/80 ${!isRead ? "font-semibold" : "font-medium"}`}
-            >
-              {mail.sub_title ?? "-"}
-            </p>
+            {mail.request_data.sub_title && (
+              <p
+                className={`my-1 truncate text-xs text-foreground/80 ${!isRead ? "font-semibold" : "font-medium"}`}
+              >
+                {mail.request_data.sub_title}
+              </p>
+            )}
           </div>
 
           <span className="shrink-0 text-[11px] whitespace-nowrap text-muted-foreground">
