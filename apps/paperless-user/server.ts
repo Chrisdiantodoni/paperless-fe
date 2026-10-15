@@ -4,7 +4,7 @@ import { toNodeHandler } from "srvx/node"
 
 // Detect environment
 const DEVELOPMENT = process.env.NODE_ENV === "development"
-const PORT = Number.parseInt(process.env.PORT || "3000")
+const PORT = Number.parseInt(process.env.PORT || "3001")
 
 // Create express app
 const app = express()
