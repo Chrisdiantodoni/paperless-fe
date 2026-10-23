@@ -136,6 +136,7 @@ function getDefaultFormValues(
         ? {
             static_mail_template_id: templateId,
             title: "",
+            employment_type: null,
             description: "",
             additional_info: "",
             qualifications: [],

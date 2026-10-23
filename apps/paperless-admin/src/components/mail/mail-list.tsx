@@ -39,9 +39,9 @@ export function MailList({
   const isLastPage = page >= pageCount || pageCount === 0
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="h-full overflow-y-auto">
       {/* List Container */}
-      <div className="flex-1 divide-y divide-border overflow-y-auto">
+      <div className="divide-y divide-border">
         {isLoading ? (
           <div className="space-y-3 p-4">
             {Array.from({ length: 6 }).map((_, i) => (

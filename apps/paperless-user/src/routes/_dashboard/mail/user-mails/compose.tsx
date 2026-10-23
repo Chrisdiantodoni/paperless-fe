@@ -14,6 +14,7 @@ import { useConfirm } from "@workspace/ui/components/ui/confirm-dialog"
 import { handleApiError } from "@/lib/handle-api-error"
 import {
   composeNonTemplateSchema,
+  emptySuperior,
 } from "@/schema/mail/compose-non-template.schema"
 import type { ComposeNonTemplateForm } from "@/schema/mail/compose-non-template.schema"
 import { SortableList } from "@workspace/ui/components/ui/sortable-list"
@@ -43,6 +44,7 @@ function RouteComponent() {
       content: "",
       recipients: [] as ComposeNonTemplateForm["recipients"],
       recipients_cc: [] as ComposeNonTemplateForm["recipients_cc"],
+      superior: emptySuperior,
       notes: "",
       attachments: [] as File[],
     },
@@ -69,6 +71,11 @@ function RouteComponent() {
       if (confirmed) {
         try {
           const allRecipients = [
+            {
+              user_id: value.superior.user_id.value,
+              recipient_type: "superior",
+              sequence: 1,
+            },
             ...value.recipients.map((r, i) => ({
               user_id: r.user_id.value,
               recipient_type: "to",
@@ -245,6 +252,33 @@ function RouteComponent() {
                 <CardTitle>Penerima</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <form.Field name="superior.user_id">
+                  {(field: any) => {
+                    const errors = field.state.meta.errors
+                    const showError =
+                      field.state.meta.isTouched && errors.length > 0
+                    return (
+                      <div className="space-y-2">
+                        <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                          Superior
+                        </label>
+                        <StaffCombobox
+                          value={field.state.value}
+                          onChange={field.handleChange}
+                          onBlur={field.handleBlur}
+                          invalid={showError}
+                          error={
+                            showError
+                              ? String(
+                                  errors?.[0]?.message ?? errors?.[0] ?? ""
+                                )
+                              : undefined
+                          }
+                        />
+                      </div>
+                    )
+                  }}
+                </form.Field>
                 <div className="space-y-2">
                   <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                     Kepada (To)

@@ -75,6 +75,14 @@ export function MailItem({
             >
               {permitTitle}
             </p>
+            {mail.request_data.type === "job_posting_request" &&
+              mail.request_data.employment_type && (
+                <p
+                  className={`my-1 truncate text-xs text-foreground/80 capitalize ${!isRead ? "font-semibold" : "font-medium"}`}
+                >
+                  {mail.request_data.employment_type}
+                </p>
+              )}
             {mail.request_data.sub_title && (
               <p
                 className={`my-1 truncate text-xs text-foreground/80 ${!isRead ? "font-semibold" : "font-medium"}`}

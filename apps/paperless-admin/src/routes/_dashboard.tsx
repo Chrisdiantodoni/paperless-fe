@@ -7,6 +7,7 @@ import { Separator } from "@workspace/ui/components/ui/separator"
 
 import {
   SidebarInset,
+  SidebarProvider,
   SidebarTrigger,
 } from "@workspace/ui/components/ui/sidebar"
 import { DynamicBreadcrumb } from "@/components/dynamic-breadcrumb"
@@ -22,11 +23,9 @@ export const Route = createFileRoute("/_dashboard")({
         to: "/dashboard",
       })
     }
-    const { queryClient } = context
-    const [user, sidebar] = await Promise.all([
-      queryClient.ensureQueryData(userQueryOptions()),
-      queryClient.ensureQueryData(sidebarQueryOptions()),
-    ])
+    const { queryClient, user } = context
+    queryClient.setQueryData(userQueryOptions().queryKey, user)
+    const sidebar = await queryClient.ensureQueryData(sidebarQueryOptions())
     return { user, sidebar }
   },
   loader: ({ context }) => ({ user: context.user, sidebar: context.sidebar }),
@@ -38,7 +37,7 @@ function RouteComponent() {
   const { user, sidebar } = Route.useLoaderData()
   console.log(user, "user")
   return (
-    <>
+    <SidebarProvider>
       <AppSidebar user={user} sidebar={sidebar} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -58,6 +57,6 @@ function RouteComponent() {
           <Outlet />
         </div>
       </SidebarInset>
-    </>
+    </SidebarProvider>
   )
 }

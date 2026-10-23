@@ -15,8 +15,13 @@ const recipientItemSchema = z.object({
       message: "Penerima wajib dipilih",
       path: [], // penting: bikin error nempel di department_id, bukan department_id.value
     }),
-  recipient_type: z.enum(["to", "cc"]),
+  recipient_type: z.enum(["to", "cc", "superior"]),
   sequence: z.number(),
+})
+
+const superiorItemSchema = recipientItemSchema.extend({
+  recipient_type: z.literal("superior"),
+  sequence: z.literal(1),
 })
 
 export const staticMailTemplateFormSchema = z.object({
@@ -51,6 +56,7 @@ export const staticMailTemplateFormSchema = z.object({
     .array(recipientItemSchema)
     .min(1, { message: "Minimal harus ada 1 penerima email" }),
   recipients_cc: z.array(recipientItemSchema),
+  superior: superiorItemSchema,
 })
 
 export type StaticMailTemplateFormSchema = z.infer<
@@ -72,6 +78,11 @@ export const emptyStaticMailTemplateValues: StaticMailTemplateFormSchema = {
   positions: [],
   recipients: [],
   recipients_cc: [],
+  superior: {
+    user_id: { ...emptySelectValue },
+    recipient_type: "superior",
+    sequence: 1,
+  },
 }
 
 // =====================
@@ -129,6 +140,7 @@ const dynamicMailTemplateObject = z.object({
     .array(recipientItemSchema)
     .min(1, { message: "Minimal harus ada 1 penerima email" }),
   recipients_cc: z.array(recipientItemSchema),
+  superior: superiorItemSchema,
 })
 
 export const emptyDynamicMailTemplateValues: DynamicMailTemplateForm = {
@@ -143,6 +155,11 @@ export const emptyDynamicMailTemplateValues: DynamicMailTemplateForm = {
   positions: [],
   recipients: [],
   recipients_cc: [],
+  superior: {
+    user_id: { ...emptySelectValue },
+    recipient_type: "superior",
+    sequence: 1,
+  },
 }
 
 /** Use this for form validators (pre-transform) */
@@ -152,7 +169,7 @@ export const dynamicMailTemplateValidator = dynamicMailTemplateObject
 export const dynamicMailTemplateSchema = dynamicMailTemplateObject.transform(
   (data) => {
     // Pisahkan 'department' dari data lainnya
-    const { department, recipients, recipients_cc, ...rest } = data
+    const { department, recipients, recipients_cc, superior, ...rest } = data
     const newRecipients = recipients.map((item, index) => ({
       ...item,
       user_id: item.user_id.value,
@@ -170,7 +187,11 @@ export const dynamicMailTemplateSchema = dynamicMailTemplateObject.transform(
       branches: data.branches.map((item) => item.value),
       positions: data.positions.map((item) => item.value),
       department_id: department.value,
-      recipients: [...newRecipients, ...newCCRecipients],
+      recipients: [
+        ...newRecipients,
+        ...newCCRecipients,
+        { ...superior, user_id: superior.user_id.value, sequence: 1 },
+      ],
     }
   }
 )

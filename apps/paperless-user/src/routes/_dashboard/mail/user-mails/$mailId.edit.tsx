@@ -102,7 +102,22 @@ function getDefaultFormValues(mail: AllMailProps) {
               })) ?? [],
           }
         : undefined,
-    job_posting_data: req.type === "job_posting_request" ? {} : undefined,
+    job_posting_data:
+      req.type === "job_posting_request"
+        ? {
+            static_mail_template_id:
+              (req as any).static_mail_template_id ?? null,
+            title: req.title ?? "",
+            employment_type: req.employment_type ?? null,
+            description: req.description ?? "",
+            additional_info: req.additional_info ?? "",
+            qualifications: req.qualifications ?? [],
+            areas: req.areas ?? [],
+            deadline_at: req.deadline_at ?? "",
+            branch_id: (req as any).branch_id ?? "",
+            address: req.address ?? "",
+          }
+        : undefined,
 
     dynamic_data:
       req.type === "dynamic" || req.type === "dynamic_template"
@@ -269,11 +284,7 @@ function RouteComponent() {
           value.request_type === "job_posting_request" &&
           value.job_posting_data
         ) {
-          const jobPostingData = {
-            ...value.job_posting_data,
-            static_mail_template_id:
-              value.job_posting_data.static_mail_template_id || templateId,
-          }
+          const jobPostingData = value.job_posting_data
           Object.entries(jobPostingData).forEach(([key, fieldValue]) => {
             if (fieldValue === undefined || fieldValue === null) return
             if (Array.isArray(fieldValue)) {

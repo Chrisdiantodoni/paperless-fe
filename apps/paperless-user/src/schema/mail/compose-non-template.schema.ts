@@ -9,8 +9,13 @@ const recipientItemSchema = z.object({
   user_id: selectValueSchema.refine((val) => val.value.length > 0, {
     message: "Penerima wajib dipilih",
   }),
-  recipient_type: z.enum(["to", "cc"]),
+  recipient_type: z.enum(["to", "cc", "superior"]),
   sequence: z.number(),
+})
+
+const superiorItemSchema = recipientItemSchema.extend({
+  recipient_type: z.literal("superior"),
+  sequence: z.literal(1),
 })
 
 export const composeNonTemplateSchema = z.object({
@@ -20,6 +25,7 @@ export const composeNonTemplateSchema = z.object({
     .array(recipientItemSchema)
     .min(1, "Minimal 1 penerima (To) wajib diisi"),
   recipients_cc: z.array(recipientItemSchema),
+  superior: superiorItemSchema,
   notes: z.string(),
   attachments: z.array(z.instanceof(File)).max(5, "Maksimal 5 file"),
 })
@@ -29,6 +35,12 @@ export type ComposeNonTemplateForm = z.infer<typeof composeNonTemplateSchema>
 export const emptyRecipient = {
   user_id: { value: "", label: "" },
   recipient_type: "to" as const,
+  sequence: 1,
+}
+
+export const emptySuperior = {
+  user_id: { value: "", label: "" },
+  recipient_type: "superior" as const,
   sequence: 1,
 }
 

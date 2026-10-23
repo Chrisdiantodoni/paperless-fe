@@ -4,6 +4,13 @@ import { DateTimePicker } from "@workspace/ui/components/ui/date-time-picker"
 import { FieldGroup } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 import { Label } from "@workspace/ui/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/ui/select"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Plus, Trash2 } from "lucide-react"
 import { useStore } from "@tanstack/react-form"
@@ -61,19 +68,41 @@ export function JobPostingRequestForm({ form }: JobPostingRequestFormProps) {
             </div>
           )}
         </form.Field>
-        <form.Field name="job_posting_data.branch_id">
+        <form.Field name="job_posting_data.employment_type">
           {(field: any) => (
             <div className="space-y-1.5">
-              <Label required>Cabang</Label>
-              <BranchCombobox
-                value={field.state.value}
-                onChange={(value) => field.handleChange(value.value)}
-              />
+              <Label>Jenis Pekerjaan</Label>
+              <Select
+                value={field.state.value ?? ""}
+                onValueChange={field.handleChange}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Pilih jenis pekerjaan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="kontrak">Kontrak</SelectItem>
+                  <SelectItem value="magang">Magang</SelectItem>
+                  <SelectItem value="freelance">Freelance</SelectItem>
+                </SelectContent>
+              </Select>
               <FieldError field={field} />
             </div>
           )}
         </form.Field>
       </div>
+
+      <form.Field name="job_posting_data.branch_id">
+        {(field: any) => (
+          <div className="space-y-1.5">
+            <Label required>Cabang</Label>
+            <BranchCombobox
+              value={field.state.value}
+              onChange={(value) => field.handleChange(value.value)}
+            />
+            <FieldError field={field} />
+          </div>
+        )}
+      </form.Field>
 
       <div className="grid gap-4 md:grid-cols-2">
         <form.Field name="job_posting_data.deadline_at">

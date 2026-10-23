@@ -47,6 +47,10 @@ export default function StaticMailTemplateDetail({
       label: r.name,
     }))
 
+  const superiorRecipients = data.recipients
+    .filter((r) => r.recipient_type === "superior")
+    .map((r) => ({ ...r, value: r.user_id, label: r.name }))
+
   function recipientLabel(r: RecipientItem) {
     return r.label || r.value || "—"
   }
@@ -153,6 +157,18 @@ export default function StaticMailTemplateDetail({
             <p className="text-sm text-muted-foreground">Tidak ada penerima.</p>
           ) : (
             <div className="space-y-6">
+              {superiorRecipients.length > 0 && (
+                <div>
+                  <h4 className="mb-3 text-sm font-semibold tracking-wider text-muted-foreground uppercase">
+                    Superior ({superiorRecipients.length})
+                  </h4>
+                  <div className="flex flex-col gap-3">
+                    {superiorRecipients.map((r) => (
+                      <RecipientCard key={r.id} recipient={r} />
+                    ))}
+                  </div>
+                </div>
+              )}
               {toRecipients.length > 0 && (
                 <div>
                   <h4 className="mb-3 text-sm font-semibold tracking-wider text-muted-foreground uppercase">

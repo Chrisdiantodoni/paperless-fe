@@ -346,6 +346,32 @@ const TemplateFormFields = ({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <form.Field name="superior.user_id">
+              {(field: any) => {
+                const errors = field.state.meta.errors
+                const showError =
+                  field.state.meta.isTouched && errors.length > 0
+                return (
+                  <div className="space-y-2">
+                    <Label required>Superior</Label>
+                    <StaffCombobox
+                      value={field.state.value}
+                      onChange={field.handleChange}
+                      onBlur={field.handleBlur}
+                      invalid={showError}
+                      error={
+                        showError
+                          ? String(errors?.[0].message ?? "")
+                          : undefined
+                      }
+                    />
+                  </div>
+                )
+              }}
+            </form.Field>
+
+            <hr className="border-border" />
+
             <div className="space-y-2">
               <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 Kepada (To)

@@ -68,6 +68,19 @@ function RouteComponent() {
       label: item.name,
       value: item.id,
     })),
+    superior: (() => {
+      const recipient = resStaticMailTemplate.recipients.find(
+        (item) => item.recipient_type === "superior"
+      )
+      return {
+        user_id: {
+          value: recipient?.user_id ?? "",
+          label: recipient?.name ?? "",
+        },
+        recipient_type: "superior" as const,
+        sequence: 1,
+      }
+    })(),
     recipients_cc: resStaticMailTemplate.recipients
       .filter((filter) => filter.recipient_type == "cc")
       .map((rec) => ({

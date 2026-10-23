@@ -16,7 +16,7 @@ import { FormDevtoolsPanel } from "@tanstack/react-form-devtools"
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ConfirmProvider } from "@workspace/ui/components/ui/confirm-dialog"
-import { SidebarProvider } from "@workspace/ui/components/ui/sidebar"
+import { NotFoundPage } from "@workspace/ui/components/not-found-page"
 
 interface RouteContext {
   user?: UserData
@@ -46,30 +46,16 @@ export const Route = createRootRouteWithContext<RouteContext>()({
   }),
 
   notFoundComponent: () => (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="max-w-md space-y-5 text-center">
-        <p className="text-sm font-semibold text-primary">404</p>
-        <h1 className="text-3xl font-bold">Halaman tidak ditemukan</h1>
-        <p className="text-muted-foreground">
-          Alamat mungkin salah atau halaman sudah dipindahkan.
-        </p>
-        <div className="flex justify-center gap-3">
-          <Link
-            to="/dashboard"
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-          >
-            Ke dashboard
-          </Link>
-          <button
-            type="button"
-            className="rounded-md border px-4 py-2 text-sm font-medium"
-            onClick={() => window.history.back()}
-          >
-            Kembali
-          </button>
-        </div>
-      </div>
-    </main>
+    <NotFoundPage
+      action={
+        <Link
+          to="/dashboard"
+          className="inline-flex h-10 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors outline-none hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          Kembali ke dashboard
+        </Link>
+      }
+    />
   ),
   shellComponent: RootDocument,
 })
@@ -85,10 +71,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <ThemeProvider defaultTheme="system" storageKey="theme">
           <QueryClientProvider client={queryClient}>
             <ConfirmProvider>
-              <SidebarProvider>
-                <TooltipProvider>{children}</TooltipProvider>
-              </SidebarProvider>
-
+              <TooltipProvider>{children}</TooltipProvider>
               <Toaster />
             </ConfirmProvider>
             <TanStackDevtools

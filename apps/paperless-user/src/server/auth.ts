@@ -45,8 +45,7 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(
         leave_quota_taken: response.data.leave_quota_taken ?? 0,
       }
     } catch (error: any) {
-      // Pastikan handleApiError melempar ulang error (rethrow)
-      throw handleApiError(error)
+      handleApiError(error)
     }
   }
 )

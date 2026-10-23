@@ -55,16 +55,16 @@ export const setupInterceptors = (
           redirectTo = "/under-construction"
         }
 
-      return Promise.reject({
-        status,
-        code,
-        message,
-        errors,
-        errorMessage,
-        meta,
-        redirectTo,
-        responseData,
-      })
+        return Promise.reject({
+          status,
+          code,
+          message,
+          errors,
+          errorMessage,
+          meta,
+          redirectTo,
+          responseData,
+        })
       }
 
       // ==========================================================
@@ -77,22 +77,20 @@ export const setupInterceptors = (
       ) {
         if (portalUrl && !window.location.href.startsWith(portalUrl)) {
           window.location.href = `${portalUrl}/portal`
-          return new Promise(() => {})
+          return Promise.reject(error)
         }
       }
 
       if (status === 403) {
         window.location.href = "/403"
-        return new Promise(() => {})
+        return Promise.reject(error)
       } else if (status === 401 || message === "Unauthenticated.") {
         if (window.location.pathname !== "/login") {
-          // Cookies.remove(SESSION_COOKIE)
-          // window.location.href = `${portalUrl}/portal`
-          return new Promise(() => {})
+          return Promise.reject(error)
         }
       } else if (status === 503) {
         window.location.href = "/under-construction"
-        return new Promise(() => {})
+        return Promise.reject(error)
       }
 
       return Promise.reject({

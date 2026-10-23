@@ -9,18 +9,15 @@ type ApiErrorShape = {
   originalError?: unknown
 }
 
-/**
- * Handle API errors with redirect logic untuk auth errors.
- * Hanya throw redirect untuk auth errors (401/403).
- * Untuk error lain, caller harus handle sendiri.
- */
-export function handleApiError(err: unknown): void {
+export function handleApiError(err: unknown): never {
   const apiErr = err as ApiErrorShape
 
   if (apiErr?.redirectTo) {
     clearSessionCookie()
     throw redirect({ href: apiErr.redirectTo })
   }
+
+  throw apiErr?.originalError ?? err
 }
 
 /**

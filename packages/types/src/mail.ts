@@ -97,6 +97,7 @@ export interface RequestData {
   return_time?: string
   table_details?: any[]
   title?: string
+  employment_type?: "kontrak" | "magang" | "freelance" | null
   additional_info?: string
   qualifications?: string[]
   deadline_at?: string

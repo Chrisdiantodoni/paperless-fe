@@ -96,6 +96,7 @@ function RouteComponent() {
   const queryClient = useQueryClient()
 
   const [localReadIds, setLocalReadIds] = useState<Set<string>>(new Set())
+  const [isDetailExpanded, setIsDetailExpanded] = useState(false)
 
   useEffect(() => {
     if (mailPagination?.data) {
@@ -112,6 +113,7 @@ function RouteComponent() {
   const handleClose = () => {
     setSelectedId(null)
     setShowDetail(false)
+    setIsDetailExpanded(false)
   }
 
   const handleNavChange = (nav: "all" | "sent" | "draft") => {
@@ -316,9 +318,9 @@ function RouteComponent() {
 
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-stretch">
           <div
-            className={`min-h-0 w-full border-b border-border lg:flex lg:w-[360px] lg:flex-col lg:border-r lg:border-b-0 xl:w-[400px] ${
-              showDetail ? "hidden" : "flex flex-col"
-            }`}
+            className={`min-h-0 w-full border-b border-border lg:w-[360px] lg:flex-col lg:border-r lg:border-b-0 xl:w-[400px] ${
+              showDetail || isDetailExpanded ? "hidden" : "flex flex-col"
+            } ${isDetailExpanded ? "lg:hidden" : "lg:flex"}`}
           >
             <MailList
               isLoading={isFetching}
@@ -351,6 +353,8 @@ function RouteComponent() {
                 onSend={handleSend}
                 onRevise={handleRevise}
                 onClose={handleClose}
+                onToggleExpanded={() => setIsDetailExpanded((value) => !value)}
+                isExpanded={isDetailExpanded}
                 showCloseButton
               />
             ) : (

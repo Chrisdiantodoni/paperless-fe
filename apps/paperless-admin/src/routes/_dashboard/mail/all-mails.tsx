@@ -30,6 +30,7 @@ export const Route = createFileRoute("/_dashboard/mail/all-mails")({
 
 function RouteComponent() {
   const search = Route.useSearch()
+  const [isDetailExpanded, setIsDetailExpanded] = useState(false)
   const { setOpen } = useSidebar()
   const hasCollapsedSidebar = useRef(false)
 
@@ -180,9 +181,9 @@ function RouteComponent() {
         />
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-stretch">
           <div
-            className={`min-h-0 w-full border-b border-border lg:flex lg:w-[360px] lg:flex-col lg:border-r lg:border-b-0 xl:w-[400px] ${
-              showDetail ? "hidden" : "flex flex-col"
-            }`}
+            className={`min-h-0 w-full border-b border-border lg:w-[360px] lg:flex-col lg:border-r lg:border-b-0 xl:w-[400px] ${
+              showDetail || isDetailExpanded ? "hidden" : "flex flex-col"
+            } ${isDetailExpanded ? "lg:hidden" : "lg:flex"}`}
           >
             {isListError ? (
               <div role="alert" className="m-auto space-y-3 p-6 text-center">
@@ -229,7 +230,12 @@ function RouteComponent() {
                 detail={mailDetail ?? undefined}
                 isLoading={isLoadingDetail}
                 showCloseButton
-                onClose={() => setShowDetail(false)}
+                onClose={() => {
+                  setShowDetail(false)
+                  setIsDetailExpanded(false)
+                }}
+                onToggleExpanded={() => setIsDetailExpanded((value) => !value)}
+                isExpanded={isDetailExpanded}
                 onEditRecipients={handleEditRecipients}
               />
             ) : (

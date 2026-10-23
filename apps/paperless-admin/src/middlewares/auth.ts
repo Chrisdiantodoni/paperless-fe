@@ -24,7 +24,10 @@ export const authMiddleware = createMiddleware({ type: "request" }).server(
     try {
       userResponse = await auth.me()
     } catch (err) {
-      await clearSessionCookieServer()
+      if ((err as { status?: number })?.status === 401) {
+        await clearSessionCookieServer()
+        throw redirect({ href: loginHref })
+      }
       handleApiError(err)
     }
 

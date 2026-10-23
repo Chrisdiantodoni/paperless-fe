@@ -161,6 +161,7 @@ export const createJobPostingDataSchema = z.object({
     .string("Judul wajib diisi")
     .trim()
     .min(1, "Judul wajib diisi"),
+  employment_type: z.enum(["kontrak", "magang", "freelance"]).nullable(),
 
   description: z.string().nullish(),
   additional_info: z.string().nullish(),

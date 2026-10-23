@@ -47,13 +47,15 @@ export const Route = createFileRoute(
 
 interface RecipientFormItem {
   user_id: { value: string; label: string }
-  recipient_type: "to" | "cc"
+  recipient_type: "to" | "cc" | "superior"
   sequence: number
   status?: string
   locked: boolean
 }
 
-const emptyItem = (type: "to" | "cc"): RecipientFormItem => ({
+const emptyItem = (
+  type: "to" | "cc" | "superior"
+): RecipientFormItem => ({
   user_id: { value: "", label: "" },
   recipient_type: type,
   sequence: 1,
@@ -64,7 +66,7 @@ const emptyItem = (type: "to" | "cc"): RecipientFormItem => ({
 function getDefaultValues(mail: AllMailProps) {
   const req = mail.request_data
 
-  const mapRecipients = (type: "to" | "cc") =>
+  const mapRecipients = (type: "to" | "cc" | "superior") =>
     (mail.recipients || [])
       .filter((r) => r.recipient_type === type)
       .sort((a, b) => a.sequence - b.sequence)
@@ -82,6 +84,9 @@ function getDefaultValues(mail: AllMailProps) {
     notes: req.notes ?? "",
     recipients: mapRecipients("to") as RecipientFormItem[],
     recipients_cc: mapRecipients("cc") as RecipientFormItem[],
+    superior: (mapRecipients("superior")[0] ?? {
+      ...emptyItem("superior"),
+    }) as RecipientFormItem,
     attachments: [] as File[],
   }
 }
@@ -372,6 +377,11 @@ function RouteComponent() {
         formData.append("non_template_data[content]", value.content)
 
         const allRecipients = [
+          {
+            user_id: value.superior.user_id.value,
+            recipient_type: "superior" as const,
+            sequence: 1,
+          },
           ...value.recipients.map((r, i) => ({
             user_id: r.user_id.value,
             recipient_type: "to" as const,
@@ -488,10 +498,6 @@ function RouteComponent() {
     )
   }
 
-  const superiorRecipients = (mail.recipients || [])
-    .filter((r) => r.recipient_type === "superior")
-    .sort((a, b) => a.sequence - b.sequence)
-
   return (
     <PageWrapper className="space-y-6">
       <PageHeader
@@ -597,6 +603,34 @@ function RouteComponent() {
                 <CardTitle className="text-base">Penerima</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <form.Field name="superior.user_id">
+                  {(field: any) => {
+                    const errors = field.state.meta.errors
+                    const showError =
+                      field.state.meta.isTouched && errors.length > 0
+                    return (
+                      <div className="space-y-2">
+                        <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                          Superior
+                        </label>
+                        <StaffCombobox
+                          value={field.state.value}
+                          onChange={field.handleChange}
+                          onBlur={field.handleBlur}
+                          invalid={showError}
+                          error={
+                            showError
+                              ? String(errors?.[0]?.message ?? errors?.[0] ?? "")
+                              : undefined
+                          }
+                        />
+                      </div>
+                    )
+                  }}
+                </form.Field>
+
+                <hr className="border-border" />
+
                 <RecipientRepeater
                   form={form}
                   name="recipients"
@@ -610,48 +644,6 @@ function RouteComponent() {
                   name="recipients_cc"
                   label="Tembusan (CC)"
                 />
-
-                {superiorRecipients.length > 0 && (
-                  <>
-                    <hr className="border-border" />
-                    <div className="space-y-2">
-                      <span className="text-sm font-medium">
-                        Diketahui ({superiorRecipients.length})
-                      </span>
-                      <div className="space-y-2">
-                        {superiorRecipients.map((rec) => (
-                          <div
-                            key={rec.id}
-                            className="flex items-center justify-between rounded-md border border-border bg-muted/40 p-2.5"
-                          >
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1.5">
-                                <span className="truncate text-sm font-medium">
-                                  {rec.name}
-                                </span>
-                                <Lock className="h-3 w-3 shrink-0 text-muted-foreground" />
-                              </div>
-                              <div className="truncate text-xs text-muted-foreground">
-                                {rec.position ?? "-"} • {rec.department ?? "-"}
-                              </div>
-                            </div>
-                            {rec.status && (
-                              <Badge
-                                variant="outline"
-                                className={`px-1.5 py-0 text-[10px] capitalize ${getBadgeClass(rec.status)}`}
-                              >
-                                {rec.status}
-                              </Badge>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Diketahui otomatis (read-only)
-                      </p>
-                    </div>
-                  </>
-                )}
               </CardContent>
             </Card>
           </div>

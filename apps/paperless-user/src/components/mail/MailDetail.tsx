@@ -19,8 +19,10 @@ import {
   FileEdit,
   ShieldCheck,
   Signature,
-  type LucideIcon,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { AttachmentItem } from "./AttachmentItem"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Badge } from "@workspace/ui/components/ui/badge"
@@ -421,6 +423,8 @@ export interface MailDetailProps {
   onSend?: () => void
   onRevise?: () => void
   onClose?: () => void
+  onToggleExpanded?: () => void
+  isExpanded?: boolean
   showCloseButton?: boolean
 }
 
@@ -437,6 +441,8 @@ export function MailDetail({
   onSend,
   onRevise,
   onClose,
+  onToggleExpanded,
+  isExpanded = false,
   showCloseButton = false,
 }: MailDetailProps) {
   const { data: userData } = useUser()
@@ -574,7 +580,27 @@ export function MailDetail({
             </span>
           </div>
         </div>
-        <StatusBadge status={detail.status} />
+        <div className="flex items-center gap-2">
+          {onToggleExpanded && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden size-8 lg:inline-flex"
+              aria-label={
+                isExpanded ? "Tampilkan daftar surat" : "Perluas detail surat"
+              }
+              aria-pressed={isExpanded}
+              onClick={onToggleExpanded}
+            >
+              {isExpanded ? (
+                <PanelLeftOpen className="size-4" />
+              ) : (
+                <PanelLeftClose className="size-4" />
+              )}
+            </Button>
+          )}
+          <StatusBadge status={detail.status} />
+        </div>
       </div>
 
       {/* New Layout: Full Width Content First, Then 2-Column Bottom */}
@@ -626,6 +652,14 @@ export function MailDetail({
                       Alamat Penempatan
                     </p>
                     <p className="mt-1 text-sm">{req.address || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Jenis Pekerjaan
+                    </p>
+                    <p className="mt-1 text-sm capitalize">
+                      {req.employment_type || "-"}
+                    </p>
                   </div>
                 </div>
 

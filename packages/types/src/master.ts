@@ -75,15 +75,20 @@ export interface StaticMailTemplate {
   department: string
   is_active: string
   content: string
-  request_type: "leave_request" | "permit_request" | "absence_request" | "overtime_request"
+  request_type:
+    | "leave_request"
+    | "permit_request"
+    | "absence_request"
+    | "overtime_request"
   branches: Branch[]
   departments: Department[]
   positions: Position[]
   recipients: {
     id: string
     sequence: number
-    recipient_type: "to" | "cc"
+    recipient_type: "to" | "cc" | "superior"
     user_id: string
+    name: string
     department: string
     branch: string
     position: string
@@ -120,8 +125,9 @@ export interface IDynamicMailTemplate {
   recipients: {
     id: string
     sequence: number
-    recipient_type: "to" | "cc"
+    recipient_type: "to" | "cc" | "superior"
     user_id: string
+    name: string
     department: string
     branch: string
     position: string

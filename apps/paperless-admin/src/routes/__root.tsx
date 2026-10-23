@@ -7,7 +7,6 @@ import {
 import type { QueryClient } from "@tanstack/react-query"
 import { QueryClientProvider } from "@tanstack/react-query"
 import type { UserData } from "@workspace/types/user.type"
-import { SidebarProvider } from "@workspace/ui/components/ui/sidebar"
 import { TooltipProvider } from "@workspace/ui/components/ui/tooltip"
 import { Toaster } from "@workspace/ui/components/ui/sonner"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
@@ -17,6 +16,7 @@ import { FormDevtoolsPanel } from "@tanstack/react-form-devtools"
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ConfirmProvider } from "@workspace/ui/components/ui/confirm-dialog"
+import { NotFoundPage } from "@workspace/ui/components/not-found-page"
 
 interface RouteContext {
   user?: UserData
@@ -46,21 +46,16 @@ export const Route = createRootRouteWithContext<RouteContext>()({
   }),
 
   notFoundComponent: () => (
-    <main className="flex min-h-screen items-center justify-center p-6 text-center">
-      <div className="space-y-4">
-        <p className="text-sm font-medium text-muted-foreground">404</p>
-        <h1 className="text-2xl font-semibold">Halaman tidak ditemukan</h1>
-        <p className="text-muted-foreground">
-          Alamat mungkin salah atau halaman sudah dipindahkan.
-        </p>
+    <NotFoundPage
+      action={
         <Link
           to="/dashboard"
-          className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground outline-none hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="inline-flex h-10 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors outline-none hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           Kembali ke dashboard
         </Link>
-      </div>
-    </main>
+      }
+    />
   ),
   shellComponent: RootDocument,
 })
@@ -76,10 +71,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <ThemeProvider defaultTheme="system" storageKey="theme">
           <QueryClientProvider client={queryClient}>
             <ConfirmProvider>
-              <SidebarProvider>
-                <TooltipProvider>{children}</TooltipProvider>
-              </SidebarProvider>
-
+              <TooltipProvider>{children}</TooltipProvider>
               <Toaster />
             </ConfirmProvider>
             <TanStackDevtools

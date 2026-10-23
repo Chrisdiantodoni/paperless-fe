@@ -39,6 +39,10 @@ export default function DynamicTemplateDetail({
     .filter((r) => r.recipient_type === "cc")
     .sort((a, b) => a.sequence - b.sequence)
 
+  const superiorRecipients = recipients.filter(
+    (r) => r.recipient_type === "superior"
+  )
+
   return (
     <Card className="w-full min-w-0 shadow-sm">
       <CardHeader>
@@ -195,6 +199,18 @@ export default function DynamicTemplateDetail({
             <p className="text-sm text-muted-foreground">Tidak ada penerima.</p>
           ) : (
             <div className="space-y-6">
+              {superiorRecipients.length > 0 && (
+                <div>
+                  <h4 className="mb-3 text-sm font-semibold tracking-wider text-muted-foreground uppercase">
+                    Superior ({superiorRecipients.length})
+                  </h4>
+                  <div className="flex flex-col gap-3">
+                    {superiorRecipients.map((r) => (
+                      <RecipientCard key={r.id} recipient={r} />
+                    ))}
+                  </div>
+                </div>
+              )}
               {toRecipients.length > 0 && (
                 <div>
                   <h4 className="mb-3 text-sm font-semibold tracking-wider text-muted-foreground uppercase">

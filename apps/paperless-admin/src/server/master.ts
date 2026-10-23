@@ -144,7 +144,15 @@ export const createStaticMailTemplate = createServerFn({ method: "POST" })
         branches: data.branches.map((item) => item.value),
         departments: data.departments.map((item) => item.value),
         positions: data.positions.map((item) => item.value),
-        recipients: [...recipients, ...ccRecipients],
+        recipients: [
+          ...recipients,
+          ...ccRecipients,
+          {
+            ...data.superior,
+            user_id: data.superior.user_id.value,
+            sequence: 1,
+          },
+        ],
       }
 
       const response = await master.createStaticMailTemplate(newBody)
@@ -178,7 +186,15 @@ export const updateStaticMailTemplate = createServerFn({ method: "POST" })
         branches: form.branches.map((item) => item.value),
         departments: form.departments.map((item) => item.value),
         positions: form.positions.map((item) => item.value),
-        recipients: [...recipients, ...ccRecipients],
+        recipients: [
+          ...recipients,
+          ...ccRecipients,
+          {
+            ...form.superior,
+            user_id: form.superior.user_id.value,
+            sequence: 1,
+          },
+        ],
       }
 
       const response = await master.updateStaticMailTemplate(id, newBody)
